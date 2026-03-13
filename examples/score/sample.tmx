@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx version="1.4">
+  <header creationtool="Manual Test" creationtoolversion="1.0" datatype="plaintext" segtype="sentence" adminlang="en" srclang="en" o-tmf="unknown"/>
+  <body>
+    <tu tuid="1">
+      <prop type="reference">Hola mundo</prop>
+      <tuv xml:lang="en"><seg>Hello world</seg></tuv>
+      <tuv xml:lang="es"><seg>Hola mundo</seg></tuv>
+    </tu>
+    <tu tuid="2">
+      <prop type="reference">Buenos dias</prop>
+      <tuv xml:lang="en"><seg>Good morning</seg></tuv>
+      <tuv xml:lang="es"><seg>Buenos dias</seg></tuv>
+    </tu>
+    <tu tuid="3">
+      <prop type="reference">Muchas gracias</prop>
+      <tuv xml:lang="en"><seg>Thank you very much</seg></tuv>
+      <tuv xml:lang="es"><seg>Muchas gracias</seg></tuv>
+    </tu>
+    <tu tuid="4">
+      <prop type="reference">El rapido zorro marron salta sobre el perro perezoso</prop>
+      <tuv xml:lang="en"><seg>The quick brown fox jumps over the lazy dog</seg></tuv>
+      <tuv xml:lang="es"><seg>El rapido zorro marron salta sobre el perro perezoso</seg></tuv>
+    </tu>
+    <tu tuid="5">
+      <prop type="reference">Evaluacion de calidad de traduccion automatica</prop>
+      <tuv xml:lang="en"><seg>Machine translation quality evaluation</seg></tuv>
+      <tuv xml:lang="es"><seg>Evaluacion de calidad de traduccion automatica</seg></tuv>
+    </tu>
+    <tu tuid="6">
+      <prop type="reference">Esta es una frase con sentido.</prop>
+      <tuv xml:lang="en"><seg>This is a meaningful sentence.</seg></tuv>
+      <tuv xml:lang="es"><seg>Xyza bcdef ghijkl.</seg></tuv>
+    </tu>
+  </body>
+</tmx>

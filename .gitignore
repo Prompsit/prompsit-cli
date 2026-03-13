@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+dist/
+*.tsbuildinfo
+
+# CLI output artifacts
+translated/
+
+# Environment
+.env
+.env.e2e
+.npmrc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent review (temporary)
+.agent-review/
+/.pipeline
+/.worktrees
+
+opencode_analysis/
+/opencode_analysis/
+/pi-mono-main
+
+# Local scratch / test output
+tmp/
+
+# AI tool config
+.claude/

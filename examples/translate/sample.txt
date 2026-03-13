@@ -1,0 +1,7 @@
+Hello world from the test file.
+
+This is a simple paragraph with multiple sentences. It contains text that should be translated as a single unit. The paragraph segmentation approach yields better translation quality.
+
+Here is another paragraph about machine translation. Neural machine translation has revolutionized the field. Quality estimation helps measure translation accuracy.
+
+Technical documents often have multiple sections. Each paragraph becomes one translation segment. This approach follows industry best practices.
