@@ -231,6 +231,7 @@ export const STRINGS = {
   "usage.daily_usage": "Daily usage",
   "usage.tier": "Tier",
   "usage.resets": "Resets",
+  "usage.corpus_usage": "Corpus usage",
   "usage.subscription_inactive": "Subscription is not active.",
 
   // === warmup retry ===
@@ -321,7 +322,8 @@ export const STRINGS = {
 
   "repl.welcome.annotate_hint": "Annotate monotext",
   "repl.welcome.login_hint": "Authenticate",
-  "repl.welcome.tip": "Start typing for suggestions | Tab: next field | ?: full help | clear: reset screen",
+  "repl.welcome.tip":
+    "Start typing for suggestions | Tab: next field | ?: full help | clear: reset screen",
 
   // === repl.py - runtime messages ===
   "repl.goodbye": "Goodbye!",
@@ -350,8 +352,7 @@ export const STRINGS = {
   "repl.cmd.copy-curl": "Copy last curl command to clipboard",
 
   // === shell CLI runtime messages ===
-  "cli.usage_error.hint":
-    "Invalid command or arguments. Run '{cmd}' for available commands.",
+  "cli.usage_error.hint": "Invalid command or arguments. Run '{cmd}' for available commands.",
 
   // === translator.py - visualizer step labels ===
   "i18n.viz.title": "Translating CLI to {lang}",

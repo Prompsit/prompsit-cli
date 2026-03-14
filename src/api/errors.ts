@@ -1,4 +1,5 @@
 // See API-442: Error hierarchy with codes & RFC 9457 ProblemDetail
+import { STATUS_CODES } from "node:http";
 import {
   APIError,
   AuthenticationError,
@@ -16,16 +17,16 @@ import { HttpStatus } from "../shared/constants.ts";
 // Parse API response and return appropriate exception
 // Supports RFC 9457 ProblemDetail format with fallback payload normalization.
 export function parseApiError(responseData: unknown, statusCode: number): APIError {
+  // Null/undefined guard — HTTP error with non-JSON body (e.g. nginx HTML, empty response)
+  if (responseData === null || responseData === undefined) {
+    return mapStatusToError(statusCode, httpStatusMessage(statusCode));
+  }
+
   // Check for RFC 9457 ProblemDetail format
-  if (
-    typeof responseData === "object" &&
-    responseData !== null &&
-    "type" in responseData &&
-    "code" in responseData
-  ) {
+  if (typeof responseData === "object" && "type" in responseData && "code" in responseData) {
     try {
       const problem = ProblemDetailSchema.parse(responseData);
-      const detail = problem.detail ?? "API error";
+      const detail = problem.detail ?? problem.title ?? "API error";
 
       // Map error codes to specific exception types (prefix-based)
       if (problem.code?.startsWith("AUTH_")) {
@@ -63,11 +64,7 @@ export function parseApiError(responseData: unknown, statusCode: number): APIErr
   }
 
   // Check for FastAPI detail format
-  if (
-    typeof responseData === "object" &&
-    responseData !== null &&
-    "detail" in (responseData as Record<string, unknown>)
-  ) {
+  if (typeof responseData === "object" && "detail" in (responseData as Record<string, unknown>)) {
     const { detail } = responseData as Record<string, unknown>;
 
     // detail can be a string or list of validation errors
@@ -95,8 +92,8 @@ export function parseApiError(responseData: unknown, statusCode: number): APIErr
     return mapStatusToError(statusCode, responseData);
   }
 
-  // Last resort fallback
-  return mapStatusToError(statusCode, String(responseData));
+  // Last resort fallback — structured data we can't parse
+  return mapStatusToError(statusCode, httpStatusMessage(statusCode));
 }
 
 // Map HTTP status code to the appropriate error class instance
@@ -109,6 +106,10 @@ function mapStatusToError(statusCode: number, message: string): APIError {
   if (statusCode >= HttpStatus.INTERNAL_ERROR) return new ServerError(message, statusCode);
 
   return new APIError(message, `E${statusCode}`, statusCode);
+}
+
+function httpStatusMessage(statusCode: number): string {
+  return STATUS_CODES[statusCode] ?? `HTTP error ${statusCode}`;
 }
 
 export {

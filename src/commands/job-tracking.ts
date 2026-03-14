@@ -90,7 +90,7 @@ export class SSETracker implements JobTracker {
       return { success: true, kind: "success", resultUrl: result.result_url };
     }
     if ("error_message" in result) {
-      return { success: false, kind: "failed", error: result.error_message };
+      return { success: false, kind: "failed", error: result.error_message || "Unknown error" };
     }
     // Cancelled event
     return { success: false, kind: "cancelled", error: t("job_tracking.cancelled") };

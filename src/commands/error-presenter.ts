@@ -13,8 +13,8 @@ export type TranslateFn = (key: StringKey, params?: Record<string, string>) => s
 
 /** Apply fmtCmd() to "cmd" key in hintParams so catalog stays pure data. */
 function formatHintParams(params?: Record<string, string>): Record<string, string> | undefined {
-  if (!params?.["cmd"]) return params;
-  return { ...params, cmd: fmtCmd(params["cmd"]) };
+  if (!params?.cmd) return params;
+  return { ...params, cmd: fmtCmd(params.cmd) };
 }
 
 export function presentError(classification: ErrorClassification, t: TranslateFn): PresentedError {

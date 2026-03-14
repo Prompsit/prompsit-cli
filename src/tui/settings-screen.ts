@@ -36,7 +36,9 @@ import { translateCatalog } from "../i18n/translator.ts";
 import { createTranslator } from "../api/translator-adapter.ts";
 import { createProgressSink } from "../output/progress-display.ts";
 import { getLogger } from "../logging/index.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 import { fmtCmd } from "../runtime/execution-mode.ts";
+import { performSkillSync, performSkillRemoval } from "../cli/skill-sync.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -55,6 +57,7 @@ const TUI_ITEMS: ConfigItem[] = [
   { key: "language", label: "Language", kind: "cycle", options: ["en"] },
   { key: "show-curl", label: "Show curl", kind: "bool" },
   { key: "telemetry-enabled", label: "Telemetry", kind: "bool" },
+  { key: "skill-sync", label: "Skill sync", kind: "bool" },
 ];
 
 // --- Draft State ---
@@ -119,7 +122,7 @@ async function fetchAvailableLanguages(): Promise<string[]> {
     return [...langs].toSorted((a, b) => a.localeCompare(b));
   } catch (error: unknown) {
     log.warn("Failed to fetch languages", {
-      reason: error instanceof Error ? error.message : String(error),
+      reason: toErrorMessage(error),
     });
     return ["en"];
   }
@@ -130,10 +133,7 @@ function initLanguageOptions(items: PiSettingItem[], requestRender?: () => void)
   const langItem = items.find((i) => i.id === "language");
   if (!langItem) return;
   langItem.values = [String(getConfigValue("language"))];
-  if (!isAuthenticated()) {
-    langItem.description = t("config.language.login_required", { cmd: fmtCmd("login") });
-    return;
-  }
+  if (!isAuthenticated()) return;
   void fetchAvailableLanguages().then((langs) => {
     langItem.values = langs;
     requestRender?.();
@@ -190,13 +190,28 @@ async function applyDraftChanges(draft: DraftState): Promise<void> {
     }
   }
 
-  // Phase 2: Apply all changes to config (memory + disk)
+  // Phase 2: Failable side-effects (before persist — rollback on failure)
+  if (changes.has("skill-sync")) {
+    try {
+      if (changes.get("skill-sync") === "true") {
+        performSkillSync();
+      } else {
+        performSkillRemoval();
+      }
+    } catch (error: unknown) {
+      terminal.error("SKILL_SYNC", toErrorMessage(error));
+      changes.delete("skill-sync");
+    }
+  }
+
+  // Phase 3: Persist only successful changes
+  if (changes.size === 0) return;
   for (const [id, value] of changes) {
     setConfigValue(id, value);
   }
   writeConfigToml(getSettings());
 
-  // Phase 3: Side-effects
+  // Phase 4: Safe side-effects (after persist)
   if (changes.has("show-curl")) {
     setCurlEnabled(changes.get("show-curl") === "true");
   }
@@ -205,13 +220,24 @@ async function applyDraftChanges(draft: DraftState): Promise<void> {
     resetApiClient();
     terminal.warn(t("config.tui.logout_warning"));
   }
+
+  // Phase 5: Summary
+  const summary = [...changes.entries()]
+    .map(([id, value]) => {
+      const label = TUI_ITEMS.find((c) => c.key === id)?.label ?? id;
+      const from = draft.original.get(id) ?? "?";
+      return `  ${label}: ${from} \u2192 ${value}`;
+    })
+    .join("\n");
+  terminal.success(`Settings updated:\n${summary}`);
 }
 
 // --- Value Helpers ---
 
 function buildPiItems(): PiSettingItem[] {
   return TUI_ITEMS.map((item): PiSettingItem => {
-    const currentValue = String(getConfigValue(item.key));
+    let currentValue = String(getConfigValue(item.key));
+    if (item.kind === "bool" && currentValue === "null") currentValue = "false";
     let values: string[] | undefined;
     if (item.kind === "bool") values = ["true", "false"];
     else if (item.kind === "select") values = Object.values(API_URL_PRESETS);

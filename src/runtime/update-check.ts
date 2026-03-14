@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { getConfigDir } from "../config/paths.ts";
 import { atomicWriteFile } from "../config/file-utils.ts";
 import { getLogger } from "../logging/index.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 import { invalidateUI } from "./ui-invalidate.ts";
 
 const log = getLogger(import.meta.url);
@@ -113,6 +114,6 @@ export async function warmUpdateCheck(): Promise<void> {
       log.debug("update check refreshed (npm)", { version: data.version });
     }
   } catch (error: unknown) {
-    log.debug("update check failed (best-effort)", { error: String(error) });
+    log.debug("update check failed (best-effort)", { error: toErrorMessage(error) });
   }
 }

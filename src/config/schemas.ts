@@ -41,6 +41,7 @@ export const CliConfigSchema = z.object({
   job_tracking_strategy: z.enum(["auto", "sse", "polling"]).default("auto"),
   file_concurrency: z.number().int().min(1).max(10).default(3),
   job_timeout: z.number().int().min(0).default(600),
+  skill_sync: z.boolean().nullable().default(null),
 });
 
 /**

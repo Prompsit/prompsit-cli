@@ -1,0 +1,58 @@
+title: "[Q&A] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help? Check the [FAQ](https://github.com/Prompsit/prompsit-cli#faq) first — your question might already be answered.
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Installation
+        - Authentication (login / credentials)
+        - Translation (text & files)
+        - Evaluation (quality metrics)
+        - Data Processing (score / annotate)
+        - Configuration
+        - REPL (interactive mode)
+        - File Formats
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Related Command (if any)
+      placeholder: "e.g., translate, eval, score"
+    validations:
+      required: false
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Describe what you need help with. Include error messages if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What I Tried
+      description: What steps have you already taken? This helps us avoid suggesting things you've already done.
+      placeholder: |
+        1. I tried ...
+        2. I checked ...
+        3. The error I got was ...
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: CLI version, Node.js version, OS
+      placeholder: |
+        - CLI: prompsit --version
+        - Node.js: node -v
+        - OS: Windows 11 / macOS 14 / Ubuntu 24
+    validations:
+      required: false

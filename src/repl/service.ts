@@ -7,6 +7,7 @@ import { abort as abortCommand } from "./core/abort.ts";
 import { clearHint } from "./ui/hint-state.ts";
 import { CommandHistory } from "./history/command-history.ts";
 import { terminal } from "../output/terminal.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 import { t } from "../i18n/index.ts";
 import type { ProgressEvent, ProgressPhase, SubmitResult } from "./core/progress-types.ts";
 import { checkCompleteness } from "./input/analyzer.ts";
@@ -194,7 +195,7 @@ export class ReplService extends EventEmitter {
       }
     } catch (error) {
       this.emitProgress(commandId, "failed", {
-        message: error instanceof Error ? error.message : String(error),
+        message: toErrorMessage(error),
       });
       this.emit("error", error);
       return { kind: "executed", shouldContinue: true };

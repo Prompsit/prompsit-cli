@@ -3,7 +3,7 @@
 // See docs/reference/guides/logging-policy.md §2 (Exception → Log Level Tree).
 
 import { ZodError } from "zod";
-import { APIError, CancelledError, JobError } from "../errors/contracts.ts";
+import { APIError, CancelledError, JobError, toErrorMessage } from "../errors/contracts.ts";
 import { classifyError } from "../errors/catalog.ts";
 import { terminal } from "../output/index.ts";
 import { APP_ERROR } from "../cli/exit-codes.ts";
@@ -54,6 +54,6 @@ export function handleCommandError(
     failCommand(ErrorCode.ZOD_VALIDATION, t("error.zod.label"), t("error.zod.hint"));
   } else {
     log.error("Unexpected error", error instanceof Error ? error : undefined, meta);
-    failCommand(ErrorCode.UNKNOWN, error instanceof Error ? error.message : String(error));
+    failCommand(ErrorCode.UNKNOWN, toErrorMessage(error));
   }
 }

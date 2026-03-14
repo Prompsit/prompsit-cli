@@ -1,0 +1,58 @@
+title: "[Idea] "
+labels:
+  - idea
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your idea! Please fill out the sections below to help us understand your proposal.
+
+        **Tip:** Check [existing features](https://github.com/Prompsit/prompsit-cli#features) to make sure this isn't already covered.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Translation
+        - Evaluation
+        - Data Processing (score / annotate)
+        - Configuration / REPL
+        - File Formats
+        - API Integration
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this solve? What workflow is missing or broken?
+      placeholder: "When I try to ... I find that ..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: How should this work? Describe the expected behavior.
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Expected Impact
+      description: How many users would benefit from this?
+      options:
+        - Everyone (core workflow)
+        - Most users (common use case)
+        - Some users (specific workflow)
+        - Niche (edge case)
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches did you consider? Current workarounds?
+    validations:
+      required: false

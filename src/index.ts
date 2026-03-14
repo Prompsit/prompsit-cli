@@ -26,6 +26,19 @@ if (isEntryPoint) {
   setupLogging();
   process.on("exit", shutdownLogging);
 
+  // Skill sync: deploy AI agent skills on launch (skip --help/--version quick-exit paths)
+  const isQuickExit = process.argv.some(
+    (a) => a === "--help" || a === "-h" || a === "--version" || a === "-V"
+  );
+  if (!isQuickExit) {
+    try {
+      const { runSkillSync } = await import("./cli/skill-sync.ts");
+      await runSkillSync();
+    } catch {
+      /* skill sync is non-critical — never block startup */
+    }
+  }
+
   // See API-503: No-args detection — enter REPL mode when no command specified
   const hasCommand = process.argv.length > 2;
 

@@ -259,14 +259,23 @@ export const DataJobCreateResponseSchema = z.object({
 export const TierInfoSchema = z.object({
   name: z.string(),
   chars_daily_limit: z.number(),
+  corpus_bytes_daily_limit: z.number(),
   rpm_limit: z.number(),
   segment_limit: z.number().nullable(),
 });
 
-/** Daily character usage from GET /v1/user/usage. */
+/** Daily character usage (translation + QE pool) from GET /v1/user/usage. */
 export const DailyUsageSchema = z.object({
   chars_used: z.number(),
   chars_limit: z.number(),
+  percentage: z.number(),
+  reset_at: z.string(),
+});
+
+/** Daily corpus byte usage (annotation pool) from GET /v1/user/usage. */
+export const CorpusUsageSchema = z.object({
+  bytes_used: z.number(),
+  bytes_limit: z.number(),
   percentage: z.number(),
   reset_at: z.string(),
 });
@@ -281,16 +290,16 @@ export const SubscriptionInfoSchema = z.object({
 /**
  * User usage response from GET /v1/user/usage.
  *
- * Fields:
- * - tier: Plan tier configuration (name, limits)
- * - daily_usage: Today's character usage (translation + QE combined)
- * - subscription: Subscription status and dates
+ * Two usage pools:
+ * - daily_usage: character usage (translation + QE)
+ * - corpus_usage: byte usage (annotation)
  *
  * Matches app/schemas/user.py in prompsit-api.
  */
 export const UserUsageResponseSchema = z.object({
   tier: TierInfoSchema,
   daily_usage: DailyUsageSchema,
+  corpus_usage: CorpusUsageSchema,
   subscription: SubscriptionInfoSchema,
 });
 

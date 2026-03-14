@@ -32,6 +32,7 @@ import { ProgressController } from "./ui/progress-controller.ts";
 import { setCurlPair, clearCurl } from "./ui/curl-store.ts";
 import { setCurlOutputFn } from "../api/curl.ts";
 import { terminal } from "../output/terminal.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 import { outputBridge, type OutputItem } from "./core/output-bridge.ts";
 import type { ReplService } from "./service.ts";
 import type { ProgressEvent, ProgressPhase } from "./core/progress-types.ts";
@@ -157,7 +158,7 @@ export class ReplController {
       this.onProgress(event);
     };
     this.boundOnError = (error) => {
-      terminal.error("REPL_SERVICE", String(error));
+      terminal.error("REPL_SERVICE", toErrorMessage(error));
     };
   }
 
@@ -456,7 +457,7 @@ export class ReplController {
 
       this.tui.requestRender();
     } catch (error) {
-      terminal.error("SUBMIT", String(error));
+      terminal.error("SUBMIT", toErrorMessage(error));
     }
   }
 
@@ -468,7 +469,7 @@ export class ReplController {
       this.historyComponent?.resetScroll(); // scroll to bottom on new output
       this.tui.requestRender(); // differential — HistoryComponent.render() reads outputBridge lazily
     } catch (error) {
-      terminal.error("RENDER", String(error));
+      terminal.error("RENDER", toErrorMessage(error));
     }
   }
 
@@ -558,7 +559,7 @@ export class ReplController {
       },
     };
     runWithProgressContext(ctx, applyFn).catch((error: unknown) => {
-      terminal.warn(String(error));
+      terminal.warn(toErrorMessage(error));
       emit("failed");
     });
   }

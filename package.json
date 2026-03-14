@@ -2,7 +2,7 @@
   "name": "prompsit-cli",
   "version": "0.0.0",
   "description": "CLI for the Prompsit Translation API",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Prompsit Language Engineering, S.L.",
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
   "files": [
     "dist",
     "examples",
+    "assets",
     "scripts/check-node-version.cjs"
   ],
   "publishConfig": {

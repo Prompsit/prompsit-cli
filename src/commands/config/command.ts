@@ -6,6 +6,7 @@ import {
   writeConfigToml,
 } from "../../config/index.ts";
 import { ErrorCode } from "../../errors/codes.ts";
+import { toErrorMessage } from "../../errors/contracts.ts";
 import { t } from "../../i18n/index.ts";
 import { terminal } from "../../output/index.ts";
 import { runSettingsScreen } from "../../tui/settings-screen.ts";
@@ -47,7 +48,7 @@ configCommand
       try {
         setConfigValue(key, value);
       } catch (error: unknown) {
-        failCommand(ErrorCode.CONFIG_WRITE, error instanceof Error ? error.message : String(error));
+        failCommand(ErrorCode.CONFIG_WRITE, toErrorMessage(error));
         return;
       }
       writeConfigToml(getSettings());

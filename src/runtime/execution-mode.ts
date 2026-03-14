@@ -9,12 +9,9 @@ export function enterReplMode(): void {
   _repl = true;
 }
 
+/** @public Used in test cleanup */
 export function exitReplMode(): void {
   _repl = false;
-}
-
-export function isReplMode(): boolean {
-  return _repl;
 }
 
 /** Prefix bare command with "prompsit " in CLI mode, pass through in REPL. */

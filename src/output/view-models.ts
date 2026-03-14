@@ -38,6 +38,10 @@ export interface UsageVM {
   charsLimit: number;
   percentage: number;
   resetAt: string;
+  corpusBytesUsed: number;
+  corpusBytesLimit: number;
+  corpusPercentage: number;
+  corpusResetAt: string;
   subscriptionActive: boolean;
 }
 

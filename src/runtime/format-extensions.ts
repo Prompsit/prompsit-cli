@@ -12,6 +12,7 @@ import { getConfigDir } from "../config/paths.ts";
 import { atomicWriteFile } from "../config/file-utils.ts";
 import { getApiClient } from "../api/client.ts";
 import { getLogger } from "../logging/index.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -136,7 +137,7 @@ export async function warmFormatExtensions(): Promise<void> {
           log.debug("format cache refreshed (api)", { source, count: String(exts.length) });
         })
         .catch((error: unknown) => {
-          log.warn("format cache fetch failed", { source, error: String(error) });
+          log.warn("format cache fetch failed", { source, error: toErrorMessage(error) });
         })
     );
   }

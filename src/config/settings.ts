@@ -181,7 +181,7 @@ export function setConfigValue(cliKey: string, value: string): void {
   const currentValue = sectionObj[field];
   // Type coercion based on current value type
   let coercedValue: string | number | boolean = value;
-  if (typeof currentValue === "boolean") {
+  if (currentValue === null || typeof currentValue === "boolean") {
     coercedValue = value === "true";
   } else if (typeof currentValue === "number") {
     const numValue = Number(value);

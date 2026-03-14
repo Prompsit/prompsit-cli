@@ -21,6 +21,7 @@ const ALLOWLIST = new Set([
   "src/logging/setup.ts",
   "src/repl/controller.ts",
   "src/runtime/clipboard.ts",
+  "src/cli/prompts.ts",
 ]);
 
 const FORBIDDEN = [

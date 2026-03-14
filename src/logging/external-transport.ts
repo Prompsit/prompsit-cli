@@ -1,4 +1,5 @@
 import { getLogger } from "./index.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -74,7 +75,7 @@ export async function requestJsonOrNull<T>(
       if (attempt >= retries) {
         log.debug("HTTP request error", {
           url,
-          error: error instanceof Error ? error.message : String(error),
+          error: toErrorMessage(error),
         });
         return null;
       }

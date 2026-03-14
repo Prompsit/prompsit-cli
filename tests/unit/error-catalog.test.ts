@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { classifyError } from "../../src/errors/catalog.ts";
 import { init, t } from "../../src/i18n/index.ts";
 import {

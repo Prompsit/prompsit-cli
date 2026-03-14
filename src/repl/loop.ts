@@ -14,6 +14,7 @@ import { getSettings } from "../config/settings.ts";
 import { isAuthenticated } from "../config/credentials.ts";
 import { setCurlEnabled } from "../api/curl.ts";
 import { getLogger } from "../logging/index.ts";
+import { toErrorMessage } from "../errors/contracts.ts";
 import { currentLang, needsRefresh, clearRefreshFlag, setTranslations } from "../i18n/index.ts";
 import { translateCatalog } from "../i18n/translator.ts";
 import { createTranslator } from "../api/translator-adapter.ts";
@@ -49,18 +50,18 @@ export async function runRepl(): Promise<void> {
           }
         })
         .catch((error: unknown) => {
-          log.warn("i18n background refresh failed", { error: String(error) });
+          log.warn("i18n background refresh failed", { error: toErrorMessage(error) });
         });
     }
 
     // Background warm format extensions cache for file autocomplete (no auth needed)
     warmFormatExtensions().catch((error: unknown) => {
-      log.warn("format extensions warm failed", { error: String(error) });
+      log.warn("format extensions warm failed", { error: toErrorMessage(error) });
     });
 
     // Background check for CLI updates on npm (best-effort, silent)
     warmUpdateCheck().catch((error: unknown) => {
-      log.debug("update check warm failed", { error: String(error) });
+      log.debug("update check warm failed", { error: toErrorMessage(error) });
     });
 
     // Deploy bundled example files to ~/.prompsit/examples/ on first run

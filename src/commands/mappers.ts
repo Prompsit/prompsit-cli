@@ -53,6 +53,10 @@ export function toUsageVM(input: UserUsageResponse): UsageVM {
     charsLimit: input.daily_usage.chars_limit,
     percentage: input.daily_usage.percentage,
     resetAt: input.daily_usage.reset_at,
+    corpusBytesUsed: input.corpus_usage.bytes_used,
+    corpusBytesLimit: input.corpus_usage.bytes_limit,
+    corpusPercentage: input.corpus_usage.percentage,
+    corpusResetAt: input.corpus_usage.reset_at,
     subscriptionActive: input.subscription.active,
   };
 }

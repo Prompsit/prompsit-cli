@@ -182,7 +182,7 @@ export const terminal: Terminal = {
     _impl.success(m);
   },
   error: (c, m, h) => {
-    _impl.error(c, m, h);
+    _impl.error(c, m || "Unknown error", h);
   },
   prompt: (t) => {
     _impl.prompt(t);

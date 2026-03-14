@@ -1,0 +1,29 @@
+{
+  "name": "prompsit-cli-skills",
+
+  "owner": {
+    "name": "Prompsit Language Engineering",
+    "url": "https://github.com/Prompsit"
+  },
+
+  "metadata": {
+    "description": "AI agent skills for the Prompsit Translation API CLI. Install CLI, request API access, translate text/documents, evaluate quality, score parallel corpora, and annotate monolingual data.",
+    "version": "1.0.0"
+  },
+
+  "plugins": [
+    {
+      "name": "prompsit",
+      "description": "Prompsit Translation API: CLI setup, text/document translation, quality evaluation (BLEU, chrF, MetricX), parallel corpus scoring (Bicleaner), monolingual data annotation (Monotextor).",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./assets/skills/prompsit-setup",
+        "./assets/skills/prompsit-translate",
+        "./assets/skills/prompsit-evaluate",
+        "./assets/skills/prompsit-score",
+        "./assets/skills/prompsit-annotate"
+      ]
+    }
+  ]
+}

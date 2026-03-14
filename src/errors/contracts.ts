@@ -141,3 +141,17 @@ export class ValidationError extends APIError {
     return lines.length > 0 ? lines.join("\n") : "Validation failed";
   }
 }
+
+/** Convert any caught value to a human-readable error message. */
+export function toErrorMessage(value: unknown): string {
+  if (value instanceof Error) return value.message || value.name || "Unknown error";
+  if (typeof value === "string") return value.trim() || "Unknown error";
+  if (value === null || value === undefined) return "Unknown error";
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.message === "string" && obj.message) return obj.message;
+    if (typeof obj.detail === "string" && obj.detail) return obj.detail;
+    return "Unknown error";
+  }
+  return "Unknown error";
+}

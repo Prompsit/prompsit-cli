@@ -46,7 +46,10 @@ export const SSECompleteEventSchema = z.object({
  */
 export const SSEErrorEventSchema = z.object({
   status: z.string().default(JobStatus.FAILED),
-  error_message: z.string(),
+  error_message: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? "Unknown error"),
 });
 
 /**

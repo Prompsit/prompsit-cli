@@ -48,6 +48,22 @@ export function readConfigToml(): Settings {
 }
 
 /**
+ * Strip null/undefined values before TOML serialization.
+ * TOML 1.0 has no null type — absent keys round-trip as Zod defaults.
+ */
+function stripNulls(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) continue;
+    result[key] =
+      typeof value === "object" && !Array.isArray(value)
+        ? stripNulls(value as Record<string, unknown>)
+        : value;
+  }
+  return result;
+}
+
+/**
  * Write Settings to config.toml atomically
  *
  * Pattern: Atomic write (temp-file + rename) prevents partial writes
@@ -59,11 +75,10 @@ export function writeConfigToml(settings: Settings): void {
   const configPath = getConfigFile();
 
   // Serialize to TOML (preserves section order: api, cli, telemetry)
-  const tomlContent = smolToml.stringify({
-    api: settings.api,
-    cli: settings.cli,
-    telemetry: settings.telemetry,
-  });
+  // stripNulls: nullable fields (e.g. skill_sync=null) become absent TOML keys
+  const tomlContent = smolToml.stringify(
+    stripNulls({ api: settings.api, cli: settings.cli, telemetry: settings.telemetry })
+  );
 
   // Atomic write via temp-file + rename
   atomicWriteFile(configPath, tomlContent);
