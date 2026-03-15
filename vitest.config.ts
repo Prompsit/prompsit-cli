@@ -21,7 +21,7 @@ export default defineConfig({
           globalSetup: ["tests/e2e/helpers/global-setup.ts"],
           globalTeardown: ["tests/e2e/helpers/global-teardown.ts"],
           setupFiles: ["tests/e2e/helpers/setup.ts"],
-          pool: "threads",
+          pool: "forks",
         },
       },
     ],
