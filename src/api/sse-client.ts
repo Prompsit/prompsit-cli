@@ -257,6 +257,9 @@ export class SSEClient {
             settle(result);
           }
         },
+        onComment: () => {
+          resetHeartbeat();
+        },
         onScheduleReconnect: ({ delay }) => {
           // Honor server retry: directive in our external retry loop
           this.reconnectionDelay = delay;
