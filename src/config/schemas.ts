@@ -8,9 +8,9 @@ import { API_URL_PRESETS, DEFAULT_API_URL_PRESET } from "./constants.ts";
  */
 export const ApiConfigSchema = z.object({
   base_url: z.string().default(API_URL_PRESETS[DEFAULT_API_URL_PRESET]),
-  timeout: z.number().int().default(30),
+  timeout: z.number().int().default(0),
   connect_timeout: z.number().default(5),
-  write_timeout: z.number().default(10),
+  write_timeout: z.number().default(0),
   retry_attempts: z.number().int().default(3),
   retry_max: z.number().default(10),
   rate_limit_max_wait: z.number().int().default(300),

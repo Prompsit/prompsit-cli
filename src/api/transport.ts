@@ -182,10 +182,12 @@ export class HttpTransport {
       },
 
       // Timeout config (from settings)
+      // Only connect is always on (detect unreachable hosts).
+      // response/send disabled by default (0) — server controls limits.
       timeout: {
         connect: settings.api.connect_timeout * 1000,
-        read: settings.api.timeout * 1000,
-        send: settings.api.write_timeout * 1000,
+        ...(settings.api.timeout > 0 && { response: settings.api.timeout * 1000 }),
+        ...(settings.api.write_timeout > 0 && { send: settings.api.write_timeout * 1000 }),
       },
 
       // Hooks
