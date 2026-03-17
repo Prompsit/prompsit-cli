@@ -4,7 +4,7 @@
 
 import { openAsBlob } from "node:fs";
 import { basename } from "node:path";
-import type { AuthSession } from "../auth-session.ts";
+import type { AuthSession, Progress } from "../auth-session.ts";
 import {
   DataJobCreateResponseSchema,
   type DataJobCreateResponse,
@@ -35,7 +35,10 @@ export class DataResource {
    * @param params - Annotation parameters (file, lang, pipeline, optional filters)
    * @returns DataJobCreateResponse with job_id for tracking
    */
-  async annotate(params: AnnotateParams): Promise<DataJobCreateResponse> {
+  async annotate(
+    params: AnnotateParams,
+    onUploadProgress?: (progress: Progress) => void
+  ): Promise<DataJobCreateResponse> {
     const { filePath, lang, pipeline, minLen, minAvgWords, lidModel } = params;
     const fileBlob = await openAsBlob(filePath);
     const fileName = basename(filePath);
@@ -51,7 +54,9 @@ export class DataResource {
     const data = await this.session.request<unknown>(
       "POST",
       `${this.baseUrl}${Endpoint.DATA_ANNOTATE}`,
-      { body: formData }
+      { body: formData },
+      undefined,
+      onUploadProgress
     );
 
     return DataJobCreateResponseSchema.parse(data);
@@ -70,7 +75,10 @@ export class DataResource {
    * @throws ZodError if response schema mismatch
    * @throws APIError on API errors
    */
-  async score(params: ScoreParams): Promise<DataJobCreateResponse> {
+  async score(
+    params: ScoreParams,
+    onUploadProgress?: (progress: Progress) => void
+  ): Promise<DataJobCreateResponse> {
     const { sourceFile, targetFile, outputFormat, sourceLang } = params;
     const baseUrl = this.baseUrl;
     const sourceBlob = await openAsBlob(sourceFile);
@@ -91,9 +99,13 @@ export class DataResource {
       formData.append("source_lang", sourceLang);
     }
 
-    const data = await this.session.request<unknown>("POST", `${baseUrl}${Endpoint.DATA_SCORE}`, {
-      body: formData,
-    });
+    const data = await this.session.request<unknown>(
+      "POST",
+      `${baseUrl}${Endpoint.DATA_SCORE}`,
+      { body: formData },
+      undefined,
+      onUploadProgress
+    );
 
     return DataJobCreateResponseSchema.parse(data);
   }

@@ -46,7 +46,7 @@ describe("AuthSession", () => {
     const result = await session.request("GET", "/v1/engines");
     expect(result).toEqual({ data: "public" });
     // publicFlag=true means no Authorization header
-    expect(transport.request).toHaveBeenCalledWith("GET", "/v1/engines", {}, true, undefined);
+    expect(transport.request).toHaveBeenCalledWith("GET", "/v1/engines", {}, true, undefined, undefined);
   });
 
   it("expired token triggers proactive refresh", async () => {

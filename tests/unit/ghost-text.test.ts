@@ -19,24 +19,24 @@ describe("computeGhostText", () => {
   it("returns template hint after command with space", () => {
     const result = computeGhostText(["eval "], 0, 5);
     expect(result).toBeTypeOf("string");
-    expect(result).toMatch(/^-s "/);
+    expect(result).toMatch(/^@"/);
   });
 
   it("returns remaining template after closed field", () => {
-    // 'eval -s "hello"' = 15 chars; closing quote typed, even fieldIdx
-    // Fix B: leading " of next prefix is skipped (already typed as closing quote)
-    const input = 'eval -s "hello"';
+    // 'eval @"hello"' — closing quote typed, even fieldIdx
+    // Leading " of next prefix is skipped (already typed as closing quote)
+    const input = 'eval @"hello"';
     const result = computeGhostText([input], 0, input.length);
     expect(result).toBeTypeOf("string");
-    expect(result).toMatch(/^ -h "/);
+    expect(result).toMatch(/^ -m "/);
   });
 
   it("returns template hint when inside quotes with content", () => {
-    // 'eval -s "hel' = 12 chars (cursor at end shows closing quote + rest)
-    const input = 'eval -s "hel';
+    // 'eval @"hel' — cursor at end shows closing quote + rest
+    const input = 'eval @"hel';
     const result = computeGhostText([input], 0, input.length);
     expect(result).toBeTypeOf("string");
-    expect(result).toMatch(/^" -h "/);
+    expect(result).toMatch(/^" -m "/);
   });
 
   it("returns null for unquoted args", () => {
@@ -126,21 +126,21 @@ describe("getTemplateSuggestion", () => {
 
   it("returns first field hint after command + space", () => {
     const hint = getTemplateSuggestion("eval ");
-    expect(hint).toBe('-s "source" -h "hypothesis" -r "reference"');
+    expect(hint).toBe('@"file" -m "metrics"');
   });
 
   it("returns null when all template fields are filled", () => {
-    // eval template: ['-s "', source], ['" -h "', hypothesis], ['" -r "', reference], ['"', null]
-    // 6 quotes → fieldIdx=6, templateIdx=3 (last segment has null field + terminates)
-    const hint = getTemplateSuggestion('eval -s "en" -h "text" -r "ref"');
+    // eval template: ['@"', file], ['" -m "', metrics], ['"', null]
+    // 4 quotes → fieldIdx=4, templateIdx=2 (last segment has null field + terminates)
+    const hint = getTemplateSuggestion('eval @"sample.tmx" -m "bleu"');
     expect(hint).toBeNull();
   });
 
   it("shows remaining fields after first field is closed", () => {
     // 2 quotes → fieldIdx=2, templateIdx=1 (second segment)
     // Leading " of prefix is skipped (user already typed closing quote)
-    const hint = getTemplateSuggestion('eval -s "en"');
-    expect(hint).toBe(' -h "hypothesis" -r "reference"');
+    const hint = getTemplateSuggestion('eval @"sample.tmx"');
+    expect(hint).toBe(' -m "metrics"');
   });
 
   it("returns null for empty input", () => {

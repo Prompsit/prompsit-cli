@@ -3,7 +3,10 @@
 // Pattern: public fallback -> proactive refresh -> request -> reactive 401 retry
 
 import type { Method, Options as GotOptions } from "got";
+import type { Progress } from "./transport.ts";
 import type { HttpTransport, RawResponse } from "./transport.ts";
+
+export type { Progress } from "./transport.ts";
 import { AuthResource } from "./resources/auth.ts";
 import { AuthenticationError, NetworkError, ServerError } from "./errors.ts";
 import {
@@ -43,10 +46,12 @@ export class AuthSession {
     method: Method,
     url: string,
     options: Partial<GotOptions> = {},
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    onUploadProgress?: (progress: Progress) => void
   ): Promise<T> {
     return this.withAuth(
-      (publicFlag, sig) => this.transport.request<T>(method, url, options, publicFlag, sig),
+      (publicFlag, sig) =>
+        this.transport.request<T>(method, url, options, publicFlag, sig, onUploadProgress),
       signal
     );
   }
@@ -70,11 +75,20 @@ export class AuthSession {
     url: string,
     outputPath: string,
     options: Partial<GotOptions> = {},
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    onDownloadProgress?: (progress: Progress) => void
   ): Promise<string> {
     return this.withAuth(
       (publicFlag, sig) =>
-        this.transport.requestToFile(method, url, outputPath, options, publicFlag, sig),
+        this.transport.requestToFile(
+          method,
+          url,
+          outputPath,
+          options,
+          publicFlag,
+          sig,
+          onDownloadProgress
+        ),
       signal
     );
   }

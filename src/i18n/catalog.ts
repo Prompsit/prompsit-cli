@@ -132,7 +132,7 @@ export const STRINGS = {
 
   // === evaluate file ===
   "evaluate.file.upload_status": "Uploading file for scoring...",
-  "evaluate.file.success": "Scored file saved to:",
+  "evaluate.file.success": "Evaluated file saved to:",
 
   // === _job_tracking.py ===
   "job_tracking.cancelled": "Job was cancelled",

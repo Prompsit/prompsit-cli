@@ -2,7 +2,7 @@
 // Used by translate file and data commands for job lifecycle.
 // All methods go through AuthSession for auth, retry, hooks, and error classification.
 
-import type { AuthSession } from "../auth-session.ts";
+import type { AuthSession, Progress } from "../auth-session.ts";
 import { JobStatusResponseSchema, type JobStatusResponse } from "../models.ts";
 import { Endpoint } from "../../shared/constants.ts";
 
@@ -54,9 +54,14 @@ export class JobsResource {
    * @param signal - Optional abort signal for cancellation
    * @returns The output path
    */
-  async download(resultUrl: string, outputPath: string, signal?: AbortSignal): Promise<string> {
+  async download(
+    resultUrl: string,
+    outputPath: string,
+    signal?: AbortSignal,
+    onDownloadProgress?: (progress: Progress) => void
+  ): Promise<string> {
     const url = `${this.baseUrl}${resultUrl}`;
 
-    return this.session.requestToFile("GET", url, outputPath, {}, signal);
+    return this.session.requestToFile("GET", url, outputPath, {}, signal, onDownloadProgress);
   }
 }

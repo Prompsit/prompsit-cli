@@ -9,6 +9,7 @@ import got, {
   type Got,
   type Method,
   type Options as GotOptions,
+  type Progress,
   type Response,
   type RetryObject,
   HTTPError,
@@ -18,6 +19,8 @@ import got, {
   type BeforeErrorHook,
   type BeforeRetryHook,
 } from "got";
+
+export type { Progress } from "got";
 import { getSettings } from "../config/settings.ts";
 import { getAccessToken } from "../config/credentials.ts";
 import { generateTraceId } from "./trace.ts";
@@ -228,7 +231,8 @@ export class HttpTransport {
     url: string,
     options: Partial<GotOptions> = {},
     publicFlag = false,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    onUploadProgress?: (progress: Progress) => void
   ): Promise<T> {
     const gotInstance = publicFlag ? this.publicClient : this.client;
 
@@ -241,7 +245,15 @@ export class HttpTransport {
         ...(effectiveSignal ? { signal: effectiveSignal } : {}),
       } as GotOptions;
 
-      const response = (await gotInstance(url, mergedOptions)) as Response<T>;
+      const request = gotInstance(url, mergedOptions);
+      // got's CancelableRequest has conflicting .on() overloads (PCancelable + RequestEvents);
+      // narrow via type assertion to resolve the union.
+      if (onUploadProgress)
+        (request as { on(e: "uploadProgress", l: (p: Progress) => void): unknown }).on(
+          "uploadProgress",
+          onUploadProgress
+        );
+      const response = (await request) as Response<T>;
 
       return response.body;
     } catch (error: unknown) {
@@ -299,7 +311,8 @@ export class HttpTransport {
     outputPath: string,
     options: Partial<GotOptions> = {},
     publicFlag = false,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    onDownloadProgress?: (progress: Progress) => void
   ): Promise<string> {
     const gotInstance = publicFlag ? this.publicClient : this.client;
 
@@ -310,6 +323,8 @@ export class HttpTransport {
         method,
         ...(effectiveSignal ? { signal: effectiveSignal } : {}),
       } as GotOptions & { isStream: true });
+
+      if (onDownloadProgress) stream.on("downloadProgress", onDownloadProgress);
 
       const fileStream = createWriteStream(outputPath);
       await pipeline(stream, fileStream, ...(effectiveSignal ? [{ signal: effectiveSignal }] : []));

@@ -307,7 +307,7 @@ async function evaluateFileMode(files: string[], opts: FileOpts): Promise<void> 
   }
   const resolvedFiles = expandResult.files;
 
-  const outputPaths = resolveOutputPaths(resolvedFiles, "_scored", opts.out, opts.outputFormat);
+  const outputPaths = resolveOutputPaths(resolvedFiles, "_evaluated", opts.out, opts.outputFormat);
   const client = getApiClient();
   const startMs = Date.now();
   log.info("Command started", {

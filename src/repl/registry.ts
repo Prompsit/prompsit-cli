@@ -310,9 +310,8 @@ export const COMMANDS: readonly ReplCommand[] = [
     argsSyntax: '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats]',
     group: G_EVALUATION,
     template: [
-      ['-s "', "source"],
-      ['" -h "', "hypothesis"],
-      ['" -r "', "reference"],
+      ['@"', "file"],
+      ['" -m "', "metrics"],
       ['"', null],
     ],
     welcome: {

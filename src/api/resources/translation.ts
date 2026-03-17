@@ -1,7 +1,7 @@
 // See API-469, API-494: Translation resource - text translation + document upload
 // Uses AuthSession (authenticated requests with auto-refresh).
 
-import type { AuthSession } from "../auth-session.ts";
+import type { AuthSession, Progress } from "../auth-session.ts";
 import {
   TranslationResponseSchema,
   type TranslationResponse,
@@ -72,7 +72,10 @@ export class TranslationResource {
    * @throws AuthenticationError if not authenticated
    * @throws APIError on API errors (422 unsupported format, 413 file too large)
    */
-  async uploadDocument(params: UploadDocumentParams): Promise<DocJobCreateResponse> {
+  async uploadDocument(
+    params: UploadDocumentParams,
+    onUploadProgress?: (progress: Progress) => void
+  ): Promise<DocJobCreateResponse> {
     const { filePath, sourceLang, targetLang, outputFormat } = params;
     const baseUrl = this.baseUrl;
 
@@ -91,7 +94,9 @@ export class TranslationResource {
     const data = await this.session.request<unknown>(
       "POST",
       `${baseUrl}${Endpoint.DOCUMENT_TRANSLATE}`,
-      { body: formData }
+      { body: formData },
+      undefined,
+      onUploadProgress
     );
 
     return DocJobCreateResponseSchema.parse(data);
