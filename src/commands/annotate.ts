@@ -158,9 +158,9 @@ export const annotateCommand = new Command("annotate")
         // Phase 1: Upload (0-5%)
         const resp = await withWarmupRetry(
           () =>
-            client.data.annotate({ filePath, ...annotateBase }, (p) =>
-              { onProgress(Math.round(p.percent * 5)); }
-            ),
+            client.data.annotate({ filePath, ...annotateBase }, (p) => {
+              onProgress(Math.round(p.percent * 5));
+            }),
           {
             signal,
             onStatus: (m) => {
@@ -173,12 +173,14 @@ export const annotateCommand = new Command("annotate")
           description: basename(filePath),
           silent: true,
           signal,
-          onProgress: (pct) => { onProgress(5 + Math.round(pct * 0.9)); },
+          onProgress: (pct) => {
+            onProgress(5 + Math.round(pct * 0.9));
+          },
         });
         // Phase 3: Download (95-100%)
-        return client.jobs.download(resultUrl, outputPaths[index], signal, (p) =>
-          { onProgress(95 + Math.round(p.percent * 5)); }
-        );
+        return client.jobs.download(resultUrl, outputPaths[index], signal, (p) => {
+          onProgress(95 + Math.round(p.percent * 5));
+        });
       },
       formatSuccess: (path) => `${t("annotate.success")} ${path}`,
       command: "annotate",

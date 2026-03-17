@@ -213,19 +213,23 @@ async function translateFileMode(files: string[], opts: FileOpts): Promise<void>
           targetLang,
           outputFormat: opts.outputFormat,
         },
-        (p) => { onProgress(Math.round(p.percent * 5)); }
+        (p) => {
+          onProgress(Math.round(p.percent * 5));
+        }
       );
       // Phase 2: Server processing (5-95%)
       const resultUrl = await trackJob(client, resp.job_id, {
         description: basename(filePath),
         silent: true,
         signal,
-        onProgress: (pct) => { onProgress(5 + Math.round(pct * 0.9)); },
+        onProgress: (pct) => {
+          onProgress(5 + Math.round(pct * 0.9));
+        },
       });
       // Phase 3: Download (95-100%)
-      return client.jobs.download(resultUrl, targetPaths[index], signal, (p) =>
-        { onProgress(95 + Math.round(p.percent * 5)); }
-      );
+      return client.jobs.download(resultUrl, targetPaths[index], signal, (p) => {
+        onProgress(95 + Math.round(p.percent * 5));
+      });
     },
     formatSuccess: (path) => `${t("translate.file.success")} ${path}`,
     command: "translate",
