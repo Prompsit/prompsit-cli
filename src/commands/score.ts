@@ -134,7 +134,7 @@ export const scoreCommand = new Command("score")
                   outputFormat: opts.outputFormat,
                   sourceLang,
                 },
-                (p) => onProgress(Math.round(p.percent * 5))
+                (p) => { onProgress(Math.round(p.percent * 5)); }
               ),
             {
               signal,
@@ -148,11 +148,11 @@ export const scoreCommand = new Command("score")
             description: basename(src),
             silent: true,
             signal,
-            onProgress: (pct) => onProgress(5 + Math.round(pct * 0.9)),
+            onProgress: (pct) => { onProgress(5 + Math.round(pct * 0.9)); },
           });
           // Phase 3: Download (95-100%)
           return client.jobs.download(resultUrl, outputPaths[index], signal, (p) =>
-            onProgress(95 + Math.round(p.percent * 5))
+            { onProgress(95 + Math.round(p.percent * 5)); }
           );
         },
         formatSuccess: (path) => `${t("score.success")} ${path}`,
@@ -205,7 +205,7 @@ export const scoreCommand = new Command("score")
                 outputFormat: opts.outputFormat,
                 sourceLang,
               },
-              (p) => onProgress(Math.round(p.percent * 5))
+              (p) => { onProgress(Math.round(p.percent * 5)); }
             ),
           {
             signal,
@@ -219,11 +219,11 @@ export const scoreCommand = new Command("score")
           description: basename(filePath),
           silent: true,
           signal,
-          onProgress: (pct) => onProgress(5 + Math.round(pct * 0.9)),
+          onProgress: (pct) => { onProgress(5 + Math.round(pct * 0.9)); },
         });
         // Phase 3: Download (95-100%)
         return client.jobs.download(resultUrl, outputPaths[index], signal, (p) =>
-          onProgress(95 + Math.round(p.percent * 5))
+          { onProgress(95 + Math.round(p.percent * 5)); }
         );
       },
       formatSuccess: (path) => `${t("score.success")} ${path}`,
