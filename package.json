@@ -52,6 +52,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "fix:all": "eslint . --fix && prettier --write \"src/**/*.{ts,json}\"",
     "format": "prettier --write \"src/**/*.{ts,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,json}\"",
     "lint:unused": "knip --production",
