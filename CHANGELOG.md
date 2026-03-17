@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+- Automated npm publishing via GitHub Actions (CalVer from mirror commit date)
+- `/publish` skill: commit+push only, npm publish handled by CI
+
+### Added
+- `fix:all` npm script — ESLint autofix + Prettier in one command
+- `/changelog` skill for maintaining CHANGELOG.md
+- GitHub Release auto-creation from CHANGELOG.md Unreleased section
+
+### Fixed
+- ESLint `no-confusing-void-expression` errors in annotate, score, translate commands
+- Prettier formatting after ESLint autofix
+- npm publish `--provenance` error on private GitHub repo
+
 ## 1.0.0 — Initial Public Release
 
 First open-source release of Prompsit CLI.
