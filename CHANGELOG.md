@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `/publish` skill: commit+push only, npm publish handled by CI
 
 ### Added
+- `--verbose` / `-v` CLI flag — enables debug logging to stderr for troubleshooting
 - `fix:all` npm script — ESLint autofix + Prettier in one command
 - `/changelog` skill for maintaining CHANGELOG.md
 - GitHub Release auto-creation from CHANGELOG.md Unreleased section

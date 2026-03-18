@@ -154,7 +154,20 @@ CLI/REPL entry point
 
 ---
 
-## 6. Handler Output Formats
+## 6. CLI Verbosity Flag
+
+| Flag | Console Level | Use Case |
+|------|--------------|----------|
+| _(none)_ | config `log_level` (default: `"warn"`) | Normal usage |
+| `--verbose` / `-v` | `"debug"` | Troubleshooting |
+
+**Precedence** (highest wins): `--verbose` > `PROMPSIT_CLI__LOG_LEVEL` env var > `config.toml` `[cli] log_level` > `"warn"` default.
+
+The flag is pre-scanned from `process.argv` before `setupLogging()`, so it captures all startup diagnostics. File logging (`~/.prompsit/debug.log`) always captures DEBUG regardless of this flag.
+
+---
+
+## 7. Handler Output Formats
 
 | Handler | Destination | Format | Example |
 |---------|------------|--------|---------|
@@ -174,7 +187,7 @@ CLI/REPL entry point
 
 ---
 
-## 7. Message Conventions
+## 8. Message Conventions
 
 | Rule | Good | Bad |
 |------|------|-----|
@@ -185,7 +198,7 @@ CLI/REPL entry point
 
 ---
 
-## 8. console.log vs logger
+## 9. console.log vs logger
 
 | Output Type | Tool | Destination |
 |-------------|------|-------------|
@@ -200,7 +213,7 @@ CLI/REPL entry point
 
 ---
 
-## 9. Anti-Patterns & Fixes
+## 10. Anti-Patterns & Fixes
 
 | Anti-Pattern | Fix |
 |-------------|-----|
@@ -222,7 +235,7 @@ CLI/REPL entry point
 - New standard metadata fields
 - Logging infrastructure changes (new handlers)
 
-**Last Updated:** 2026-02-15
+**Last Updated:** 2026-03-18
 
 ## Sources
 

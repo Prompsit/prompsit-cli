@@ -29,17 +29,17 @@ export function silenceConsole(): void {
 /**
  * Initialize logging with pino multistream: console (pretty), file, and optional Loki.
  *
- * Console level follows cli.log_level from config.
+ * Console level: consoleOverride (CLI flag) > cli.log_level (config) > "warn" (default).
  * File stream always captures DEBUG (full diagnostics).
  * Root pino level = "debug" (lowest stream level, required by multistream).
  */
-export function setupLogging(): void {
+export function setupLogging(consoleOverride?: LogLevel): void {
   if (_initialized) return;
   _initialized = true;
 
   const settings = getSettings();
   const settingsDiagnostics = getSettingsDiagnostics();
-  const configLevel = settings.cli.log_level as LogLevel;
+  const configLevel = consoleOverride ?? (settings.cli.log_level as LogLevel);
 
   // 1. Console stream: pino-pretty → gated stderr writable
   const gatedStderr = new Writable({

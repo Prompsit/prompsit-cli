@@ -39,6 +39,7 @@ program.configureHelp({
 
 program.helpOption("-h, --help", "Show this help");
 program.version(getVersion(), "-V, --version", "Show version number");
+program.option("-v, --verbose", "Enable debug logging to stderr");
 
 // --- Grouped commands ---
 

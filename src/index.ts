@@ -23,7 +23,11 @@ const isEntryPoint =
   stripExt(fileURLToPath(import.meta.url)) === stripExt(realpathSync(process.argv[1] ?? ""));
 if (isEntryPoint) {
   setupSignalHandlers();
-  setupLogging();
+
+  // Pre-scan argv for --verbose before logging init (captures ALL startup logs)
+  const userArgs = process.argv.slice(2);
+  const isVerbose = userArgs.includes("--verbose") || userArgs.includes("-v");
+  setupLogging(isVerbose ? "debug" : undefined);
   process.on("exit", shutdownLogging);
 
   // Skill sync: deploy AI agent skills on launch (skip --help/--version quick-exit paths)
@@ -40,7 +44,8 @@ if (isEntryPoint) {
   }
 
   // See API-503: No-args detection — enter REPL mode when no command specified
-  const hasCommand = process.argv.length > 2;
+  // Check for non-flag args (flags like --verbose should not prevent REPL entry)
+  const hasCommand = userArgs.some((a) => !a.startsWith("-"));
 
   if (hasCommand) {
     // Wrap in trace context: single trace_id for entire CLI command execution
