@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/npm/l/prompsit-cli)](https://www.npmjs.com/package/prompsit-cli)
 [![node](https://img.shields.io/node/v/prompsit-cli)](https://nodejs.org/)
 
-One CLI for the entire Prompsit API services. Translate text and documents, evaluate translation quality, score parallel corpora with Bicleaner-AI, and annotate monolingual data with Monotextor — from your terminal or an interactive REPL.
+One CLI for the entire Prompsit API services. Translate text and documents, evaluate translation quality, score parallel corpora with Bicleaner-AI, and annotate multilingual datasets with Monotextor — from your terminal or an interactive REPL.
 
 ## Quick Start
 
