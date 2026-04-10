@@ -2,7 +2,7 @@
 // Coordinates: initiate → display code → open browser → poll → return credentials.
 // Works in both CLI mode (ora spinner) and REPL mode (terminal.dim).
 
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import ora, { type Ora } from "ora";
 import type { AuthResource } from "../api/resources/auth.ts";
 import { getApiClient } from "../api/client.ts";
@@ -47,7 +47,18 @@ async function openBrowser(url: string): Promise<boolean> {
     cmd = "open";
     args = [url];
   } else {
-    cmd = "xdg-open";
+    // Linux/WSL: fallback chain (GitHub CLI pattern — cli/browser)
+    // wslview works in WSL, xdg-open works in native Linux
+    const found = ["xdg-open", "wslview"].find((c) => {
+      try {
+        execFileSync("which", [c], { stdio: "ignore" });
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (!found) return false;
+    cmd = found;
     args = [url];
   }
 
