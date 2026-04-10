@@ -112,38 +112,50 @@ export class AuthResource {
     | { status: "slow_down" }
     | { status: "expired" }
     | { status: "denied" }
+    | { status: "transient_error" }
   > {
-    const raw = await this.transport.requestRaw(
-      "POST",
-      `${this.baseUrl}${Endpoint.AUTH_DEVICE_TOKEN}`,
-      {
-        json: {
-          device_code: deviceCode,
-          grant_type: GrantType.DEVICE_CODE,
+    try {
+      const raw = await this.transport.requestRaw(
+        "POST",
+        `${this.baseUrl}${Endpoint.AUTH_DEVICE_TOKEN}`,
+        {
+          json: {
+            device_code: deviceCode,
+            grant_type: GrantType.DEVICE_CODE,
+          },
+          throwHttpErrors: false,
         },
-        throwHttpErrors: false,
-      },
-      true // public client
-    );
+        true // public client
+      );
 
-    if (raw.statusCode === 200) {
-      const body: unknown = JSON.parse(raw.body.toString());
-      return { status: "success", data: DeviceTokenResponseSchema.parse(body) };
+      if (raw.statusCode === 200) {
+        const body: unknown = JSON.parse(raw.body.toString());
+        return { status: "success", data: DeviceTokenResponseSchema.parse(body) };
+      }
+
+      if (raw.statusCode === 400) {
+        const body: unknown = JSON.parse(raw.body.toString());
+        const err = DeviceTokenErrorSchema.parse(body);
+        if (err.error === "authorization_pending") return { status: "pending" };
+        if (err.error === "slow_down") return { status: "slow_down" };
+        if (err.error === "expired_token") return { status: "expired" };
+        return { status: "denied" };
+      }
+
+      // 5xx (502 Bad Gateway, 503 Service Unavailable, etc.) — transient, retry
+      if (raw.statusCode >= 500) {
+        return { status: "transient_error" };
+      }
+
+      throw new APIError(
+        `Unexpected status ${String(raw.statusCode)}`,
+        "E_DEVICE_FLOW",
+        raw.statusCode
+      );
+    } catch (error: unknown) {
+      // Network errors (DNS, timeout, connection reset) — transient, retry
+      if (error instanceof APIError) throw error; // re-throw our own errors
+      return { status: "transient_error" };
     }
-
-    if (raw.statusCode === 400) {
-      const body: unknown = JSON.parse(raw.body.toString());
-      const err = DeviceTokenErrorSchema.parse(body);
-      if (err.error === "authorization_pending") return { status: "pending" };
-      if (err.error === "slow_down") return { status: "slow_down" };
-      if (err.error === "expired_token") return { status: "expired" };
-      return { status: "denied" };
-    }
-
-    throw new APIError(
-      `Unexpected status ${String(raw.statusCode)}`,
-      "E_DEVICE_FLOW",
-      raw.statusCode
-    );
   }
 }

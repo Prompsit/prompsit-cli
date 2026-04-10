@@ -5,10 +5,10 @@
 import { spawn } from "node:child_process";
 import ora, { type Ora } from "ora";
 import type { AuthResource } from "../api/resources/auth.ts";
+import { getApiClient } from "../api/client.ts";
 import { sleep } from "../runtime/async-utils.ts";
 import { getRuntimePlatform } from "../runtime/platform.ts";
-import { CancelledError } from "../errors/contracts.ts";
-import { AuthenticationError } from "../errors/contracts.ts";
+import { CancelledError, AuthenticationError } from "../errors/contracts.ts";
 import { terminal } from "../output/index.ts";
 import { t } from "../i18n/index.ts";
 import { getLogger } from "../logging/index.ts";
@@ -98,14 +98,21 @@ export async function runDeviceFlow(
   });
 
   // 2. Display user_code and verification URI
+  // Resolve relative URI to absolute (defensive: API may omit API_PUBLIC_URL)
+  const baseUrl = getApiClient().baseUrl;
+  const resolveUrl = (uri: string) => (uri.startsWith("http") ? uri : `${baseUrl}${uri}`);
+  const verificationUri = resolveUrl(deviceAuth.verification_uri);
+  const browseUrl = deviceAuth.verification_uri_complete
+    ? resolveUrl(deviceAuth.verification_uri_complete)
+    : verificationUri;
+
   terminal.info("");
   terminal.info(`  ${t("auth.device.user_code", { code: deviceAuth.user_code })}`);
   terminal.info("");
-  terminal.info(`  ${t("auth.device.visit_url", { url: deviceAuth.verification_uri })}`);
+  terminal.info(`  ${t("auth.device.visit_url", { url: verificationUri })}`);
   terminal.info("");
 
-  // 3. Open browser
-  const browseUrl = deviceAuth.verification_uri_complete ?? deviceAuth.verification_uri;
+  // 3. Open browser (prefer complete URL with embedded user_code)
   const opened = await openBrowser(browseUrl);
   if (opened) {
     terminal.info(t("auth.device.browser_opened"));
@@ -166,6 +173,10 @@ export async function runDeviceFlow(
         case "denied": {
           spinner?.fail();
           throw new AuthenticationError(t("auth.device.denied"));
+        }
+        case "transient_error": {
+          log.warn("Transient error during polling, will retry");
+          break;
         }
       }
     }
