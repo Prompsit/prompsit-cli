@@ -109,7 +109,7 @@ export async function runDeviceFlow(
   terminal.info("");
   terminal.info(`  ${t("auth.device.user_code", { code: deviceAuth.user_code })}`);
   terminal.info("");
-  terminal.info(`  ${t("auth.device.visit_url", { url: verificationUri })}`);
+  terminal.info(`  ${t("auth.device.visit_url", { url: browseUrl })}`);
   terminal.info("");
 
   // 3. Open browser (prefer complete URL with embedded user_code)
