@@ -59,10 +59,7 @@ export const loginCommand = new Command("login")
       } else {
         // Device Flow path: browser-based sign-in / registration
         log.debug("Starting device flow");
-        const result = await runDeviceFlow(
-          getApiClient().auth,
-          getCurrentAbortSignal()
-        );
+        const result = await runDeviceFlow(getApiClient().auth, getCurrentAbortSignal());
 
         saveTokens({
           accessToken: result.accessToken,
@@ -85,7 +82,10 @@ export const loginCommand = new Command("login")
       }
     } catch (error: unknown) {
       // Ctrl+C during interactive readline or device flow polling
-      if ((error as Error).message === "Cancelled" || (error as Error).message === "Request cancelled") {
+      if (
+        (error as Error).message === "Cancelled" ||
+        (error as Error).message === "Request cancelled"
+      ) {
         setSigintExit();
         return;
       }

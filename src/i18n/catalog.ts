@@ -29,8 +29,7 @@ export const STRINGS = {
   "auth.device.waiting": "Waiting for authorization...",
   "auth.device.expired": "Sign-in timed out. Run '{cmd}' to try again.",
   "auth.device.denied": "Authorization was denied.",
-  "auth.device.secret_hint":
-    'You can also login with: {cmd} -a "{account}" -s "{secret}"',
+  "auth.device.secret_hint": 'You can also login with: {cmd} -a "{account}" -s "{secret}"',
 
   // === config.py ===
   "config.invalid_key": "Invalid key:",
