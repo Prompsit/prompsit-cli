@@ -70,15 +70,7 @@ export const loginCommand = new Command("login")
           prompsitSecret: result.prompsitSecret,
         });
         resetApiClient();
-
-        // Show hint for future ROPC login
-        terminal.dim(
-          t("auth.device.secret_hint", {
-            cmd: "login",
-            account: result.accountId,
-            secret: result.prompsitSecret,
-          })
-        );
+        terminal.success(t("auth.login.success"));
       }
     } catch (error: unknown) {
       // Ctrl+C during interactive readline or device flow polling
