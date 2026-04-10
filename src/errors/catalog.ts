@@ -39,7 +39,7 @@ const ERROR_RULES = new Map<ErrorClass, ErrorRule[]>([
         pattern: null,
         labelKey: "error.auth.label",
         hintKey: "error.auth.hint",
-        hintKwargs: { cmd: "login -a EMAIL -s SECRET" },
+        hintKwargs: { cmd: "login" },
       },
     ],
   ],

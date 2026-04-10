@@ -20,6 +20,18 @@ export const STRINGS = {
   "auth.login.prompt_secret": "API secret: ",
   "auth.login.credentials_required": "Account and secret are required.",
 
+  // === auth - device flow (RFC 8628) ===
+  "auth.device.starting": "Starting sign-in...",
+  "auth.device.user_code": "Your one-time code: {code}",
+  "auth.device.visit_url": "Open this URL: {url}",
+  "auth.device.browser_opened": "Browser opened. Enter the code above to sign in with Google.",
+  "auth.device.browser_failed": "Could not open browser. Open the URL above manually.",
+  "auth.device.waiting": "Waiting for authorization...",
+  "auth.device.expired": "Sign-in timed out. Run '{cmd}' to try again.",
+  "auth.device.denied": "Authorization was denied.",
+  "auth.device.secret_hint":
+    'You can also login with: {cmd} -a "{account}" -s "{secret}"',
+
   // === config.py ===
   "config.invalid_key": "Invalid key:",
   "config.valid_keys": "Valid keys:",

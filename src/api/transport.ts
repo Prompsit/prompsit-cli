@@ -3,6 +3,7 @@
 // Three request methods: request<T> (JSON), requestRaw (buffer+headers), requestToFile (streaming).
 
 import { createWriteStream } from "node:fs";
+import * as os from "node:os";
 import { pipeline } from "node:stream/promises";
 
 import got, {
@@ -25,6 +26,7 @@ import { getSettings } from "../config/settings.ts";
 import { getAccessToken } from "../config/credentials.ts";
 import { generateTraceId } from "./trace.ts";
 import { getTraceId } from "../logging/index.ts";
+import { getVersion } from "../shared/version.ts";
 import { logCurl, isCurlEnabled } from "./curl.ts";
 import {
   HEADER_AUTHORIZATION,
@@ -85,6 +87,8 @@ function createGotHooks() {
     // Inject X-Request-ID header — reuse trace_id from AsyncLocalStorage context,
     // fallback to fresh ID if called outside trace context (e.g. startup health check)
     options.headers["X-Request-ID"] = getTraceId() || generateTraceId();
+    // Identify CLI in API access logs (searchable in Loki as structured_metadata)
+    options.headers["User-Agent"] = `prompsit-cli/${getVersion()} (${os.platform()})`;
   };
 
   const afterResponse: AfterResponseHook = (response) => {

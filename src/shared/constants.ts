@@ -42,6 +42,7 @@ export type SSEEventType = (typeof SSEEventType)[keyof typeof SSEEventType];
 export const GrantType = {
   PASSWORD: "password",
   REFRESH_TOKEN: "refresh_token",
+  DEVICE_CODE: "urn:ietf:params:oauth:grant-type:device_code",
 } as const;
 export type GrantType = (typeof GrantType)[keyof typeof GrantType];
 
@@ -73,6 +74,8 @@ export const RETRYABLE_STATUS_CODES = [
 
 export const Endpoint = {
   AUTH_TOKEN: "/v1/auth/token",
+  AUTH_DEVICE: "/v1/auth/device",
+  AUTH_DEVICE_TOKEN: "/v1/auth/device/token",
   HEALTH: "/health",
   LANGUAGES: "/v1/translation/languages",
   TRANSLATE: "/v1/translation",
@@ -104,6 +107,11 @@ export const CONTENT_TYPE_SSE = "text/event-stream";
 export const SSE_RETRY_ATTEMPTS = 3;
 export const DEFAULT_POLL_INTERVAL = 5; // seconds
 export const MAX_POLL_INTERVAL = 30; // seconds
+
+// --- Device Flow (RFC 8628) ---
+
+export const DEVICE_FLOW_DEFAULT_INTERVAL = 5; // seconds (RFC 8628 §3.2 default)
+export const DEVICE_FLOW_TIMEOUT = 600; // seconds (device_code TTL)
 export const SSE_HEARTBEAT_TIMEOUT = 30; // seconds (2x server heartbeat interval)
 
 // --- Data processing validation ---

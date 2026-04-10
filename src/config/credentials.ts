@@ -21,6 +21,7 @@ const CredentialDataSchema = z.object({
   account_id: z.string().nullish(), // Displayed in REPL status bar
   expires_at: z.number().optional(), // Unix timestamp, calculated from expires_in
   plan: z.string().optional(), // Subscription plan from API
+  prompsit_secret: z.string().nullish(), // API secret from device flow (shown once)
 });
 
 type CredentialData = z.infer<typeof CredentialDataSchema>;
@@ -32,6 +33,7 @@ export interface TokenData {
   accountId?: string;
   expiresIn?: number;
   plan?: string;
+  prompsitSecret?: string;
 }
 
 // ===== CredentialStore Class =====
@@ -73,7 +75,7 @@ export class CredentialStore {
    * Pattern: Atomic write (temp-file + rename) prevents corruption
    */
   saveTokens(opts: TokenData): void {
-    const { accessToken, refreshToken, accountId, expiresIn, plan } = opts;
+    const { accessToken, refreshToken, accountId, expiresIn, plan, prompsitSecret } = opts;
     const data: Record<string, string | number | undefined> = {
       access_token: accessToken,
     };
@@ -81,6 +83,16 @@ export class CredentialStore {
     if (refreshToken !== undefined) data.refresh_token = refreshToken;
     if (accountId !== undefined) data.account_id = accountId;
     if (plan !== undefined) data.plan = plan;
+
+    // Preserve existing prompsit_secret when not explicitly provided.
+    // Without this, token refresh (auth-session.ts:164) would overwrite
+    // credentials.json without prompsit_secret, losing it permanently.
+    if (prompsitSecret === undefined) {
+      const existing = this.loadCache()?.prompsit_secret;
+      if (existing) data.prompsit_secret = existing;
+    } else {
+      data.prompsit_secret = prompsitSecret;
+    }
 
     // Calculate expires_at as Unix timestamp
     if (expiresIn === undefined) {
@@ -127,6 +139,11 @@ export class CredentialStore {
   /** @returns Subscription plan string or null. */
   getPlan(): string | null {
     return this.loadCache()?.plan ?? null;
+  }
+
+  /** @returns Prompsit API secret or null if not stored. */
+  getPrompsitSecret(): string | null {
+    return this.loadCache()?.prompsit_secret ?? null;
   }
 
   /** Delete credentials file and reset in-memory cache. */
@@ -252,6 +269,10 @@ export function isAuthenticated(): boolean {
 
 export function getPlan(): string | null {
   return getCredentialStore().getPlan();
+}
+
+export function getPrompsitSecret(): string | null {
+  return getCredentialStore().getPrompsitSecret();
 }
 
 export function isTokenExpired(bufferSeconds?: number): boolean {

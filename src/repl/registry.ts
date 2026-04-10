@@ -132,7 +132,7 @@ export const COMMANDS: readonly ReplCommand[] = [
   {
     name: "login",
     commanderPath: "login",
-    argsSyntax: '--account "EMAIL" --secret "SECRET"',
+    argsSyntax: '[--account "EMAIL" --secret "SECRET"]',
     group: G_BASICS,
     template: [
       ['-a "', "EMAIL"],
@@ -141,17 +141,20 @@ export const COMMANDS: readonly ReplCommand[] = [
     ],
     welcome: {
       hintKey: "repl.welcome.login_hint",
-      rows: [{ syntax: '-a "EMAIL" -s "SECRET"', example: 'login -a "EMAIL" -s "SECRET"' }],
+      rows: [
+        { syntax: "", example: "login" },
+        { syntax: '-a "EMAIL" -s "SECRET"', example: 'login -a "EMAIL" -s "SECRET"' },
+      ],
     },
     options: [
       { flag: '-a, --account "EMAIL"', descKey: "repl.opt.account" },
       { flag: '-s, --secret "SECRET"', descKey: "repl.opt.secret" },
     ],
     cliExamples: [
-      "prompsit login                     # Open contact page",
-      'prompsit login -a "EMAIL" -s "SECRET"   # Login with credentials',
+      "prompsit login                           # Sign in via browser",
+      'prompsit login -a "EMAIL" -s "SECRET"    # Login with credentials',
     ],
-    replExamples: ['login -a "EMAIL" -s "SECRET"'],
+    replExamples: ["login", 'login -a "EMAIL" -s "SECRET"'],
   },
   {
     name: "logout",

@@ -44,8 +44,9 @@ if (isEntryPoint) {
   }
 
   // See API-503: No-args detection — enter REPL mode when no command specified
-  // Check for non-flag args (flags like --verbose should not prevent REPL entry)
-  const hasCommand = userArgs.some((a) => !a.startsWith("-"));
+  // Quick-exit flags (--help, --version) must go through Commander.js, not REPL.
+  // Other flags (--verbose) alone should not prevent REPL entry.
+  const hasCommand = isQuickExit || userArgs.some((a) => !a.startsWith("-"));
 
   if (hasCommand) {
     // Wrap in trace context: single trace_id for entire CLI command execution

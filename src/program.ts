@@ -69,7 +69,7 @@ program.addHelpText(
   "after",
   `
 Examples:
-  $ prompsit login -a EMAIL -s SECRET
+  $ prompsit login
   $ prompsit translate "Hello world" -s en -t es
   $ prompsit translate @report.docx -s en -t de
   $ prompsit translate --formats

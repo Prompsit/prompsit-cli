@@ -28,6 +28,17 @@ Prompsit CLI is a command-line interface for the Prompsit Translation API. Trans
 
 **Architecture:** Layered (Presentation → Application → Domain → Infrastructure). Entry point: [src/index.ts](src/index.ts) → Commander.js commands or REPL ([repl/](src/repl/)).
 
+## Related Projects
+
+**Prompsit API** (`../prompsit-api/`) — the backend API that this CLI consumes via HTTP/REST. When adapting CLI to API changes, read the API project for context:
+
+- **Entry point & agent instructions:** `../prompsit-api/CLAUDE.md`
+- **API endpoints:** `../prompsit-api/app/api/v1/` (translation, quality, jobs, user, etc.)
+- **Domain models:** `../prompsit-api/app/domain/`
+- **Documentation:** `../prompsit-api/docs/` (architecture, requirements, API spec, database schema)
+
+> **Read-only reference.** Do not edit API files from this project — switch to the API working directory for changes.
+
 ## Quick Start
 
 ```bash
@@ -132,4 +143,4 @@ src/
 - [ ] Critical rules align with current requirements
 - [ ] No duplicated content across documents
 
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-04-10

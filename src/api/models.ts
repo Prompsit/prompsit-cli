@@ -361,6 +361,54 @@ export interface AnnotateParams {
   lidModel: string;
 }
 
+// --- Device Flow schemas (RFC 8628) ---
+
+/**
+ * Device authorization response from POST /v1/auth/device.
+ *
+ * Fields:
+ * - device_code: Opaque 32-byte base64 token for polling
+ * - user_code: Human-readable XXXX-XXXX format
+ * - verification_uri: Short URL (RFC 8628 §3.3)
+ * - verification_uri_complete: URL with embedded user_code for QR codes (§3.3.1)
+ * - expires_in: Device code TTL in seconds (default 600s)
+ * - interval: Minimum polling interval in seconds (default 5s)
+ */
+export const DeviceAuthorizationResponseSchema = z.object({
+  device_code: z.string(),
+  user_code: z.string(),
+  verification_uri: z.string(),
+  verification_uri_complete: z.string().optional(),
+  expires_in: z.number().default(600),
+  interval: z.number().default(5),
+});
+
+/**
+ * Device token success response from POST /v1/auth/device/token.
+ *
+ * All fields are REQUIRED in the API (app/schemas/auth.py:277-320).
+ * Do NOT copy nullable/optional patterns from TokenResponseSchema — that models
+ * POST /v1/auth/token where refresh_token IS nullable. Device flow is different.
+ */
+export const DeviceTokenResponseSchema = z.object({
+  access_token: z.string(),
+  refresh_token: z.string(),
+  token_type: z.string().default("Bearer"),
+  expires_in: z.number(),
+  plan: z.string(),
+  account_id: z.string(),
+  prompsit_secret: z.string(),
+});
+
+/**
+ * Device token error response from POST /v1/auth/device/token (HTTP 400).
+ * RFC 8628 §3.5 error codes for polling.
+ */
+export const DeviceTokenErrorSchema = z.object({
+  error: z.enum(["authorization_pending", "slow_down", "expired_token", "access_denied"]),
+  error_description: z.string().optional(),
+});
+
 /**
  * Inferred TypeScript types from Zod schemas.
  * Single source of truth: types automatically match schema definitions.
@@ -377,3 +425,6 @@ export type JobStatusResponse = z.infer<typeof JobStatusResponseSchema>;
 export type DocJobCreateResponse = z.infer<typeof DocJobCreateResponseSchema>;
 export type DataJobCreateResponse = z.infer<typeof DataJobCreateResponseSchema>;
 export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
+export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
+export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
+export type DeviceTokenError = z.infer<typeof DeviceTokenErrorSchema>;
