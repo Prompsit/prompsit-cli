@@ -64,13 +64,22 @@ export const loginCommand = new Command("login")
         saveTokens({
           accessToken: result.accessToken,
           refreshToken: result.refreshToken,
-          accountId: result.accountId,
+          accountId: result.email,
           expiresIn: result.expiresIn,
           plan: result.plan,
           prompsitSecret: result.prompsitSecret,
         });
         resetApiClient();
         terminal.success(t("auth.login.success"));
+
+        // Show hint for future ROPC login (now with email, not UUID)
+        terminal.dim(
+          t("auth.device.secret_hint", {
+            cmd: "login",
+            account: result.email,
+            secret: result.prompsitSecret,
+          })
+        );
       }
     } catch (error: unknown) {
       // Ctrl+C during interactive readline or device flow polling

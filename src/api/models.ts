@@ -396,6 +396,7 @@ export const DeviceTokenResponseSchema = z.object({
   token_type: z.string().default("Bearer"),
   expires_in: z.number(),
   plan: z.string(),
+  email: z.string(),
   account_id: z.string(),
   prompsit_secret: z.string(),
 });

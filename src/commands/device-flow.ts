@@ -23,6 +23,7 @@ const SLOW_DOWN_INCREMENT = 5; // RFC 8628 §3.5: increase interval by 5s on slo
 export interface DeviceFlowResult {
   accessToken: string;
   refreshToken: string;
+  email: string;
   accountId: string;
   expiresIn: number;
   plan: string;
@@ -151,6 +152,7 @@ export async function runDeviceFlow(
           return {
             accessToken: result.data.access_token,
             refreshToken: result.data.refresh_token,
+            email: result.data.email,
             accountId: result.data.account_id,
             expiresIn: result.data.expires_in,
             plan: result.data.plan,
