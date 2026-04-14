@@ -429,3 +429,86 @@ export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
 export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
 export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
 export type DeviceTokenError = z.infer<typeof DeviceTokenErrorSchema>;
+
+// ---------------------------------------------------------------------------
+// Translation Memory (TM) — API-535
+// ---------------------------------------------------------------------------
+
+export const TMResponseSchema = z.object({
+  id: z.string(),
+  profile_id: z.string(),
+  source_lang: z.string(),
+  target_lang: z.string(),
+  segment_count: z.number(),
+  created_at: z.string(),
+});
+
+export const TMListResponseSchema = z.object({
+  items: z.array(TMResponseSchema),
+  total: z.number(),
+});
+
+export const TMSegmentResponseSchema = z.object({
+  id: z.string(),
+  source_text: z.string(),
+  target_text: z.string(),
+  source_hash: z.string(),
+  created_at: z.string(),
+});
+
+export const TMSegmentListResponseSchema = z.object({
+  items: z.array(TMSegmentResponseSchema),
+  total: z.number(),
+  page: z.number(),
+  page_size: z.number(),
+});
+
+export const TMImportResponseSchema = z.object({
+  tm_id: z.string(),
+  segment_count: z.number(),
+  language_pairs: z.array(z.tuple([z.string(), z.string()])),
+});
+
+export const TMSearchHitResponseSchema = z.object({
+  source_text: z.string(),
+  target_text: z.string(),
+  similarity: z.number(),
+  match_type: z.string(),
+});
+
+export const TMSearchResponseSchema = z.object({
+  hits: z.array(TMSearchHitResponseSchema),
+  total_count: z.number(),
+});
+
+export type TMResponse = z.infer<typeof TMResponseSchema>;
+export type TMListResponse = z.infer<typeof TMListResponseSchema>;
+export type TMSegmentResponse = z.infer<typeof TMSegmentResponseSchema>;
+export type TMSegmentListResponse = z.infer<typeof TMSegmentListResponseSchema>;
+export type TMImportResponse = z.infer<typeof TMImportResponseSchema>;
+export type TMSearchHitResponse = z.infer<typeof TMSearchHitResponseSchema>;
+export type TMSearchResponse = z.infer<typeof TMSearchResponseSchema>;
+
+// TM param interfaces (camelCase at CLI boundary, mapped to snake_case in resource)
+
+export interface TMListParams {
+  profileId?: string;
+  sourceLang?: string;
+  targetLang?: string;
+}
+
+export interface TMShowSegmentsParams {
+  sourceLang: string;
+  targetLang: string;
+  profileId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TMSearchParams {
+  query: string;
+  sourceLang: string;
+  targetLang: string;
+  limit?: number;
+  profileId?: string;
+}

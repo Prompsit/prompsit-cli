@@ -13,6 +13,7 @@ import { DiscoveryResource } from "./resources/discovery.ts";
 import { JobsResource } from "./resources/jobs.ts";
 import { DataResource } from "./resources/data.ts";
 import { UserResource } from "./resources/user.ts";
+import { TMResource } from "./resources/tm.ts";
 import { getSettings } from "../config/settings.ts";
 
 /**
@@ -34,6 +35,7 @@ export class APIClient {
   public readonly jobs: JobsResource;
   public readonly data: DataResource;
   public readonly user: UserResource;
+  public readonly tm: TMResource;
 
   constructor() {
     this.baseUrl = getSettings().api.base_url.replace(/\/{1,100}$/, "");
@@ -48,6 +50,7 @@ export class APIClient {
     this.jobs = new JobsResource(this.session, this.baseUrl);
     this.data = new DataResource(this.session, this.baseUrl);
     this.user = new UserResource(this.session, this.baseUrl);
+    this.tm = new TMResource(this.session, this.baseUrl);
   }
 
   /**

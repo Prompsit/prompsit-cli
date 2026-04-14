@@ -22,6 +22,7 @@ export const ApiConfigSchema = z.object({
  */
 export const CliConfigSchema = z.object({
   contact_url: z.string().default("https://prompsit.com/en/contact"),
+  feedback_url: z.string().default("https://github.com/Prompsit/prompsit-cli/issues"),
   batch_size: z.number().int().default(50),
   progress_threshold: z.number().int().default(10),
   language: z.string().default("en"),

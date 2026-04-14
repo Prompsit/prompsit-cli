@@ -15,6 +15,8 @@ import { configCommand } from "./commands/config/command.ts";
 import { scoreCommand } from "./commands/score.ts";
 import { annotateCommand } from "./commands/annotate.ts";
 import { usageCommand } from "./commands/usage.ts";
+import { contactCommand, feedbackCommand } from "./commands/links.ts";
+import { tmCommand } from "./commands/tm/command.ts";
 import { getVersion } from "./shared/version.ts";
 import { terminal } from "./output/terminal.ts";
 import { getSettings } from "./config/index.ts";
@@ -50,6 +52,9 @@ program.addCommand(logoutCommand);
 program.commandsGroup("Translation:");
 program.addCommand(translateCommand);
 
+program.commandsGroup("Translation Memory:");
+program.addCommand(tmCommand);
+
 program.commandsGroup("Evaluation:");
 program.addCommand(evaluateCommand);
 
@@ -63,6 +68,8 @@ program.addCommand(configCommand);
 program.commandsGroup("System:");
 program.addCommand(healthCommand);
 program.addCommand(usageCommand);
+program.addCommand(contactCommand);
+program.addCommand(feedbackCommand);
 
 // Copy-paste examples in main help footer
 program.addHelpText(
@@ -80,6 +87,9 @@ Examples:
   $ prompsit score @corpus.tmx
   $ prompsit annotate @corpus.jsonl -l en --metadata "lid,docscorer"
   $ prompsit usage
+  $ prompsit tm show
+  $ prompsit tm import memory.tmx
+  $ prompsit tm search "Hello world" -t es
   $ prompsit                                            # Interactive REPL
 
 Run 'prompsit <command> --help' for detailed usage and examples.`

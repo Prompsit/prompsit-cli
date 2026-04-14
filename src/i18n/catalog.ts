@@ -7,7 +7,6 @@
 export const STRINGS = {
   // === auth.py ===
   "auth.login.no_credentials": "No credentials provided",
-  "auth.login.opening_contact": "Opening {url} to request API access...",
   "auth.login.authenticating": "Authenticating...",
   "auth.login.success": "Successfully authenticated!",
   "auth.login.expires": "Session expires in {hours} hours",
@@ -113,6 +112,10 @@ export const STRINGS = {
   "health.status": "Checking service health...",
   "health.api_version": "API version:",
   "health.api_url": "API URL:",
+
+  // === links (contact, feedback) ===
+  "links.opening": "Opening {url}...",
+  "links.failed": "Could not open browser. Visit {url} manually.",
 
   // === annotate ===
   "annotate.file_not_found": "File not found:",
@@ -278,6 +281,8 @@ export const STRINGS = {
   "repl.cmd.annotate": "Annotate corpus (Monotextor: Language ID, PII, quality)",
   "repl.cmd.health": "Check API health",
   "repl.cmd.usage": "Show daily API usage",
+  "repl.cmd.contact": "Open the Prompsit contact page",
+  "repl.cmd.feedback": "Open the GitHub issues page",
   "repl.cmd.clear": "Clear screen and show banner",
   "repl.cmd.help": "Show help",
   "repl.cmd.help_alias": "Show help (alias)",
@@ -379,6 +384,39 @@ export const STRINGS = {
   "i18n.viz.batches_done": "{count} batches",
   "i18n.viz.writing": "writing...",
   "i18n.viz.failed": "API error, skipped",
+
+  // === tm commands (API-535) ===
+  "tm.show.header": "Translation Memories ({total})",
+  "tm.show.empty": "No translation memories found",
+  "tm.show.segments_header": "Segments — {source} → {target} (page {page}, {total} total)",
+  "tm.show.segments_empty": "No segments in this TM",
+  "tm.import.success": "Imported {count} segments",
+  "tm.import.pair": "  {source} → {target}",
+  "tm.import.uploading": "Uploading TMX file...",
+  "tm.import.verify_hint": "If unsure, verify with: tm show",
+  "tm.search.header": "Search results ({total})",
+  "tm.search.no_hits": "No matches found",
+  "tm.search.auto_resolved": "Searching in {source} → {target} TM",
+  "tm.search.ambiguous_source": "Multiple TMs with target {target}. Specify --source: {sources}",
+  "tm.search.no_tm": "No TM found with target language {target}",
+  "validate.tm.missing_target_search": "--target is required for search",
+  "validate.tm.missing_both_langs": "Both --source and --target required to show segments",
+  "validate.tm.file_not_found": "File not found: {path}",
+  // tm table columns
+  "table.col.source_lang": "Source",
+  "table.col.target_lang": "Target",
+  "table.col.segment_count": "Segments",
+  "table.col.source_text": "Source Text",
+  "table.col.target_text": "Target Text",
+  "table.col.similarity": "Similarity",
+  "table.col.match_type": "Match",
+  "table.col.created_at": "Created",
+  // tm REPL
+  "repl.help.group.tm": "Translation Memory",
+  "repl.cmd.tm_show": "Show TM overview or segments",
+  "repl.cmd.tm_import": "Import TMX file",
+  "repl.cmd.tm_search": "Search translation memory",
+  "repl.opt.profile": "Profile ID",
 } as const satisfies Record<string, string>;
 
 export type StringKey = keyof typeof STRINGS;

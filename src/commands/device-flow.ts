@@ -2,12 +2,11 @@
 // Coordinates: initiate → display code → open browser → poll → return credentials.
 // Works in both CLI mode (ora spinner) and REPL mode (terminal.dim).
 
-import { execFileSync, spawn } from "node:child_process";
+import { openBrowser } from "../runtime/browser.ts";
 import ora, { type Ora } from "ora";
 import type { AuthResource } from "../api/resources/auth.ts";
 import { getApiClient } from "../api/client.ts";
 import { sleep } from "../runtime/async-utils.ts";
-import { getRuntimePlatform } from "../runtime/platform.ts";
 import { CancelledError, AuthenticationError } from "../errors/contracts.ts";
 import { terminal } from "../output/index.ts";
 import { t } from "../i18n/index.ts";
@@ -16,7 +15,6 @@ import { DEVICE_FLOW_DEFAULT_INTERVAL } from "../shared/constants.ts";
 
 const log = getLogger(import.meta.url);
 
-const BROWSER_TIMEOUT_MS = 3000;
 const SLOW_DOWN_INCREMENT = 5; // RFC 8628 §3.5: increase interval by 5s on slow_down
 
 // Adaptive polling: first 30 seconds (while user is actively in browser)
@@ -36,60 +34,6 @@ export interface DeviceFlowResult {
   prompsitSecret: string;
 }
 
-/**
- * Open a URL in the default browser.
- * Cross-platform: start (win32), open (darwin), xdg-open (linux).
- * Returns true if opened, false on failure. Non-blocking.
- */
-async function openBrowser(url: string): Promise<boolean> {
-  const platform = getRuntimePlatform();
-  let cmd: string;
-  let args: string[];
-
-  if (platform === "win32") {
-    cmd = "cmd";
-    args = ["/c", "start", "", url];
-  } else if (platform === "darwin") {
-    cmd = "open";
-    args = [url];
-  } else {
-    // Linux/WSL: fallback chain (GitHub CLI pattern — cli/browser)
-    // wslview works in WSL, xdg-open works in native Linux
-    const found = ["xdg-open", "wslview"].find((c) => {
-      try {
-        execFileSync("which", [c], { stdio: "ignore" });
-        return true;
-      } catch {
-        return false;
-      }
-    });
-    if (!found) return false;
-    cmd = found;
-    args = [url];
-  }
-
-  return new Promise((resolve) => {
-    try {
-      const child = spawn(cmd, args, {
-        windowsHide: true,
-        stdio: "ignore",
-        detached: true,
-      });
-      child.unref();
-
-      const timeout = setTimeout(() => {
-        resolve(true); // Assume opened if no error within timeout
-      }, BROWSER_TIMEOUT_MS);
-
-      child.on("error", () => {
-        clearTimeout(timeout);
-        resolve(false);
-      });
-    } catch {
-      resolve(false);
-    }
-  });
-}
 
 /**
  * Run the complete RFC 8628 Device Flow.

@@ -19,11 +19,13 @@ const G_SCORE = "repl.help.group.score" as const satisfies StringKey;
 const G_ANNOTATE = "repl.help.group.annotate" as const satisfies StringKey;
 const G_CONFIG = "repl.help.group.config" as const satisfies StringKey;
 const G_SYSTEM = "repl.help.group.system" as const satisfies StringKey;
+const G_TM = "repl.help.group.tm" as const satisfies StringKey;
 
 /** Defines the display order of help groups. */
 const GROUP_ORDER: readonly StringKey[] = [
   G_BASICS,
   G_TEXT_TRANSLATION,
+  G_TM,
   G_EVALUATION,
   G_SCORE,
   G_ANNOTATE,
@@ -46,6 +48,7 @@ const PARENT_GROUPS: Readonly<Partial<Record<string, readonly StringKey[]>>> = {
   evaluate: [G_EVALUATION],
   eval: [G_EVALUATION],
   score: [G_SCORE],
+  tm: [G_TM],
 };
 
 /** Commands where -h is NOT help (e.g. evaluate uses -h for --hypothesis). */
@@ -470,6 +473,18 @@ export const COMMANDS: readonly ReplCommand[] = [
     group: G_SYSTEM,
   },
   {
+    name: "contact",
+    commanderPath: "contact",
+    argsSyntax: "",
+    group: G_SYSTEM,
+  },
+  {
+    name: "feedback",
+    commanderPath: "feedback",
+    argsSyntax: "",
+    group: G_SYSTEM,
+  },
+  {
     name: "copy-curl",
     commanderPath: null,
     argsSyntax: "",
@@ -481,6 +496,85 @@ export const COMMANDS: readonly ReplCommand[] = [
     commanderPath: null,
     argsSyntax: "",
     group: G_SYSTEM,
+  },
+  // -- Translation Memory --------------------------------------------------
+  {
+    name: "tm",
+    commanderPath: "tm",
+    argsSyntax: "[subcommand]",
+    group: G_TM,
+    relatedCommands: [
+      { syntax: 'tm show', descKey: "repl.cmd.tm_show" },
+      { syntax: 'tm import <file>', descKey: "repl.cmd.tm_import" },
+      { syntax: 'tm search "<query>" -t <lang>', descKey: "repl.cmd.tm_search" },
+    ],
+    cliExamples: [
+      'prompsit tm show',
+      'prompsit tm show -s en -t es',
+      'prompsit tm import memory.tmx',
+      'prompsit tm search "Hello" -t es',
+    ],
+    replExamples: [
+      'tm show',
+      'tm show -s en -t es',
+      'tm import memory.tmx',
+      'tm search "Hello" -t es',
+    ],
+  },
+  {
+    name: "tm show",
+    commanderPath: "tm show",
+    argsSyntax: '[-s "lang" -t "lang"] [--page N]',
+    group: G_TM,
+    descKey: "repl.cmd.tm_show",
+    options: [
+      { flag: '-s, --source "lang"', descKey: "repl.opt.source" },
+      { flag: '-t, --target "lang"', descKey: "repl.opt.target" },
+      { flag: '--profile "id"', descKey: "repl.opt.profile" },
+    ],
+    cliExamples: [
+      'prompsit tm show',
+      'prompsit tm show -s en -t es',
+      'prompsit tm show -s en -t es --page 2',
+    ],
+    replExamples: ['tm show', 'tm show -s en -t es'],
+  },
+  {
+    name: "tm import",
+    commanderPath: "tm import",
+    argsSyntax: '<file>',
+    group: G_TM,
+    descKey: "repl.cmd.tm_import",
+    options: [
+      { flag: '--profile "id"', descKey: "repl.opt.profile" },
+    ],
+    cliExamples: [
+      'prompsit tm import memory.tmx',
+      'prompsit tm import @memory.tmx',
+    ],
+    replExamples: ['tm import memory.tmx'],
+  },
+  {
+    name: "tm search",
+    commanderPath: "tm search",
+    argsSyntax: '"query" -t "lang"',
+    group: G_TM,
+    descKey: "repl.cmd.tm_search",
+    template: [
+      ['"', "QUERY"],
+      ['" -t "', "LANG"],
+      ['"', null],
+    ],
+    options: [
+      { flag: '-t, --target "lang"', descKey: "repl.opt.target" },
+      { flag: '-s, --source "lang"', descKey: "repl.opt.source" },
+      { flag: '--profile "id"', descKey: "repl.opt.profile" },
+    ],
+    cliExamples: [
+      'prompsit tm search "Hello world" -t es',
+      'prompsit tm search "Payment failed" -t es -s en',
+    ],
+    replExamples: ['tm search "Hello" -t es'],
   },
 ] as const;
 

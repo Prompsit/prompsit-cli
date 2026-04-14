@@ -92,6 +92,11 @@ export const Endpoint = {
   DATA_ANNOTATE: "/v1/data/annotate",
   DATA_SCORE: "/v1/data/score",
   USER_USAGE: "/v1/user/usage",
+  // Translation Memory
+  TM: "/v1/translation/memory",
+  TM_IMPORT: "/v1/translation/memory/import",
+  TM_SEGMENTS: "/v1/translation/memory/segments",
+  TM_SEARCH: "/v1/translation/memory/search",
 } as const;
 export type Endpoint = (typeof Endpoint)[keyof typeof Endpoint];
 
@@ -145,6 +150,13 @@ export const METRICX_THRESHOLD_EXCELLENT = 5; // lower = better
 export const METRICX_THRESHOLD_GOOD = 10;
 export const CHRF_THRESHOLD_EXCELLENT = 60;
 export const CHRF_THRESHOLD_GOOD = 40;
+
+// --- Translation Memory thresholds ---
+
+export const TM_SEARCH_THRESHOLD = 0.7;
+export const TM_DEFAULT_SEARCH_LIMIT = 10;
+export const TM_DEFAULT_PAGE_SIZE = 50;
+export const TM_SIMILARITY_GOOD = 0.9;
 
 // --- File permissions ---
 
