@@ -24,9 +24,27 @@ export function createTmListTableModel(data: TMListResponse): TableModel {
 
   return {
     columns: [
-      { key: "source_lang", header: t("table.col.source_lang"), width: 10, required: true, priority: 0 },
-      { key: "target_lang", header: t("table.col.target_lang"), width: 10, required: true, priority: 0 },
-      { key: "segment_count", header: t("table.col.segment_count"), width: 12, required: true, priority: 0 },
+      {
+        key: "source_lang",
+        header: t("table.col.source_lang"),
+        width: 10,
+        required: true,
+        priority: 0,
+      },
+      {
+        key: "target_lang",
+        header: t("table.col.target_lang"),
+        width: 10,
+        required: true,
+        priority: 0,
+      },
+      {
+        key: "segment_count",
+        header: t("table.col.segment_count"),
+        width: 12,
+        required: true,
+        priority: 0,
+      },
       { key: "created_at", header: t("table.col.created_at"), minWidth: 12, priority: 1 },
     ],
     rows,
@@ -45,8 +63,20 @@ export function createTmSegmentTableModel(data: TMSegmentListResponse): TableMod
 
   return {
     columns: [
-      { key: "source_text", header: t("table.col.source_text"), minWidth: 20, required: true, priority: 0 },
-      { key: "target_text", header: t("table.col.target_text"), minWidth: 20, required: true, priority: 0 },
+      {
+        key: "source_text",
+        header: t("table.col.source_text"),
+        minWidth: 20,
+        required: true,
+        priority: 0,
+      },
+      {
+        key: "target_text",
+        header: t("table.col.target_text"),
+        minWidth: 20,
+        required: true,
+        priority: 0,
+      },
       { key: "created_at", header: t("table.col.created_at"), width: 12, priority: 1 },
     ],
     rows,
@@ -61,7 +91,8 @@ export function createTmSearchTableModel(data: TMSearchResponse): TableModel {
     const sim = hit.similarity;
     const simStr = (sim * 100).toFixed(0) + "%";
     const coloredSim = sim >= TM_SIMILARITY_GOOD ? chalk.green(simStr) : chalk.yellow(simStr);
-    const coloredType = hit.match_type === "exact" ? chalk.green(hit.match_type) : chalk.yellow(hit.match_type);
+    const coloredType =
+      hit.match_type === "exact" ? chalk.green(hit.match_type) : chalk.yellow(hit.match_type);
 
     return {
       source_text: truncate(hit.source_text),
@@ -73,9 +104,27 @@ export function createTmSearchTableModel(data: TMSearchResponse): TableModel {
 
   return {
     columns: [
-      { key: "source_text", header: t("table.col.source_text"), minWidth: 20, required: true, priority: 0 },
-      { key: "target_text", header: t("table.col.target_text"), minWidth: 20, required: true, priority: 0 },
-      { key: "similarity", header: t("table.col.similarity"), width: 12, required: true, priority: 0 },
+      {
+        key: "source_text",
+        header: t("table.col.source_text"),
+        minWidth: 20,
+        required: true,
+        priority: 0,
+      },
+      {
+        key: "target_text",
+        header: t("table.col.target_text"),
+        minWidth: 20,
+        required: true,
+        priority: 0,
+      },
+      {
+        key: "similarity",
+        header: t("table.col.similarity"),
+        width: 12,
+        required: true,
+        priority: 0,
+      },
       { key: "match_type", header: t("table.col.match_type"), width: 8, priority: 1 },
     ],
     rows,

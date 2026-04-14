@@ -47,11 +47,9 @@ export class TMResource {
     if (params?.sourceLang) searchParams.source_lang = params.sourceLang;
     if (params?.targetLang) searchParams.target_lang = params.targetLang;
 
-    const data = await this.session.request<unknown>(
-      "GET",
-      `${this.baseUrl}${Endpoint.TM}`,
-      { searchParams },
-    );
+    const data = await this.session.request<unknown>("GET", `${this.baseUrl}${Endpoint.TM}`, {
+      searchParams,
+    });
 
     return TMListResponseSchema.parse(data);
   }
@@ -72,7 +70,7 @@ export class TMResource {
     const data = await this.session.request<unknown>(
       "GET",
       `${this.baseUrl}${Endpoint.TM_SEGMENTS}`,
-      { searchParams },
+      { searchParams }
     );
 
     return TMSegmentListResponseSchema.parse(data);
@@ -87,7 +85,7 @@ export class TMResource {
   async importTmx(
     filePath: string,
     profileId?: string,
-    onUploadProgress?: (progress: Progress) => void,
+    onUploadProgress?: (progress: Progress) => void
   ): Promise<TMImportResponse> {
     const fileBlob = await openAsBlob(filePath);
     const fileName = basename(filePath);
@@ -104,7 +102,7 @@ export class TMResource {
       `${this.baseUrl}${Endpoint.TM_IMPORT}`,
       { body: formData, searchParams },
       undefined,
-      onUploadProgress,
+      onUploadProgress
     );
 
     return TMImportResponseSchema.parse(data);
@@ -127,7 +125,7 @@ export class TMResource {
     const data = await this.session.request<unknown>(
       "POST",
       `${this.baseUrl}${Endpoint.TM_SEARCH}`,
-      { json: body },
+      { json: body }
     );
 
     return TMSearchResponseSchema.parse(data);

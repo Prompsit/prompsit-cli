@@ -38,10 +38,7 @@ export function registerTmSearch(tmCommand: Command): void {
           });
 
           if (tms.items.length === 0) {
-            failCommand(
-              ErrorCode.VALIDATION,
-              t("tm.search.no_tm", { target: opts.target }),
-            );
+            failCommand(ErrorCode.VALIDATION, t("tm.search.no_tm", { target: opts.target }));
             return;
           }
 
@@ -49,15 +46,13 @@ export function registerTmSearch(tmCommand: Command): void {
             const sources = tms.items.map((tm) => tm.source_lang).join(", ");
             failCommand(
               ErrorCode.VALIDATION,
-              t("tm.search.ambiguous_source", { target: opts.target, sources }),
+              t("tm.search.ambiguous_source", { target: opts.target, sources })
             );
             return;
           }
 
           sourceLang = tms.items[0].source_lang;
-          terminal.info(
-            t("tm.search.auto_resolved", { source: sourceLang, target: opts.target }),
-          );
+          terminal.info(t("tm.search.auto_resolved", { source: sourceLang, target: opts.target }));
         }
 
         const result = await client.tm.search({

@@ -34,7 +34,6 @@ export interface DeviceFlowResult {
   prompsitSecret: string;
 }
 
-
 /**
  * Run the complete RFC 8628 Device Flow.
  *

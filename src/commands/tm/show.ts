@@ -49,7 +49,7 @@ export function registerTmShow(tmCommand: Command): void {
               target,
               page: opts.page,
               total: String(result.total),
-            }),
+            })
           );
           terminal.table(createTmSegmentTableModel(result));
         } else {
