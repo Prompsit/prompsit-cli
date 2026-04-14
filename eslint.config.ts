@@ -75,6 +75,11 @@ export default tseslint.config(
       "unicorn/prefer-dom-node-remove": "off",
       // Noop stubs and fire-and-forget .catch(() => {}) are idiomatic
       "@typescript-eslint/no-empty-function": "off",
+
+      // Resolve strictTypeChecked vs stylisticTypeChecked conflict:
+      // no-non-null-assertion (strict) forbids `x!`, non-nullable-type-assertion-style (stylistic) requires it.
+      // Prioritize type-safety: keep the forbid rule, disable the stylistic one that demands `!`.
+      "@typescript-eslint/non-nullable-type-assertion-style": "off",
     },
   },
 

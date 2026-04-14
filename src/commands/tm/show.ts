@@ -26,19 +26,18 @@ export function registerTmShow(tmCommand: Command): void {
     .action(async (opts) => {
       try {
         const client = getApiClient();
-        const hasSource = opts.source !== undefined;
-        const hasTarget = opts.target !== undefined;
+        const { source, target } = opts;
 
-        if (hasSource !== hasTarget) {
+        if ((source === undefined) !== (target === undefined)) {
           failCommand(ErrorCode.VALIDATION, t("validate.tm.missing_both_langs"));
           return;
         }
 
-        if (hasSource && hasTarget) {
+        if (source !== undefined && target !== undefined) {
           // Show segments for specific TM
           const result = await client.tm.listSegments({
-            sourceLang: opts.source!,
-            targetLang: opts.target!,
+            sourceLang: source,
+            targetLang: target,
             profileId: opts.profile,
             page: Number(opts.page),
             pageSize: Number(opts.pageSize),
@@ -46,8 +45,8 @@ export function registerTmShow(tmCommand: Command): void {
 
           terminal.info(
             t("tm.show.segments_header", {
-              source: opts.source!,
-              target: opts.target!,
+              source,
+              target,
               page: opts.page,
               total: String(result.total),
             }),

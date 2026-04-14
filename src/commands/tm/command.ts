@@ -9,7 +9,7 @@ import { registerTmSearch } from "./search.ts";
 export const tmCommand = new Command("tm")
   .description("Manage translation memories")
   .helpCommand(false)
-  .action(async () => {
+  .action(() => {
     // Default to tm show (list TMs)
     const showCmd = tmCommand.commands.find((c) => c.name() === "show");
     if (showCmd) showCmd.parse([], { from: "user" });
