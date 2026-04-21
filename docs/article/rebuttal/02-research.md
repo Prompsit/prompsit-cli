@@ -33,10 +33,19 @@
 |---|---|---|
 | Quantized NMT via CTranslate2 | YES (from agent probes) | Service stack includes `prompsit_mt_api` running CTranslate2 engines |
 | Apertium RBMT is CPU-only | YES | `prompsit_apertium_api` container in `docker-compose.yml` |
-| Internal energy measurements | NOT FOUND | No files matching `energy`, `power`, `watt`, `kwh`, `carbon`, `co2` returned meaningful content |
-| Throughput numbers committed | NOT FOUND | No benchmark artefacts in the repo |
+| Internal energy measurements | NOT FOUND in repo | No files matching `energy`, `power`, `watt`, `kwh`, `carbon`, `co2` returned meaningful content |
+| Throughput numbers committed | NOT FOUND in repo | No benchmark artefacts in the repo |
+| External published references | YES (added 2026-04-21) | See sub-section below |
 
-**Rebuttal implication:** without internal measurements we should not promise measurement tables; either (a) cite an external published comparison, or (b) soften to "an order of magnitude" in camera-ready.
+### External published references (added 2026-04-21)
+
+| Reference | Relevance | Citation |
+|---|---|---|
+| Bentivogli et al. 2022, *The Ecological Footprint of Neural Machine Translation Systems* | Peer-reviewed energy/CO₂ measurements for NMT inference (Transformer vs RNN, GPU vs CPU, quantization) | arxiv 2202.02170 / Springer LNCS |
+| Patterson et al. 2021, *Carbon Emissions and Large Neural Network Training* | Training/inference energy of large models (incl. GPT-3 baseline at 1287 MWh / 552 tCO₂eq) | arxiv 2104.10350 |
+| Pangeanic 2024, *NMT vs LLM White Book* | Industry benchmark: 10–100× NMT throughput gap; 5–50× per-word cost gap | blog.pangeanic.com/which-is-better-for-my-use-case-nmt-neural-mt-or-llm-translation |
+
+**Rebuttal implication:** the "100 times less energy" claim is defensible *with literature citation*, not with our own internal measurements. The chosen rebuttal/poster wording is "an order of magnitude" + the three references above. Our quantized CTranslate2 + Apertium RBMT stack is contextualised against this published baseline; no self-measured numbers are required for the EAMT response.
 
 ## 4. Services and Scope (answering R2 directly)
 

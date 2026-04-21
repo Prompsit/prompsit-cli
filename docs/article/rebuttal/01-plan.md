@@ -26,8 +26,10 @@
 
 ## Response Strategy
 
+**Genre framing.** This is a 2-page Projects/Products track description, not a research paper. The page limit prevents folding additional benchmark tables, latency percentiles, deployment notes, and pricing into the article. Where reviewers ask for material that physically does not fit, we defer it to the **poster**, conditional on acceptance, rather than promising it for camera-ready.
+
 **Block A — Evidence for load-bearing claims (rows 1, 2, 3).**
-Concede the gap openly. Commit to specific additions in camera-ready: (a) energy reference + measurement note, (b) p50/p95 latency with payload sizes and cache-hit assumptions, (c) throughput figures, (d) COMET/chrF on FLORES-200 and WMT against specific commercial providers. Mention low-resource pairs where differentiation is strongest.
+Concede the gap openly. For the energy claim: soften the wording to "an order of magnitude" and cite published references (Bentivogli et al. 2022, Patterson et al. 2021, Pangeanic 2024) — no internal measurements required. Defer to the **poster**: (a) p50/p95 latency with payload sizes and cache-hit assumptions, (b) throughput figures, (c) COMET/chrF on FLORES-200 and WMT against specific commercial providers (DeepL, Google Cloud Translation). Highlight low-resource pairs where differentiation is strongest.
 
 **Block B — "Open-source" clarification (row 5).**
 Concede R1's framing. Restate scope: CLI (Apache 2.0) + open-source engines (OPUS-MT, Apertium, CTranslate2, Bicleaner-AI, Monotextor) + our own released models. Commit to rephrasing.
