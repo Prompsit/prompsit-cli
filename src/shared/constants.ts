@@ -76,6 +76,7 @@ export const Endpoint = {
   AUTH_TOKEN: "/v1/auth/token",
   AUTH_DEVICE: "/v1/auth/device",
   AUTH_DEVICE_TOKEN: "/v1/auth/device/token",
+  AUTH_SECRET: "/v1/auth/secret",
   HEALTH: "/health",
   LANGUAGES: "/v1/translation/languages",
   TRANSLATE: "/v1/translation",

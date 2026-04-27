@@ -8,9 +8,11 @@ import {
   DeviceAuthorizationResponseSchema,
   DeviceTokenResponseSchema,
   DeviceTokenErrorSchema,
+  ChangeSecretResponseSchema,
   type TokenResponse,
   type DeviceAuthorizationResponse,
   type DeviceTokenResponse,
+  type ChangeSecretResponse,
 } from "../models.ts";
 import { Endpoint, GrantType } from "../../shared/constants.ts";
 import { APIError } from "../../errors/contracts.ts";
@@ -157,5 +159,28 @@ export class AuthResource {
       if (error instanceof APIError) throw error; // re-throw our own errors
       return { status: "transient_error" };
     }
+  }
+
+  /**
+   * Rotate or set the calling account's prompsit_secret (POST /v1/auth/secret).
+   *
+   * @param custom - User-supplied secret (6-72 UTF-8 bytes, printable, no
+   *                 newlines, must NOT start with reserved 'pr_' prefix). If
+   *                 omitted/undefined, the server generates a new pr_xxx value.
+   * @returns ChangeSecretResponse with new secret + fresh JWT pair.
+   * @throws APIError 401 missing/invalid JWT, 422 invalid format, 429 rate-limited.
+   *
+   * Side effects on success: ALL active refresh tokens are revoked and
+   * token_version is bumped server-side, invalidating all previously-issued
+   * access tokens. The fresh JWT pair returned here is the only valid session.
+   */
+  async changeSecret(custom?: string): Promise<ChangeSecretResponse> {
+    const body = custom === undefined ? {} : { secret: custom };
+    const data = await this.transport.request<unknown>(
+      "POST",
+      `${this.baseUrl}${Endpoint.AUTH_SECRET}`,
+      { json: body }
+    );
+    return ChangeSecretResponseSchema.parse(data);
   }
 }

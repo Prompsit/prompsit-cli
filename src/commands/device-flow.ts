@@ -31,7 +31,8 @@ export interface DeviceFlowResult {
   accountId: string;
   expiresIn: number;
   plan: string;
-  prompsitSecret: string;
+  /** Present only on first Google registration; absent on recurring login. */
+  prompsitSecret?: string;
 }
 
 /**
@@ -128,7 +129,7 @@ export async function runDeviceFlow(
             accountId: result.data.account_id,
             expiresIn: result.data.expires_in,
             plan: result.data.plan,
-            prompsitSecret: result.data.prompsit_secret,
+            prompsitSecret: result.data.prompsit_secret ?? undefined,
           };
         }
         case "pending": {

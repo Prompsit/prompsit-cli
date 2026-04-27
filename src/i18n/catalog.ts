@@ -30,6 +30,12 @@ export const STRINGS = {
   "auth.device.denied": "Authorization was denied.",
   "auth.device.secret_hint": 'You can also login with: {cmd} -a "{account}" -s "{secret}"',
 
+  // === auth - secret rotation (POST /v1/auth/secret) ===
+  "auth.secret.changed": "Secret updated. New value (shown once): {secret}",
+  "auth.secret.confirm_revoke":
+    "This will revoke ALL active sessions for {account} (every other CLI must run 'login' again). Continue?",
+  "auth.secret.aborted": "Aborted by user.",
+
   // === config.py ===
   "config.invalid_key": "Invalid key:",
   "config.valid_keys": "Valid keys:",

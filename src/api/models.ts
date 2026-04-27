@@ -386,9 +386,9 @@ export const DeviceAuthorizationResponseSchema = z.object({
 /**
  * Device token success response from POST /v1/auth/device/token.
  *
- * All fields are REQUIRED in the API (app/schemas/auth.py:277-320).
- * Do NOT copy nullable/optional patterns from TokenResponseSchema — that models
- * POST /v1/auth/token where refresh_token IS nullable. Device flow is different.
+ * `prompsit_secret` is present only on FIRST Google registration; on recurring
+ * logins the API omits it (returns null) and the CLI must keep its previously
+ * stored value. See ADR-037.
  */
 export const DeviceTokenResponseSchema = z.object({
   access_token: z.string(),
@@ -398,7 +398,21 @@ export const DeviceTokenResponseSchema = z.object({
   plan: z.string(),
   email: z.string(),
   account_id: z.string(),
+  prompsit_secret: z.string().nullish(),
+});
+
+/**
+ * Response from POST /v1/auth/secret (self-service rotate or set custom).
+ *
+ * Returns the new plaintext secret PLUS a fresh JWT pair so the calling CLI
+ * session can resume immediately on the new credentials.
+ */
+export const ChangeSecretResponseSchema = z.object({
   prompsit_secret: z.string(),
+  access_token: z.string(),
+  refresh_token: z.string(),
+  expires_in: z.number(),
+  token_type: z.string().default("Bearer"),
 });
 
 /**
@@ -429,6 +443,7 @@ export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
 export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
 export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
 export type DeviceTokenError = z.infer<typeof DeviceTokenErrorSchema>;
+export type ChangeSecretResponse = z.infer<typeof ChangeSecretResponseSchema>;
 
 // ---------------------------------------------------------------------------
 // Translation Memory (TM) — API-535

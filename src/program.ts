@@ -9,6 +9,7 @@ import { init as initI18n } from "./i18n/index.ts";
 import { setUsageErrorExit } from "./cli/exit.ts";
 import { healthCommand } from "./commands/health.ts";
 import { loginCommand, logoutCommand } from "./commands/auth.ts";
+import { secretCommand } from "./commands/secret.ts";
 import { translateCommand } from "./commands/translate.ts";
 import { evaluateCommand } from "./commands/evaluate.ts";
 import { configCommand } from "./commands/config/command.ts";
@@ -48,6 +49,7 @@ program.option("-v, --verbose", "Enable debug logging to stderr");
 program.commandsGroup("Basics:");
 program.addCommand(loginCommand);
 program.addCommand(logoutCommand);
+program.addCommand(secretCommand);
 
 program.commandsGroup("Translation:");
 program.addCommand(translateCommand);

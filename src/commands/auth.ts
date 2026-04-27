@@ -72,14 +72,19 @@ export const loginCommand = new Command("login")
         resetApiClient();
         terminal.success(t("auth.login.success"));
 
-        // Show hint for future ROPC login (now with email, not UUID)
-        terminal.dim(
-          t("auth.device.secret_hint", {
-            cmd: "login",
-            account: result.email,
-            secret: result.prompsitSecret,
-          })
-        );
+        // First-registration path: API returned a fresh prompsit_secret; show
+        // the ROPC fallback hint so the user can copy it. On recurring login
+        // the secret is omitted by the API and the previously-saved value is
+        // preserved by saveTokens(); no hint needed.
+        if (result.prompsitSecret) {
+          terminal.dim(
+            t("auth.device.secret_hint", {
+              cmd: "login",
+              account: result.email,
+              secret: result.prompsitSecret,
+            })
+          );
+        }
       }
     } catch (error: unknown) {
       // Ctrl+C during interactive readline or device flow polling
