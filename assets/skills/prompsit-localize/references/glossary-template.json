@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "source_locale": "en",
+  "terms": {
+    "open source": {
+      "ru": "открытый исходный код",
+      "es": "código abierto",
+      "pl": "otwarte źródło",
+      "notes": "Never use 'open-source' as adjective in RU; use 'с открытым исходным кодом'."
+    },
+    "machine translation": {
+      "ru": "машинный перевод",
+      "es": "traducción automática",
+      "pl": "tłumaczenie maszynowe"
+    }
+  },
+  "preserve_in_source_language": ["GitHub", "TypeScript", "Astro", "Prompsit"]
+}

@@ -1,0 +1,18 @@
+{
+  "patterns": [
+    { "match": "**/hero.title", "tier": "witness" },
+    { "match": "**/hero.eyebrow", "tier": "witness" },
+    { "match": "**/og.title", "tier": "witness" },
+    { "match": "**/og.description", "tier": "witness" },
+    { "match": "**/seo.title", "tier": "witness" },
+    { "match": "**/faq.items[*].question", "tier": "witness" },
+    { "match": "**/faq.items[*].answer", "tier": "body" },
+    { "match": "**/lead", "tier": "body" },
+    { "match": "**/description", "tier": "body" },
+    { "match": "**/content", "tier": "body" },
+    { "match": "**/common.actions.*", "tier": "ui" },
+    { "match": "**/buttons.*", "tier": "ui" },
+    { "match": "**/aria.*", "tier": "ui" },
+    { "match": "**/errors.*", "tier": "ui" }
+  ]
+}

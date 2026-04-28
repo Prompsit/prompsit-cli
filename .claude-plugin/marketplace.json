@@ -7,14 +7,14 @@
   },
 
   "metadata": {
-    "description": "AI agent skills for the Prompsit Translation API CLI. Install CLI, request API access, translate text/documents, evaluate quality, score parallel corpora, and annotate monolingual data.",
+    "description": "AI agent skills for the Prompsit Translation API CLI. Ships two plugins: a CLI skill bundle (setup, translate, evaluate, score, annotate) and an editorial localization workflow.",
     "version": "1.0.0"
   },
 
   "plugins": [
     {
       "name": "prompsit",
-      "description": "Prompsit Translation API: CLI setup, text/document translation, quality evaluation (BLEU, chrF, MetricX), parallel corpus scoring (Bicleaner), monolingual data annotation (Monotextor).",
+      "description": "Prompsit Translation API: CLI setup, text/document translation, quality evaluation (BLEU, chrF, MetricX), parallel corpus scoring (Bicleaner), and monolingual data annotation (Monotextor).",
       "source": "./",
       "strict": false,
       "skills": [
@@ -23,6 +23,15 @@
         "./assets/skills/prompsit-evaluate",
         "./assets/skills/prompsit-score",
         "./assets/skills/prompsit-annotate"
+      ]
+    },
+    {
+      "name": "prompsit-localize",
+      "description": "Editorial localization pipeline (agent workflow). Tier-based strategy (witness/body/UI), glossary lock, back-translation gate, diff-aware re-runs. Wraps `prompsit translate` plus an LLM editor pass.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./assets/skills/prompsit-localize"
       ]
     }
   ]

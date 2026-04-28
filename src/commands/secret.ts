@@ -34,9 +34,7 @@ const secretSetCmd = new Command("set")
       const account = getAccountId() ?? "this account";
 
       if (!options.yes) {
-        const confirmed = await promptConfirm(
-          t("auth.secret.confirm_revoke", { account })
-        );
+        const confirmed = await promptConfirm(t("auth.secret.confirm_revoke", { account }));
         if (!confirmed) {
           terminal.warn(t("auth.secret.aborted"));
           process.exit(1);
