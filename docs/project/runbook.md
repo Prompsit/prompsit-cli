@@ -218,7 +218,21 @@ PROMPSIT_API__BASE_URL=http://localhost:8080 TEST_ACCOUNT=local@test.com TEST_SE
 | npmjs update | `npm install -g prompsit-cli@latest --prefer-online` |
 | Local install | `npm install .` |
 
-**Publishing:** Automated via `.gitlab-ci.yml` to npmjs on git tag push (`git tag v1.0.0 && git push --tags`).
+**Publishing:** Automated. Each push to `master` triggers [.gitlab-ci.yml](../../.gitlab-ci.yml), which mirrors a filtered, squashed snapshot to `github.com/Prompsit/prompsit-cli` `main` (one `Mirror <gitlab-sha> (<date>)` commit per push, after a leak-scan gate). GitHub Actions on `main` then runs lint/typecheck/test/build and, on success, derives a CalVer version (`YY.MMDD.HHMM`) from the commit timestamp, runs `npm publish`, and creates a GitHub Release if `## Unreleased` in [../../CHANGELOG.md](../../CHANGELOG.md) has entries. **No developer-side `git tag` push is required** — versions are derived from commit timestamps automatically.
+
+**Manual fallback:** `npm run release` builds and publishes from a local checkout using the current local time for the version. Use only when GitHub Actions CI is unavailable.
+
+**Verifying a push reached GitHub:** the GitHub default branch is `main`, not `master`, and SHAs do **not** match between the two remotes — match by the SHA embedded in the mirror commit message.
+
+```bash
+# Confirm the mirror commit references your local SHA:
+gh api repos/Prompsit/prompsit-cli/commits/main \
+  --jq '{short: .sha[0:7], message: (.commit.message | split("\n")[0]), date: .commit.author.date}'
+
+# Inspect the post-mirror CI run; failure here blocks npm publish:
+gh run list --repo Prompsit/prompsit-cli --limit 5 \
+  --json status,conclusion,name,headSha,createdAt
+```
 
 ---
 
@@ -262,6 +276,6 @@ Each HTTP request gets an 8-char `X-Request-ID` header (trace_id) for end-to-end
 
 ---
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-04-28
 
 **Update Triggers:** New config keys, CLI commands, operational procedures, or troubleshooting scenarios.

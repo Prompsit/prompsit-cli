@@ -83,7 +83,7 @@ The table below compares both platforms and includes a weighted score (1–10) f
 | Startup time | 15% | ~40-70ms (V8 JIT) | 9 | ~80-150ms (CPython 3.12+) | 6 | Node.js |
 | Async I/O (SSE, streaming) | 15% | Native event loop, first-class `async/await` | 9 | `asyncio` — capable, explicit loop management | 7 | Node.js |
 | CLI frameworks | 10% | Commander.js, oclif, yargs | 8 | Click, Typer, argparse (stdlib) | 8 | Even |
-| TUI/interactivity | 10% | Ink (React reconciler, JSX) or pi-tui (diff rendering, plain TS, built-in editor). Smaller ecosystem overall | 6 | Rich + Textual — more mature, wider adoption | 9 | Python |
+| TUI/interactivity | 10% | pi-tui (diff rendering, plain TS, built-in editor) — current after replacing Ink on 2026-02-24 (see [ADR-004](../adrs/adr-004-repl-input-handling.md)). Smaller ecosystem overall | 6 | Rich + Textual — more mature, wider adoption | 9 | Python |
 | Type safety | 15% | TypeScript strict — compile-time, full ecosystem | 9 | Type hints (mypy/pyright) — optional, no runtime enforcement | 6 | Node.js |
 | Distribution via registry | 15% | `npm i -g` — single command, lockfile | 8 | `pip install` — needs venv for isolation | 6 | Node.js |
 | Distribution as binary | — | SEA (experimental), @yao-pkg/pkg | — | PyInstaller — mature, no cross-compilation | — | Even |

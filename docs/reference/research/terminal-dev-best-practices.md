@@ -1,9 +1,11 @@
 # Terminal Development Best Practices (Node.js/TypeScript)
 
-<!-- SCOPE: Research reference on rendering, input, performance, and tooling for terminal apps with Ink, Commander.js, chalk, cli-table3. -->
-<!-- Last Updated: 2026-02-16 -->
+> ⚠️ **HISTORICAL DOCUMENT** — This research was written when the project's TUI was built on **Ink**. Ink was replaced by [`@mariozechner/pi-tui`](https://www.npmjs.com/package/@mariozechner/pi-tui) on 2026-02-24 (see [ADR-004](../adrs/adr-004-repl-input-handling.md)). The Ink-specific guidance below (rendering pipeline, anti-flicker tactics, `<Static>` patterns) no longer reflects the current implementation. Retained as a reference for the analysis that informed the migration.
 
-Practical guide for building polished TUI apps on Node.js/TypeScript. Filtered to our stack: Ink (React), Commander.js, chalk, cli-table3, ora, got, Zod.
+<!-- SCOPE: Historical research on rendering/input/performance for Ink-based TUI apps. Retained for ADR-004 context. Current TUI uses pi-tui — see docs/project/architecture.md and ADR-004. -->
+<!-- Last Updated: 2026-02-16 (frozen — pre-pi-tui migration) -->
+
+Practical guide for building polished TUI apps on Node.js/TypeScript, written for the project's previous stack: Ink (React), Commander.js, chalk, cli-table3, ora, got, Zod. Treat the Ink sections as background for understanding why pi-tui was selected, not as guidance for current development.
 
 ---
 
