@@ -17,12 +17,6 @@ const log = getLogger(import.meta.url);
 
 const SLOW_DOWN_INCREMENT = 5; // RFC 8628 §3.5: increase interval by 5s on slow_down
 
-// Adaptive polling: first 30 seconds (while user is actively in browser)
-// poll every 2s for snappy UX. After that, fall back to API-provided interval.
-// If API returns slow_down, we respect it immediately and disable adaptive mode.
-const ADAPTIVE_WINDOW_MS = 30_000;
-const ADAPTIVE_INTERVAL_SEC = 2;
-
 /** Result from a completed device flow. */
 export interface DeviceFlowResult {
   accessToken: string;
@@ -83,13 +77,11 @@ export async function runDeviceFlow(
   }
 
   // 4. Poll for authorization
-  // Adaptive interval: fast polling first 30s, fall back to API interval after.
-  // API-provided interval is the floor once adaptive window ends OR on slow_down.
-  const apiInterval = deviceAuth.interval || DEVICE_FLOW_DEFAULT_INTERVAL;
-  let interval = Math.min(apiInterval, ADAPTIVE_INTERVAL_SEC);
-  let adaptiveMode = true;
-  const pollStart = Date.now();
-  const deadline = pollStart + deviceAuth.expires_in * 1000;
+  // Honor the server-advertised interval as-is. The server enforces this value as a
+  // hard minimum (RFC 8628 §3.5) and returns slow_down to anyone polling faster, so
+  // polling below it is counterproductive — it only earns a slow_down penalty.
+  let interval = deviceAuth.interval || DEVICE_FLOW_DEFAULT_INTERVAL;
+  const deadline = Date.now() + deviceAuth.expires_in * 1000;
 
   // Spinner: ora for CLI, terminal.dim for REPL (stdin is raw)
   const isRepl = process.stdin.isRaw;
@@ -102,13 +94,6 @@ export async function runDeviceFlow(
 
   try {
     while (Date.now() < deadline) {
-      // Adaptive window expired → switch to API-provided interval
-      if (adaptiveMode && Date.now() - pollStart >= ADAPTIVE_WINDOW_MS) {
-        adaptiveMode = false;
-        interval = apiInterval;
-        log.debug("Adaptive polling window ended", { new_interval: String(interval) });
-      }
-
       // Cancellable sleep (AbortSignal from REPL Ctrl+C or CLI SIGINT)
       try {
         await sleep(interval * 1000, signal);
@@ -137,10 +122,10 @@ export async function runDeviceFlow(
           break;
         }
         case "slow_down": {
-          // Server throttling — disable adaptive mode and respect RFC 8628 §3.5:
-          // "the interval MUST be increased by 5 seconds for all subsequent requests"
-          adaptiveMode = false;
-          interval = Math.max(interval, apiInterval) + SLOW_DOWN_INCREMENT;
+          // Defensive backstop. We already poll at the server-advertised interval, so
+          // this should not fire in normal operation; if it does, respect RFC 8628 §3.5:
+          // "the interval MUST be increased by 5 seconds for all subsequent requests".
+          interval += SLOW_DOWN_INCREMENT;
           log.debug("Polling slowed down", { new_interval: String(interval) });
           break;
         }
