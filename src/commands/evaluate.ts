@@ -22,6 +22,7 @@ import { stripFilePrefix } from "../runtime/input-detect.ts";
 import { tryExpandFileArgs, resolveOutputPaths } from "../runtime/file-args.ts";
 import { withWarmupRetry } from "../api/warmup-retry.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
+import { infoOutputFromFlag } from "./info-output.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -119,11 +120,16 @@ export const evaluateCommand = new Command("evaluate")
   .option("--out <dir>", "Output directory (file mode, default: beside input)")
   .option("--output-format <format>", "Output format (csv/tsv/tmx/xliff)")
   .option("--formats", "Show supported file formats", false)
+  .option("--tsv", "Print machine-readable TSV for --formats", false)
   .helpCommand(false)
   .action(async (inputs, opts) => {
     // Info-only early exit
     if (opts.formats) {
-      await showFormats("qe");
+      await showFormats("qe", infoOutputFromFlag(opts.tsv));
+      return;
+    }
+    if (opts.tsv) {
+      failCommand(ErrorCode.VALIDATION, t("validate.tsv.info_only"));
       return;
     }
 

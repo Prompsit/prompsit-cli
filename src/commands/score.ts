@@ -23,6 +23,7 @@ import {
 } from "../runtime/file-args.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
 import { withWarmupRetry } from "../api/warmup-retry.ts";
+import { infoOutputFromFlag } from "./info-output.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -38,14 +39,19 @@ export const scoreCommand = new Command("score")
   .option("--out <dir>", "Output directory (default: beside input file)")
   .option("--formats", "Show supported file formats", false)
   .option("-l, --languages", "Show supported source languages", false)
+  .option("--tsv", "Print machine-readable TSV for --languages/--formats", false)
   .action(async (sourceFiles, opts) => {
     // Early-exit: info-only flags (no inputs required)
     if (opts.formats) {
-      await showFormats("score");
+      await showFormats("score", infoOutputFromFlag(opts.tsv));
       return;
     }
     if (opts.languages) {
-      await showScoringLanguages();
+      await showScoringLanguages(infoOutputFromFlag(opts.tsv));
+      return;
+    }
+    if (opts.tsv) {
+      failCommand(ErrorCode.VALIDATION, t("validate.tsv.info_only"));
       return;
     }
 

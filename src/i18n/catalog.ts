@@ -246,6 +246,8 @@ export const STRINGS = {
   "validate.score.source_lang_hint": "Supported languages: en, de, es.",
   "validate.score.source_lang_required":
     "Source language (-s) is required for non-TMX formats. Supported: en, de, es.",
+  "validate.tsv.info_only":
+    "Option '--tsv' can only be used with discovery flags: --languages, --formats, or annotate --metadata.",
 
   // === usage ===
   "usage.daily_usage": "Daily usage",
@@ -325,6 +327,7 @@ export const STRINGS = {
   "repl.opt.metrics": "Comma-separated: bleu,chrf,metricx,comet (default: bleu,chrf)",
   "repl.opt.formats": "Show supported file formats",
   "repl.opt.languages": "Show available language pairs",
+  "repl.opt.tsv": "Print machine-readable TSV for discovery/info output",
   "repl.opt.metadata":
     "Metadata to add (comma-separated: lid, dedup, pii, adult_filter, monofixer, docscorer)",
   "repl.opt.min_len": "Min document length in chars (default: 500, CJK: 300)",

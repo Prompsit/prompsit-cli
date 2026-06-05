@@ -7,6 +7,7 @@ import type { FormatEntryVM } from "../output/view-models.ts";
 import { saveFormatExtensions, type FormatSource } from "../runtime/format-extensions.ts";
 import { handleCommandError } from "./error-handler.ts";
 import { getLogger } from "../logging/index.ts";
+import { isTsvOutput, writeTsvRows, type InfoOutputOptions } from "./info-output.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -16,10 +17,17 @@ function buildExamples(selfId: string, outputFormats: string[]): string {
 }
 
 /** Fetch format metadata from the appropriate API endpoint and render the unified table. */
-export async function showFormats(source: FormatSource): Promise<void> {
+export async function showFormats(
+  source: FormatSource,
+  options?: InfoOutputOptions
+): Promise<void> {
   try {
     const entries = await fetchFormats(source);
-    terminal.table(createFormatsTableModel(entries));
+    if (isTsvOutput(options)) {
+      writeTsvRows(formatEntriesToTsvRows(entries));
+    } else {
+      terminal.table(createFormatsTableModel(entries));
+    }
     // Side effect: update format extensions cache for file autocomplete
     saveFormatExtensions(
       source,
@@ -28,6 +36,20 @@ export async function showFormats(source: FormatSource): Promise<void> {
   } catch (error: unknown) {
     handleCommandError(log, error, { command: "formats" });
   }
+}
+
+export function formatEntriesToTsvRows(entries: readonly FormatEntryVM[]): string[][] {
+  const rows: string[][] = [];
+  for (const entry of entries) {
+    const inputs = entry.extensions.map((ext) => ext.replace(/^\./, ""));
+    const outputs = entry.output_formats.length > 0 ? entry.output_formats : [""];
+    for (const input of inputs) {
+      for (const output of outputs) {
+        rows.push([input, output]);
+      }
+    }
+  }
+  return rows;
 }
 
 async function fetchFormats(source: FormatSource): Promise<FormatEntryVM[]> {

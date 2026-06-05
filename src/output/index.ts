@@ -9,3 +9,4 @@ export {
   createFormatsTableModel,
 } from "./tables/index.ts";
 export { renderUsageBar } from "./usage-display.ts";
+export { renderTsvRows } from "./tsv.ts";

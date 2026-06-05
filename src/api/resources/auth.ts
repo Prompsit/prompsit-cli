@@ -16,6 +16,9 @@ import {
 } from "../models.ts";
 import { Endpoint, GrantType } from "../../shared/constants.ts";
 import { APIError } from "../../errors/contracts.ts";
+import { getLogger } from "../../logging/index.ts";
+
+const log = getLogger(import.meta.url);
 
 /**
  * Auth API resource for OAuth2 token operations.
@@ -117,6 +120,7 @@ export class AuthResource {
     | { status: "transient_error" }
   > {
     try {
+      const startedAt = Date.now();
       const raw = await this.transport.requestRaw(
         "POST",
         `${this.baseUrl}${Endpoint.AUTH_DEVICE_TOKEN}`,
@@ -126,9 +130,16 @@ export class AuthResource {
             grant_type: GrantType.DEVICE_CODE,
           },
           throwHttpErrors: false,
+          // RFC 8628 polling errors are semantic 400s; app-level polling owns retry/backoff.
+          retry: { limit: 0 },
         },
         true // public client
       );
+      const durationMs = Date.now() - startedAt;
+      log.debug("Device token poll HTTP response", {
+        http_status: String(raw.statusCode),
+        duration_ms: String(durationMs),
+      });
 
       if (raw.statusCode === 200) {
         const body: unknown = JSON.parse(raw.body.toString());

@@ -20,11 +20,18 @@ import { stripFilePrefix } from "../runtime/input-detect.ts";
 import { tryExpandFileArgs, resolveOutputPaths } from "../runtime/file-args.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
 import { withWarmupRetry } from "../api/warmup-retry.ts";
+import { infoOutputFromFlag } from "./info-output.ts";
 
 const log = getLogger(import.meta.url);
 
 // Boolean flags that don't consume the next token as a value
-const BOOL_FLAGS: ReadonlySet<string> = new Set(["--qe", "--languages", "-l", "--formats"]);
+const BOOL_FLAGS: ReadonlySet<string> = new Set([
+  "--qe",
+  "--languages",
+  "-l",
+  "--formats",
+  "--tsv",
+]);
 
 /**
  * Flat translate command.
@@ -43,15 +50,23 @@ export const translateCommand = new Command("translate")
   .option("--output-format <format>", "Target format conversion (e.g. po, arb, vtt)")
   .option("--formats", "Show supported document formats", false)
   .option("-l, --languages", "Show available language pairs", false)
+  .option("--tsv", "Print machine-readable TSV for --languages/--formats", false)
   .helpCommand(false)
   .action(async (inputs, opts) => {
     // Info-only early exits (no inputs required)
     if (opts.formats) {
-      await showFormats("document");
+      await showFormats("document", infoOutputFromFlag(opts.tsv));
       return;
     }
     if (opts.languages) {
-      await showLanguages({ source: opts.source, target: opts.target });
+      await showLanguages(
+        { source: opts.source, target: opts.target },
+        infoOutputFromFlag(opts.tsv)
+      );
+      return;
+    }
+    if (opts.tsv) {
+      failCommand(ErrorCode.VALIDATION, t("validate.tsv.info_only"));
       return;
     }
 

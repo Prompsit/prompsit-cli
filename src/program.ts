@@ -82,12 +82,17 @@ Examples:
   $ prompsit translate "Hello world" -s en -t es
   $ prompsit translate @report.docx -s en -t de
   $ prompsit translate --formats
+  $ prompsit translate --formats --tsv
   $ prompsit translate --languages -s en
+  $ prompsit translate --languages --tsv
   $ prompsit eval -s "Hello" -h "Hola" -r "Hola"
   $ prompsit eval @scores.csv -m bleu,chrf
   $ prompsit eval --formats
+  $ prompsit eval --formats --tsv
   $ prompsit score @corpus.tmx
+  $ prompsit score --languages --tsv
   $ prompsit annotate @corpus.jsonl -l en --metadata "lid,docscorer"
+  $ prompsit annotate --metadata --tsv
   $ prompsit usage
   $ prompsit tm show
   $ prompsit tm import memory.tmx

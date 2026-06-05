@@ -82,6 +82,7 @@ export async function runDeviceFlow(
   // polling below it is counterproductive — it only earns a slow_down penalty.
   let interval = deviceAuth.interval || DEVICE_FLOW_DEFAULT_INTERVAL;
   const deadline = Date.now() + deviceAuth.expires_in * 1000;
+  let pollCount = 0;
 
   // Spinner: ora for CLI, terminal.dim for REPL (stdin is raw)
   const isRepl = process.stdin.isRaw;
@@ -101,10 +102,22 @@ export async function runDeviceFlow(
         throw new CancelledError();
       }
 
+      pollCount += 1;
+      const pollStartedAt = Date.now();
       const result = await authResource.pollDeviceToken(deviceAuth.device_code);
+      const pollDurationMs = Date.now() - pollStartedAt;
+      const logPollState = (nextIntervalSeconds: number | null) => {
+        log.debug("Device token poll completed", {
+          poll_count: String(pollCount),
+          poll_status: result.status,
+          duration_ms: String(pollDurationMs),
+          next_poll_ms: nextIntervalSeconds === null ? "0" : String(nextIntervalSeconds * 1000),
+        });
+      };
 
       switch (result.status) {
         case "success": {
+          logPollState(null);
           spinner?.succeed(t("auth.login.success"));
           log.info("Device flow completed");
           return {
@@ -119,6 +132,7 @@ export async function runDeviceFlow(
         }
         case "pending": {
           // Continue polling
+          logPollState(interval);
           break;
         }
         case "slow_down": {
@@ -126,18 +140,22 @@ export async function runDeviceFlow(
           // this should not fire in normal operation; if it does, respect RFC 8628 §3.5:
           // "the interval MUST be increased by 5 seconds for all subsequent requests".
           interval += SLOW_DOWN_INCREMENT;
+          logPollState(interval);
           log.debug("Polling slowed down", { new_interval: String(interval) });
           break;
         }
         case "expired": {
+          logPollState(null);
           spinner?.fail();
           throw new AuthenticationError(t("auth.device.expired", { cmd: "login" }));
         }
         case "denied": {
+          logPollState(null);
           spinner?.fail();
           throw new AuthenticationError(t("auth.device.denied"));
         }
         case "transient_error": {
+          logPollState(interval);
           log.warn("Transient error during polling, will retry");
           break;
         }

@@ -19,6 +19,7 @@ import { failCommand } from "./error-handler.ts";
 import { tryExpandFileArgs, resolveOutputPaths } from "../runtime/file-args.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
 import { withWarmupRetry } from "../api/warmup-retry.ts";
+import { infoOutputFromFlag } from "./info-output.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -73,16 +74,21 @@ export const annotateCommand = new Command("annotate")
     ).hideHelp()
   )
   .option("--formats", "Show supported file formats", false)
+  .option("--tsv", "Print machine-readable TSV for --formats/--metadata", false)
   .action(async (inputFiles, opts) => {
     // Early-exit: --formats shows annotation input formats
     if (opts.formats) {
-      await showFormats("annotate");
+      await showFormats("annotate", infoOutputFromFlag(opts.tsv));
       return;
     }
 
     // Early-exit: --metadata without files shows metadata info table
     if (opts.metadata === true && inputFiles.length === 0) {
-      showAnnotateMetadata();
+      showAnnotateMetadata(infoOutputFromFlag(opts.tsv));
+      return;
+    }
+    if (opts.tsv) {
+      failCommand(ErrorCode.VALIDATION, t("validate.tsv.info_only"));
       return;
     }
 

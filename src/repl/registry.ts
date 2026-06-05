@@ -246,7 +246,7 @@ export const COMMANDS: readonly ReplCommand[] = [
   {
     name: "translate",
     commanderPath: "translate",
-    argsSyntax: '"text"|@"file" -s "lang" -t "lang" [--qe] [--formats] [--languages]',
+    argsSyntax: '"text"|@"file" -s "lang" -t "lang" [--qe] [--formats] [--languages] [--tsv]',
     group: G_TEXT_TRANSLATION,
     template: [
       ['"', "text"],
@@ -265,12 +265,13 @@ export const COMMANDS: readonly ReplCommand[] = [
         },
       ],
     },
-    boolFlags: ["--qe", "--languages", "-l", "--formats"],
+    boolFlags: ["--qe", "--languages", "-l", "--formats", "--tsv"],
     options: [
       { flag: '-s, --source "lang"', descKey: "repl.opt.source" },
       { flag: '-t, --target "lang"', descKey: "repl.opt.target" },
       { flag: "--qe", descKey: "repl.opt.qe" },
       { flag: "-l, --languages", descKey: "repl.opt.languages" },
+      { flag: "--tsv", descKey: "repl.opt.tsv" },
       { flag: '--out "dir"', descKey: "repl.opt.output" },
       { flag: '--output-format "fmt"', descKey: "repl.opt.output_format" },
       { flag: "--formats", descKey: "repl.opt.formats" },
@@ -280,10 +281,12 @@ export const COMMANDS: readonly ReplCommand[] = [
       'prompsit translate "Hello" "World" -s "en" -t "es"',
       'prompsit translate "Hello" -s "en" -t "es" --qe',
       "prompsit translate --languages",
+      "prompsit translate --languages --tsv",
       'prompsit translate --languages -s "en"',
       'prompsit translate @"~/.prompsit/examples/translate/sample.txt" -s "en" -t "es"',
       'prompsit translate @"~/.prompsit/examples/translate/" -s "en" -t "es" --out "./translated/"',
       "prompsit translate --formats",
+      "prompsit translate --formats --tsv",
     ],
     replExamples: [
       '"Hello world" -s "en" -t "es"',
@@ -292,13 +295,15 @@ export const COMMANDS: readonly ReplCommand[] = [
       'translate @"~/.prompsit/examples/translate/sample.txt" -s "en" -t "es"',
       'translate @"~/.prompsit/examples/translate/" -s "en" -t "es" --out "./translated/"',
       "translate --languages",
+      "translate --languages --tsv",
       "translate --formats",
+      "translate --formats --tsv",
     ],
   },
   {
     name: "t",
     commanderPath: "translate",
-    argsSyntax: '"text"|@"file" -s "lang" -t "lang" [--qe] [--formats] [--languages]',
+    argsSyntax: '"text"|@"file" -s "lang" -t "lang" [--qe] [--formats] [--languages] [--tsv]',
     group: G_TEXT_TRANSLATION,
     hidden: true,
     aliasOf: "translate",
@@ -313,7 +318,8 @@ export const COMMANDS: readonly ReplCommand[] = [
   {
     name: "eval",
     commanderPath: "evaluate",
-    argsSyntax: '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats]',
+    argsSyntax:
+      '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats] [--tsv]',
     group: G_EVALUATION,
     template: [
       ['@"', "file"],
@@ -334,7 +340,7 @@ export const COMMANDS: readonly ReplCommand[] = [
         },
       ],
     },
-    boolFlags: ["--formats"],
+    boolFlags: ["--formats", "--tsv"],
     options: [
       { flag: '-s, --source "src"', descKey: "repl.opt.source_text" },
       { flag: '-h, --hypothesis "hyp"', descKey: "repl.opt.hypothesis" },
@@ -343,6 +349,7 @@ export const COMMANDS: readonly ReplCommand[] = [
       { flag: '--out "dir"', descKey: "repl.opt.output" },
       { flag: '--output-format "fmt"', descKey: "repl.opt.output_format" },
       { flag: "--formats", descKey: "repl.opt.formats" },
+      { flag: "--tsv", descKey: "repl.opt.tsv" },
     ],
     cliExamples: [
       'prompsit eval -s "Hello" -h "Hola" -r "Hola"',
@@ -350,6 +357,7 @@ export const COMMANDS: readonly ReplCommand[] = [
       'prompsit eval @"~/.prompsit/examples/evaluate/sample.tmx" -m "bleu,chrf"',
       'prompsit eval @"~/.prompsit/examples/evaluate/" -m "bleu,chrf" --out "./results/"',
       "prompsit eval --formats",
+      "prompsit eval --formats --tsv",
     ],
     replExamples: [
       'eval -s "Hello" -h "Hola" -r "Hola"',
@@ -357,12 +365,14 @@ export const COMMANDS: readonly ReplCommand[] = [
       'eval @"~/.prompsit/examples/evaluate/sample.tmx" -m "bleu,chrf"',
       'eval @"~/.prompsit/examples/evaluate/" -m "bleu,chrf" --out "./results/"',
       "eval --formats",
+      "eval --formats --tsv",
     ],
   },
   {
     name: "evaluate",
     commanderPath: "evaluate",
-    argsSyntax: '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats]',
+    argsSyntax:
+      '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats] [--tsv]',
     group: G_EVALUATION,
     hidden: true,
     aliasOf: "eval",
@@ -373,9 +383,9 @@ export const COMMANDS: readonly ReplCommand[] = [
     name: "score",
     commanderPath: "score",
     argsSyntax:
-      '@"files/dir..." [-s "lang"] [--target "path/dir"] [--output-format "fmt"] [--out "dir"] [--formats] [--languages]',
+      '@"files/dir..." [-s "lang"] [--target "path/dir"] [--output-format "fmt"] [--out "dir"] [--formats] [--languages] [--tsv]',
     group: G_SCORE,
-    boolFlags: ["--formats", "--languages", "-l"],
+    boolFlags: ["--formats", "--languages", "-l", "--tsv"],
     template: [
       ['@"', "file"],
       ['"', null],
@@ -396,6 +406,7 @@ export const COMMANDS: readonly ReplCommand[] = [
       { flag: '--out "dir"', descKey: "repl.opt.output" },
       { flag: "--formats", descKey: "repl.opt.formats" },
       { flag: "-l, --languages", descKey: "repl.opt.languages" },
+      { flag: "--tsv", descKey: "repl.opt.tsv" },
     ],
     cliExamples: [
       'prompsit score @"~/.prompsit/examples/score/sample.tmx"',
@@ -404,7 +415,9 @@ export const COMMANDS: readonly ReplCommand[] = [
       'prompsit score @"~/.prompsit/examples/score/sample.tmx" --output-format "tsv"',
       'prompsit score @"~/.prompsit/examples/score/sample.tmx" --out "./scored/"',
       "prompsit score --formats",
+      "prompsit score --formats --tsv",
       "prompsit score --languages",
+      "prompsit score --languages --tsv",
     ],
     replExamples: [
       'score @"~/.prompsit/examples/score/sample.tmx"',
@@ -412,7 +425,9 @@ export const COMMANDS: readonly ReplCommand[] = [
       'score @"./source_dir/" -t @"./target_dir/" -s "en"',
       'score @"~/.prompsit/examples/score/sample.tmx" --output-format "tsv"',
       "score --formats",
+      "score --formats --tsv",
       "score --languages",
+      "score --languages --tsv",
     ],
   },
 
@@ -420,9 +435,10 @@ export const COMMANDS: readonly ReplCommand[] = [
   {
     name: "annotate",
     commanderPath: "annotate",
-    argsSyntax: '@"files/dir..." -l "code" [--metadata "options"] [--out "dir"] [--formats]',
+    argsSyntax:
+      '@"files/dir..." -l "code" [--metadata "options"] [--out "dir"] [--formats] [--tsv]',
     group: G_ANNOTATE,
-    boolFlags: ["--formats", "--metadata"],
+    boolFlags: ["--formats", "--metadata", "--tsv"],
     template: [
       ['@"', "file"],
       ['" -l "', "lang"],
@@ -442,20 +458,25 @@ export const COMMANDS: readonly ReplCommand[] = [
       { flag: '--metadata "options"', descKey: "repl.opt.metadata" },
       { flag: '--out "dir"', descKey: "repl.opt.output" },
       { flag: "--formats", descKey: "repl.opt.formats" },
+      { flag: "--tsv", descKey: "repl.opt.tsv" },
     ],
     cliExamples: [
       'prompsit annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en"',
       'prompsit annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en" --metadata "lid,docscorer"',
       'prompsit annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en" --out "./annotated/"',
       "prompsit annotate --formats",
+      "prompsit annotate --formats --tsv",
       "prompsit annotate --metadata",
+      "prompsit annotate --metadata --tsv",
     ],
     replExamples: [
       'annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en"',
       'annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en" --metadata "lid,docscorer"',
       'annotate @"~/.prompsit/examples/annotate/sample.jsonl" -l "en" --out "./annotated/"',
       "annotate --formats",
+      "annotate --formats --tsv",
       "annotate --metadata",
+      "annotate --metadata --tsv",
     ],
   },
 

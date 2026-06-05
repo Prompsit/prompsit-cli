@@ -36,5 +36,6 @@ tmp/
 
 # AI tool config
 .claude/
+.codex/
 /.playwright-mcp
 /.hex-skills

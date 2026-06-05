@@ -2,8 +2,9 @@
 
 import { terminal } from "../output/index.ts";
 import type { TableModel } from "../output/tables/types.ts";
+import { isTsvOutput, writeTsvRows, type InfoOutputOptions } from "./info-output.ts";
 
-interface MetadataRow {
+export interface MetadataRow {
   description: string;
   option: string;
   output: string;
@@ -68,6 +69,14 @@ function createMetadataTableModel(): TableModel {
 }
 
 /** Show available annotation metadata stages with descriptions and output fields. */
-export function showAnnotateMetadata(): void {
+export function showAnnotateMetadata(options?: InfoOutputOptions): void {
+  if (isTsvOutput(options)) {
+    writeTsvRows(metadataRowsToTsvRows(METADATA_ROWS));
+    return;
+  }
   terminal.table(createMetadataTableModel());
+}
+
+export function metadataRowsToTsvRows(rows: readonly MetadataRow[]): string[][] {
+  return rows.map((row) => [row.option, row.description, row.output]);
 }
