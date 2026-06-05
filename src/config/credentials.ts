@@ -271,6 +271,7 @@ export function getPlan(): string | null {
   return getCredentialStore().getPlan();
 }
 
+/** @internal Internal credential accessor kept for module symmetry. */
 export function getPrompsitSecret(): string | null {
   return getCredentialStore().getPrompsitSecret();
 }

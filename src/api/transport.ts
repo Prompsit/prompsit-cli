@@ -46,6 +46,11 @@ const log = getLogger(import.meta.url);
  */
 function createRetryDelayCalculator(maxRetryAfterMs: number) {
   return ({ computedValue, retryAfter }: RetryObject): number => {
+    // got passes computedValue=0 when retry is disallowed by limit/method/status rules.
+    // Respect that sentinel before applying Retry-After, otherwise semantic 400
+    // responses with Retry-After can be retried by the transport layer.
+    if (computedValue === 0) return 0;
+
     // AC2: Prefer Retry-After over exponential backoff, but enforce maxRetryAfter cap
     if (retryAfter !== undefined) {
       if (retryAfter > maxRetryAfterMs) {
@@ -186,6 +191,7 @@ export class HttpTransport {
         noise: 100, // Jitter in ms (prevents thundering herd)
         maxRetryAfter: maxRetryAfterMs, // Retry-After cap (RFC 7231)
         calculateDelay: createRetryDelayCalculator(maxRetryAfterMs),
+        enforceRetryRules: true,
       },
 
       // Timeout config (from settings)

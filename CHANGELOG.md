@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - GitHub Release auto-creation from CHANGELOG.md Unreleased section
 
 ### Fixed
+- Device-token polling no longer retries semantic `400 authorization_pending` responses when a `Retry-After` header is present, removing the observed ~60s post-Google-login delay
 - Device-flow login lag after Google sign-in — the CLI now honors the server-advertised polling interval instead of starting below it, which previously tripped the server's `slow_down` and locked polling at 10s. Post-auth detection is now bounded by the server interval (≤2s with the matching API change)
 - ESLint `no-confusing-void-expression` errors in annotate, score, translate commands
 - Prettier formatting after ESLint autofix

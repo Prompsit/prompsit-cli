@@ -442,6 +442,7 @@ export type DataJobCreateResponse = z.infer<typeof DataJobCreateResponseSchema>;
 export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
 export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
 export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
+/** @internal Polling code parses the schema directly; alias kept for type-level reuse. */
 export type DeviceTokenError = z.infer<typeof DeviceTokenErrorSchema>;
 export type ChangeSecretResponse = z.infer<typeof ChangeSecretResponseSchema>;
 
@@ -496,11 +497,14 @@ export const TMSearchResponseSchema = z.object({
   total_count: z.number(),
 });
 
+/** @internal Schema alias reserved for TM callers. */
 export type TMResponse = z.infer<typeof TMResponseSchema>;
 export type TMListResponse = z.infer<typeof TMListResponseSchema>;
+/** @internal Schema alias reserved for TM callers. */
 export type TMSegmentResponse = z.infer<typeof TMSegmentResponseSchema>;
 export type TMSegmentListResponse = z.infer<typeof TMSegmentListResponseSchema>;
 export type TMImportResponse = z.infer<typeof TMImportResponseSchema>;
+/** @internal Schema alias reserved for TM callers. */
 export type TMSearchHitResponse = z.infer<typeof TMSearchHitResponseSchema>;
 export type TMSearchResponse = z.infer<typeof TMSearchResponseSchema>;
 

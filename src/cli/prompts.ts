@@ -37,6 +37,8 @@ export function promptInput(prompt: string): Promise<string> {
 /**
  * Prompt user for hidden input (secret/password).
  * Uses raw mode to suppress echo on TTY and falls back to visible input for non-TTY.
+ *
+ * @internal Reserved for non-REPL interactive flows.
  */
 export function promptHidden(prompt: string): Promise<string> {
   assertInteractiveInputAllowed();
