@@ -317,9 +317,9 @@ export const COMMANDS: readonly ReplCommand[] = [
   // -- Evaluation ----------------------------------------------------------
   {
     name: "eval",
-    commanderPath: "evaluate",
+    commanderPath: "eval",
     argsSyntax:
-      '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats] [--tsv]',
+      '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--tags] [--formats] [--tsv]',
     group: G_EVALUATION,
     template: [
       ['@"', "file"],
@@ -340,12 +340,13 @@ export const COMMANDS: readonly ReplCommand[] = [
         },
       ],
     },
-    boolFlags: ["--formats", "--tsv"],
+    boolFlags: ["--tags", "--formats", "--tsv"],
     options: [
       { flag: '-s, --source "src"', descKey: "repl.opt.source_text" },
       { flag: '-h, --hypothesis "hyp"', descKey: "repl.opt.hypothesis" },
       { flag: '-r, --reference "ref"', descKey: "repl.opt.reference" },
       { flag: '-m, --metrics "metrics"', descKey: "repl.opt.metrics" },
+      { flag: "--tags", descKey: "repl.opt.tags" },
       { flag: '--out "dir"', descKey: "repl.opt.output" },
       { flag: '--output-format "fmt"', descKey: "repl.opt.output_format" },
       { flag: "--formats", descKey: "repl.opt.formats" },
@@ -354,6 +355,7 @@ export const COMMANDS: readonly ReplCommand[] = [
     cliExamples: [
       'prompsit eval -s "Hello" -h "Hola" -r "Hola"',
       'prompsit eval -s "Hello" -h "Hola" -r "Hola" -m "bleu,chrf,metricx,comet"',
+      'prompsit eval -s "Hello <b>world</b>" -h "Hola <b>mundo</b>" --tags',
       'prompsit eval @"~/.prompsit/examples/evaluate/sample.tmx" -m "bleu,chrf"',
       'prompsit eval @"~/.prompsit/examples/evaluate/" -m "bleu,chrf" --out "./results/"',
       "prompsit eval --formats",
@@ -362,20 +364,12 @@ export const COMMANDS: readonly ReplCommand[] = [
     replExamples: [
       'eval -s "Hello" -h "Hola" -r "Hola"',
       'eval -s "Hello" -h "Hola" -r "Hola" -m "bleu,chrf,metricx,comet"',
+      'eval -s "Hello <b>world</b>" -h "Hola <b>mundo</b>" --tags',
       'eval @"~/.prompsit/examples/evaluate/sample.tmx" -m "bleu,chrf"',
       'eval @"~/.prompsit/examples/evaluate/" -m "bleu,chrf" --out "./results/"',
       "eval --formats",
       "eval --formats --tsv",
     ],
-  },
-  {
-    name: "evaluate",
-    commanderPath: "evaluate",
-    argsSyntax:
-      '-s "src" -h "hyp" -r "ref" | "file.tsv" | @"file" [-m "metrics"] [--formats] [--tsv]',
-    group: G_EVALUATION,
-    hidden: true,
-    aliasOf: "eval",
   },
 
   // -- Score ---------------------------------------------------------------

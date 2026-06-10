@@ -87,6 +87,7 @@ export const Endpoint = {
   DOCUMENT_FORMATS: "/v1/translation/document/formats",
   QE_FORMATS: "/v1/quality/score/formats",
   EVALUATE_FILE: "/v1/quality/score/file",
+  EVALUATE_TAGS: "/v1/quality/tags",
   DATA_SCORE_FORMATS: "/v1/data/score/formats",
   DATA_SCORE_LANGUAGES: "/v1/data/score/languages",
   DATA_ANNOTATE_FORMATS: "/v1/data/annotate/formats",

@@ -81,6 +81,15 @@ prompsit eval "segments.tsv" -m "bleu,chrf"                      # Batch from TS
 prompsit eval @"report.txt" -s "en" -t "es"                      # File scoring
 ```
 
+Tag quality (reference-free, no `-r`): checks that inline tags/placeholders are
+preserved and correctly positioned. Sub-scores default to both; restrict with `-m`.
+
+```bash
+prompsit eval -s "Hello <b>world</b>" -h "Hola <b>mundo</b>" --tags                       # Inline
+prompsit eval -s "Hello <b>world</b>" -h "Hola <b>mundo</b>" --tags -m "tag_preservation"  # One sub-score
+prompsit eval "pairs.tsv" --tags                                                          # Batch: 2-column TSV (source<TAB>hypothesis)
+```
+
 ### Data Processing
 
 ```bash

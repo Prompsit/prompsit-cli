@@ -107,9 +107,11 @@ export const STRINGS = {
   // === evaluate.py ===
   "evaluate.invalid_metrics": "Invalid metrics:",
   "evaluate.valid_metrics": "Valid metrics:",
+  "evaluate.invalid_subscores": "Invalid tag sub-scores:",
+  "evaluate.valid_subscores": "Valid tag sub-scores:",
   "evaluate.status": "Evaluating...",
   "evaluate.file_not_found": "File not found:",
-  "evaluate.invalid_line": "Invalid line {line_num}: expected 3 tab-separated columns",
+  "evaluate.invalid_line": "Invalid line {line_num}: expected {cols} tab-separated columns",
   "evaluate.no_segments": "No segments found in file",
   "evaluate.batch_status": "Evaluating {count} segments...",
   "evaluate.total": "Evaluated {count} segments",
@@ -237,6 +239,12 @@ export const STRINGS = {
     "Cannot mix @file and batch inputs. Use either file mode or batch mode, not both.",
   "validate.evaluate.missing_inline_flags":
     "Inline mode requires all three flags: -s (source), -h (hypothesis), -r (reference).",
+  "validate.evaluate.tags_no_file":
+    "Tag scoring (--tags) does not support @file inputs. Use inline (-s/-h) or a 2-column TSV.",
+  "validate.evaluate.tags_no_reference":
+    "Tag scoring (--tags) is reference-free. Remove -r (reference).",
+  "validate.evaluate.missing_tags_inline_flags":
+    "Tag inline mode requires both flags: -s (source), -h (hypothesis).",
   "validate.annotate.invalid_int": "Option '{option}' must be a positive integer",
   "validate.score.source_dir_target_file":
     "Source is a directory but target is a file. Both must be the same type.",
@@ -324,7 +332,9 @@ export const STRINGS = {
   "repl.opt.source_text": "Source text",
   "repl.opt.hypothesis": "Machine translation (hypothesis)",
   "repl.opt.reference": "Reference translation",
-  "repl.opt.metrics": "Comma-separated: bleu,chrf,metricx,comet (default: bleu,chrf)",
+  "repl.opt.metrics":
+    "Comma-separated: bleu,chrf,metricx,comet (default: bleu,chrf); with --tags: tag_preservation,tag_position",
+  "repl.opt.tags": "Score inline tag preservation/position (reference-free, no -r)",
   "repl.opt.formats": "Show supported file formats",
   "repl.opt.languages": "Show available language pairs",
   "repl.opt.tsv": "Print machine-readable TSV for discovery/info output",

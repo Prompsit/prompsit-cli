@@ -1,7 +1,8 @@
-// Flat evaluate command: mode determined at runtime.
-// Inline mode (no positional, -s/-h/-r): single segment evaluation via POST /v1/evaluation/evaluate.
-// Batch mode (positional without @): TSV file(s), segment evaluation via POST /v1/evaluation/evaluate.
+// Flat eval command: mode determined at runtime.
+// Inline mode (no positional, -s/-h/-r): single segment scoring via POST /v1/quality/score.
+// Batch mode (positional without @): TSV file(s), segment scoring via POST /v1/quality/score.
 // File mode (positional with @): file scoring via POST /v1/quality/score/file.
+// Tags mode (--tags): reference-free tag scoring via POST /v1/quality/tags.
 
 import { createReadStream } from "node:fs";
 import { access } from "node:fs/promises";
@@ -9,7 +10,7 @@ import { createInterface } from "node:readline";
 import { basename } from "node:path";
 import { Command } from "@commander-js/extra-typings";
 import { getApiClient } from "../api/client.ts";
-import type { Segment, EvaluateFileResult } from "../api/models.ts";
+import type { Segment, TagSegment, EvaluateFileResult } from "../api/models.ts";
 import { terminal, createEvaluationTableModel } from "../output/index.ts";
 import { toEvaluationResponseVM } from "./mappers.ts";
 import { showFormats } from "./show-formats.ts";
@@ -28,6 +29,9 @@ const log = getLogger(import.meta.url);
 
 /** Accepted metric names (case-insensitive). */
 const VALID_METRICS = new Set(["bleu", "chrf", "metricx", "comet"]);
+
+/** Accepted tag sub-score names (case-insensitive), used with --tags. */
+const VALID_TAG_SUBSCORES = new Set(["tag_preservation", "tag_position"]);
 
 /** Default metrics when --metrics not specified. */
 const DEFAULT_METRICS = "bleu,chrf";
@@ -58,13 +62,39 @@ function parseAndValidateMetrics(input: string): string[] | null {
 }
 
 /**
- * Parse a TSV file into Segment array using streaming readline.
+ * Parse and validate a comma-separated tag sub-scores string (used with --tags).
  *
- * Blank lines are skipped. Rows with != 3 columns produce error with line number.
- * Returns null on parse error (error already printed).
+ * Mirrors parseAndValidateMetrics: splits on commas, trims, lowercases.
+ * Returns null on invalid sub-score names (error already printed).
  */
-async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
-  const segments: Segment[] = [];
+function parseAndValidateSubScores(input: string): string[] | null {
+  const subScores = input
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const invalid = subScores.filter((s) => !VALID_TAG_SUBSCORES.has(s));
+
+  if (invalid.length > 0) {
+    failCommand(
+      ErrorCode.CANCELLED,
+      `${t("evaluate.invalid_subscores")} ${invalid.join(", ")}`,
+      `${t("evaluate.valid_subscores")} ${[...VALID_TAG_SUBSCORES].join(", ")}`
+    );
+    return null;
+  }
+
+  return subScores;
+}
+
+/**
+ * Read a TSV file into rows of exactly `cols` columns using streaming readline.
+ *
+ * Blank lines are skipped. Rows with != `cols` columns produce error with line
+ * number and expected column count. Returns null on parse error (error already
+ * printed) or when no rows are found.
+ */
+async function parseTsvRows(filePath: string, cols: number): Promise<string[][] | null> {
+  const rows: string[][] = [];
   let lineNum = 0;
 
   const rl = createInterface({
@@ -78,24 +108,44 @@ async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
     if (!trimmed) continue;
 
     const parts = trimmed.split("\t");
-    if (parts.length !== 3) {
-      failCommand(ErrorCode.CANCELLED, t("evaluate.invalid_line", { line_num: String(lineNum) }));
+    if (parts.length !== cols) {
+      failCommand(
+        ErrorCode.CANCELLED,
+        t("evaluate.invalid_line", { line_num: String(lineNum), cols: String(cols) })
+      );
       return null;
     }
 
-    segments.push({
-      source: parts[0],
-      hypothesis: parts[1],
-      reference: parts[2],
-    });
+    rows.push(parts);
   }
 
-  if (segments.length === 0) {
+  if (rows.length === 0) {
     failCommand(ErrorCode.CANCELLED, t("evaluate.no_segments"));
     return null;
   }
 
-  return segments;
+  return rows;
+}
+
+/** Parse a 3-column TSV (source, hypothesis, reference) into Segment array. */
+async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
+  const rows = await parseTsvRows(filePath, 3);
+  if (!rows) return null;
+  return rows.map((parts) => ({
+    source: parts[0],
+    hypothesis: parts[1],
+    reference: parts[2],
+  }));
+}
+
+/** Parse a 2-column TSV (source, hypothesis) into TagSegment array (reference-free). */
+async function parseTagsTsvFile(filePath: string): Promise<TagSegment[] | null> {
+  const rows = await parseTsvRows(filePath, 2);
+  if (!rows) return null;
+  return rows.map((parts) => ({
+    source: parts[0],
+    hypothesis: parts[1],
+  }));
 }
 
 /**
@@ -107,7 +157,7 @@ async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
  * - Positional without @ → batch mode (TSV files)
  * - Positional with @ → file scoring mode
  */
-export const evaluateCommand = new Command("evaluate")
+export const evaluateCommand = new Command("eval")
   .summary("Evaluate translation quality")
   .description("Evaluate single segments, batch TSV files, or score document files")
   .argument("[inputs...]", "TSV file(s) or @file(s) for scoring")
@@ -117,12 +167,13 @@ export const evaluateCommand = new Command("evaluate")
   .option("-h, --hypothesis <text>", "Machine translation hypothesis (inline mode)")
   .option("-r, --reference <text>", "Reference translation (inline mode)")
   .option("-m, --metrics <list>", "Metrics to compute (comma-separated)", DEFAULT_METRICS)
+  .option("--tags", "Score inline tag preservation/position (reference-free)", false)
   .option("--out <dir>", "Output directory (file mode, default: beside input)")
   .option("--output-format <format>", "Output format (csv/tsv/tmx/xliff)")
   .option("--formats", "Show supported file formats", false)
   .option("--tsv", "Print machine-readable TSV for --formats", false)
   .helpCommand(false)
-  .action(async (inputs, opts) => {
+  .action(async (inputs, opts, command) => {
     // Info-only early exit
     if (opts.formats) {
       await showFormats("qe", infoOutputFromFlag(opts.tsv));
@@ -130,6 +181,11 @@ export const evaluateCommand = new Command("evaluate")
     }
     if (opts.tsv) {
       failCommand(ErrorCode.VALIDATION, t("validate.tsv.info_only"));
+      return;
+    }
+
+    if (opts.tags) {
+      await dispatchTagsMode(inputs, opts, command.getOptionValueSource("metrics") === "default");
       return;
     }
 
@@ -354,4 +410,143 @@ async function evaluateFileMode(files: string[], opts: FileOpts): Promise<void> 
     mode: "file",
     duration_ms: String(Date.now() - startMs),
   });
+}
+
+// --- Tags mode (reference-free tag quality) ---
+
+export interface TagsOpts {
+  source?: string;
+  hypothesis?: string;
+  reference?: string;
+  metrics: string;
+}
+
+/**
+ * Route an `eval --tags` invocation to inline or batch handling.
+ *
+ * Tags scoring is reference-free, so -r is rejected and there is no @file mode
+ * (no tags file endpoint). When -m was left at its default, sub_scores is omitted
+ * so the server computes both tag_preservation and tag_position.
+ *
+ * Exported for unit testing: invalid flag combinations are rejected here before
+ * any network call, so validation is fully testable without Commander or the API.
+ */
+export async function dispatchTagsMode(
+  inputs: string[],
+  opts: TagsOpts,
+  metricsIsDefault: boolean
+): Promise<void> {
+  const hasInlineFlags =
+    opts.source !== undefined || opts.hypothesis !== undefined || opts.reference !== undefined;
+  const hasPositional = inputs.length > 0;
+
+  if (hasPositional && hasInlineFlags) {
+    failCommand(ErrorCode.VALIDATION, t("validate.evaluate.mixed_modes"));
+    return;
+  }
+
+  // Sub-scores: only sent when the user explicitly set -m (else server default).
+  // null means a parse/validation error was already reported; undefined means default.
+  const subScores = metricsIsDefault ? undefined : parseAndValidateSubScores(opts.metrics);
+  if (subScores === null) return;
+
+  if (hasPositional) {
+    // @file scoring is unsupported for tags (no file endpoint).
+    if (inputs.some((input) => stripFilePrefix(input) !== null)) {
+      failCommand(ErrorCode.VALIDATION, t("validate.evaluate.tags_no_file"));
+      return;
+    }
+    await evaluateTagsBatchMode(inputs, subScores);
+    return;
+  }
+
+  if (hasInlineFlags) {
+    if (opts.reference !== undefined) {
+      failCommand(ErrorCode.VALIDATION, t("validate.evaluate.tags_no_reference"));
+      return;
+    }
+    if (!opts.source || !opts.hypothesis) {
+      failCommand(ErrorCode.VALIDATION, t("validate.evaluate.missing_tags_inline_flags"));
+      return;
+    }
+    await evaluateTagsInlineMode(opts.source, opts.hypothesis, subScores);
+    return;
+  }
+
+  failCommand(ErrorCode.VALIDATION, t("validate.missing_argument", { name: "inputs" }));
+}
+
+async function evaluateTagsInlineMode(
+  source: string,
+  hypothesis: string,
+  subScores: string[] | undefined
+): Promise<void> {
+  const startMs = Date.now();
+  log.info("Command started", { command: "evaluate", mode: "tags-inline" });
+  try {
+    const response = await getApiClient().evaluation.scoreTags({
+      segments: [{ source, hypothesis }],
+      subScores,
+      aggregation: "corpus",
+    });
+
+    log.info("Command completed", {
+      command: "evaluate",
+      mode: "tags-inline",
+      duration_ms: String(Date.now() - startMs),
+    });
+    terminal.table(createEvaluationTableModel(toEvaluationResponseVM(response)));
+  } catch (error: unknown) {
+    handleCommandError(log, error, {
+      command: "evaluate",
+      mode: "tags-inline",
+      duration_ms: String(Date.now() - startMs),
+    });
+  }
+}
+
+async function evaluateTagsBatchMode(
+  files: string[],
+  subScores: string[] | undefined
+): Promise<void> {
+  const startMs = Date.now();
+  log.info("Command started", {
+    command: "evaluate",
+    mode: "tags-batch",
+    files_count: String(files.length),
+  });
+  try {
+    for (const file of files) {
+      try {
+        await access(file);
+      } catch {
+        failCommand(ErrorCode.CANCELLED, `${t("evaluate.file_not_found")} ${file}`);
+        return;
+      }
+
+      const segments = await parseTagsTsvFile(file);
+      if (!segments) return;
+
+      const response = await getApiClient().evaluation.scoreTags({
+        segments,
+        subScores,
+        aggregation: "both",
+      });
+
+      log.info("Command completed", {
+        command: "evaluate",
+        mode: "tags-batch",
+        duration_ms: String(Date.now() - startMs),
+        segments: String(response.segment_count),
+      });
+      terminal.table(createEvaluationTableModel(toEvaluationResponseVM(response)));
+      terminal.info(`\n${t("evaluate.total", { count: String(response.segment_count) })}`);
+    }
+  } catch (error: unknown) {
+    handleCommandError(log, error, {
+      command: "evaluate",
+      mode: "tags-batch",
+      duration_ms: String(Date.now() - startMs),
+    });
+  }
 }

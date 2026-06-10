@@ -76,6 +76,7 @@ source ~/.bashrc
 | Translate text | `prompsit translate "Hello" -s en -t es` |
 | Translate file | `prompsit translate @doc.txt -s en -t es --out ./output/` |
 | Evaluate text | `prompsit eval -s "Hello" -h "Hola" -r "Hola"` |
+| Score tags (reference-free) | `prompsit eval -s "Hi <b>x</b>" -h "Hola <b>x</b>" --tags` (TSV batch: 2 cols; sub-scores via `-m tag_preservation`) |
 | List language pairs | `prompsit engines` |
 | Check API | `prompsit health` |
 | Show config | `prompsit config` |

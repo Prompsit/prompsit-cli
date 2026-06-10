@@ -13,6 +13,7 @@ import {
   type EvaluateParams,
   type EvaluateFileParams,
   type EvaluateFileResult,
+  type ScoreTagsParams,
 } from "../models.ts";
 import { Endpoint } from "../../shared/constants.ts";
 
@@ -40,6 +41,31 @@ export class EvaluationResource {
       `${this.baseUrl}${Endpoint.EVALUATE}`,
       {
         json: { segments, metrics, aggregation },
+      }
+    );
+
+    return EvaluationResponseSchema.parse(data);
+  }
+
+  /**
+   * Score inline tag quality (reference-free) via POST /v1/quality/tags.
+   *
+   * Omits sub_scores when not provided so the server computes both
+   * (tag_preservation + tag_position). Response is wire-identical to
+   * /v1/quality/score, so EvaluationResponseSchema is reused.
+   *
+   * Not wrapped in withWarmupRetry by the caller: a 503 here means the
+   * alignment service is unavailable (tag_position only), not an ML engine
+   * cold start, so it must fail fast instead of looping on warmup retry.
+   */
+  async scoreTags(params: ScoreTagsParams): Promise<EvaluationResponse> {
+    const { segments, subScores, aggregation = "both" } = params;
+
+    const data = await this.session.request<unknown>(
+      "POST",
+      `${this.baseUrl}${Endpoint.EVALUATE_TAGS}`,
+      {
+        json: { segments, ...(subScores ? { sub_scores: subScores } : {}), aggregation },
       }
     );
 

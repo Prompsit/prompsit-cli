@@ -328,6 +328,19 @@ export interface EvaluateParams {
   aggregation?: string;
 }
 
+/** Tag-quality segment (reference-free): source + hypothesis only. */
+export interface TagSegment {
+  source: string;
+  hypothesis: string;
+}
+
+/** Input for EvaluationResource.scoreTags() */
+export interface ScoreTagsParams {
+  segments: TagSegment[];
+  subScores?: string[];
+  aggregation?: string;
+}
+
 /** Input for EvaluationResource.evaluateFile() */
 export interface EvaluateFileParams {
   filePath: string;

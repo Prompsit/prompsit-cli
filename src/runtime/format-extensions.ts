@@ -26,7 +26,6 @@ const CMD_SOURCE: Readonly<Partial<Record<string, FormatSource>>> = {
   translate: "document",
   t: "document",
   eval: "qe",
-  evaluate: "qe",
   score: "score",
   annotate: "annotate",
 };

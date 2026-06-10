@@ -6,6 +6,8 @@ import {
   CHRF_THRESHOLD_GOOD,
   METRICX_THRESHOLD_EXCELLENT,
   METRICX_THRESHOLD_GOOD,
+  QE_THRESHOLD_GOOD,
+  QE_THRESHOLD_FAIR,
 } from "../../shared/constants.ts";
 import { t } from "../../i18n/index.ts";
 import type { EvaluationResponseVM } from "../view-models.ts";
@@ -43,6 +45,18 @@ function formatMetricScore(
     return { scoreStr, quality: chalk.red(t("table.quality.poor")) };
   }
 
+  if (upper === "TAG_PRESERVATION" || upper === "TAG_POSITION") {
+    // Tag sub-scores are 0..1 ratios (pass rate / positioning accuracy).
+    const scoreStr = score.toFixed(2);
+    if (score >= QE_THRESHOLD_GOOD) {
+      return { scoreStr, quality: chalk.green(t("table.quality.excellent")) };
+    }
+    if (score >= QE_THRESHOLD_FAIR) {
+      return { scoreStr, quality: chalk.yellow(t("table.quality.good")) };
+    }
+    return { scoreStr, quality: chalk.red(t("table.quality.poor")) };
+  }
+
   const scoreStr = score.toFixed(4);
   if (score >= CHRF_THRESHOLD_EXCELLENT) {
     return { scoreStr, quality: chalk.green(t("table.quality.excellent")) };
@@ -69,7 +83,7 @@ export function createEvaluationTableModel(response: EvaluationResponseVM): Tabl
 
   return {
     columns: [
-      { key: "metric", header: t("table.col.metric"), width: 10, required: true, priority: 0 },
+      { key: "metric", header: t("table.col.metric"), width: 18, required: true, priority: 0 },
       { key: "score", header: t("table.col.score"), width: 10, required: true, priority: 0 },
       { key: "quality", header: t("table.col.quality"), minWidth: 10, priority: 1 },
     ],
