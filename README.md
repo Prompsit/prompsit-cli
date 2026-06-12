@@ -23,7 +23,7 @@ prompsit                                            # Interactive REPL
 > Run `prompsit` with no arguments to enter the **interactive REPL** with tab completion, command history, and bundled example files in `~/.prompsit/examples/`.
 
 > [!IMPORTANT]
-> Requires Node.js 22+. On Linux, use a Node version manager such as `nvm` or configure npm to use a user-owned prefix; do not use `sudo npm install -g`.
+> Requires Node.js 22.19+. On Linux, use a Node version manager such as `nvm` or configure npm to use a user-owned prefix; do not use `sudo npm install -g`.
 
 **Update:** `npm install -g prompsit-cli@latest`
 **Uninstall:** `npm uninstall -g prompsit-cli`
@@ -141,7 +141,7 @@ Run `prompsit login` without arguments. The CLI starts the Google device-flow si
 <details>
 <summary><b>Linux install fails with EACCES?</b></summary>
 
-This is usually an npm prefix permissions issue, not a Prompsit CLI issue. The preferred fix is to install Node.js 22+ with a version manager such as `nvm`, `fnm`, or Volta. If you use system Node/npm, configure a user-owned npm prefix:
+This is usually an npm prefix permissions issue, not a Prompsit CLI issue. The preferred fix is to install Node.js 22.19+ with a version manager such as `nvm`, `fnm`, or Volta. If you use system Node/npm, configure a user-owned npm prefix:
 
 ```bash
 mkdir -p ~/.local

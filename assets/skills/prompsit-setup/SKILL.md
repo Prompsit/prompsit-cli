@@ -60,7 +60,7 @@ prompsit login -a "EMAIL" -s "SECRET"
 
 ### Linux Install Notes
 
-Prompsit CLI requires Node.js 22+. Prefer a Node version manager (`nvm`, `fnm`, or Volta). If a system Node/npm install raises `EACCES` on global install, configure a user-owned prefix and retry without sudo:
+Prompsit CLI requires Node.js 22.19+. Prefer a Node version manager (`nvm`, `fnm`, or Volta). If a system Node/npm install raises `EACCES` on global install, configure a user-owned prefix and retry without sudo:
 
 ```bash
 mkdir -p ~/.local

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Changed
+- Node.js requirement is now explicit at 22.19+ to match the TUI dependency floor
 - Automated npm publishing via GitHub Actions (CalVer from mirror commit date)
 - `/publish` skill: commit+push only, npm publish handled by CI
 
@@ -16,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - GitHub Release auto-creation from CHANGELOG.md Unreleased section
 
 ### Fixed
+- `npm install -g prompsit-cli` no longer emits npm `allow-scripts` warnings from Prompsit CLI install scripts or the native `koffi` dependency
 - `npm install -g prompsit-cli` no longer pulls deprecated `@mariozechner/pi-tui`; the TUI dependency now uses `@earendil-works/pi-tui`
 - `prompsit eval ...` now works from the CLI — the command was registered as `evaluate` while all docs/examples used `eval`, so the bare CLI printed root help. The command is now `eval` everywhere (CLI + REPL); the `evaluate` keyword is removed
 - Device-token polling no longer retries semantic `400 authorization_pending` responses when a `Retry-After` header is present, removing the observed ~60s post-Google-login delay

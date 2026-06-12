@@ -1,7 +1,7 @@
 // See API-502: Cross-platform clipboard access.
 //
 // Leaf module -- no internal repl/ imports.
-// Windows: koffi FFI for instant read/write (~0ms).
+// Windows: clip.exe (write) + powershell.exe Get-Clipboard (read).
 // WSL: clip.exe (write) + powershell.exe Get-Clipboard (read).
 // macOS: pbpaste / pbcopy.
 // Linux: wl-paste / wl-copy (Wayland) → xclip → xsel (X11).
@@ -165,8 +165,11 @@ export async function probeSystemClipboard(): Promise<ClipboardProbeResult> {
 export async function getClipboardText(): Promise<string | null> {
   try {
     if (isWindowsPlatform()) {
-      const { readClipboardNative } = await import("./clipboard-win32.ts");
-      return readClipboardNative() ?? "";
+      return await runClipboardCommand("powershell.exe", [
+        "-NoProfile",
+        "-Command",
+        "Get-Clipboard",
+      ]);
     }
     if (isWSL()) {
       return await runClipboardCommand("powershell.exe", ["-NoProfile", "-c", "Get-Clipboard"]);
@@ -190,8 +193,8 @@ export async function getClipboardText(): Promise<string | null> {
 export async function setClipboardText(text: string): Promise<boolean> {
   try {
     if (isWindowsPlatform()) {
-      const { writeClipboardNative } = await import("./clipboard-win32.ts");
-      return writeClipboardNative(text) ?? false;
+      await runClipboardCommand("clip.exe", [], text);
+      return true;
     }
     if (isWSL()) {
       await runClipboardCommand("clip.exe", [], text);

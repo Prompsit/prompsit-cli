@@ -39,7 +39,7 @@ CLI for the Prompsit Translation API (translate, evaluate, manage engines/auth/c
 ## 2. Constraints
 
 ### 2.1 Technical Constraints
-- **TC-1**: Node.js 22+ required (ESM, native fetch available)
+- **TC-1**: Node.js 22.19+ required (ESM, native fetch available)
 - **TC-2**: TypeScript strict mode enforced (`strict: true` in tsconfig.json)
 - **TC-3**: Internet access required (API-dependent)
 - **TC-4**: ESM-only (`"type": "module"` in package.json)

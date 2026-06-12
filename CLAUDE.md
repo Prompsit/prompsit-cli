@@ -108,7 +108,7 @@ src/
 
 ## Technology Stack
 
-**Core:** Node.js 22+ • TypeScript 5.9+ • Commander.js + extra-typings • got • Zod • @earendil-works/pi-tui • chalk + cli-table3
+**Core:** Node.js 22.19+ • TypeScript 5.9+ • Commander.js + extra-typings • got • Zod • @earendil-works/pi-tui • chalk + cli-table3
 
 **For complete stack, versions, and dependencies:** See [docs/project/tech_stack.md](docs/project/tech_stack.md)
 

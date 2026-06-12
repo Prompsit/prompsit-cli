@@ -25,7 +25,7 @@ npm run dev -- --help              # Verify
 
 ### 2.1 Prerequisites (clean Linux)
 
-Preferred: install Node.js 22+ and npm with a Node version manager (`nvm`, `fnm`, or Volta). This keeps global npm packages inside the user's home directory and avoids `sudo npm install -g`.
+Preferred: install Node.js 22.19+ and npm with a Node version manager (`nvm`, `fnm`, or Volta). This keeps global npm packages inside the user's home directory and avoids `sudo npm install -g`.
 
 ```bash
 # Example with nvm

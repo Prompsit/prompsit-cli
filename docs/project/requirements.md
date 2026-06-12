@@ -172,7 +172,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 ## 5. Constraints
 
 ### 5.1 Technical Constraints
-- **Language**: TypeScript strict mode (Node.js 22+)
+- **Language**: TypeScript strict mode (Node.js 22.19+)
 - **CLI Framework**: Commander.js with `@commander-js/extra-typings`
 - **HTTP Client**: got (built-in retry, hooks, granular timeouts)
 - **Configuration**: Zod + smol-toml (type-safe, env var integration)
@@ -192,7 +192,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 ### 6.1 Assumptions
 1. Users have stable internet connection for API access
 2. Prompsit Translation API maintains 99%+ uptime
-3. Users have Node.js 22+ installed
+3. Users have Node.js 22.19+ installed
 4. Terminal supports ANSI colors and UTF-8 encoding
 
 ### 6.2 Dependencies
