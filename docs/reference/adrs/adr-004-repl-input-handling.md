@@ -12,7 +12,7 @@
 |------|--------|
 | 2026-02-15 | Initial: readline + keypress events |
 | 2026-02-15 | Superseded: Migrated to Ink (React terminal UI) after readline layout issues |
-| 2026-02-24 | **Current:** Migrated from Ink to `@mariozechner/pi-tui` for simpler, lighter TUI |
+| 2026-02-24 | **Current:** Migrated from Ink to `@earendil-works/pi-tui` for simpler, lighter TUI |
 
 ---
 
@@ -33,7 +33,7 @@ The REPL needs interactive features: command completion, persistent status bar, 
 
 ## Decision
 
-Use **`@mariozechner/pi-tui`** — a lightweight terminal UI library with built-in editor, completion, and layout primitives.
+Use **`@earendil-works/pi-tui`** — a lightweight terminal UI library with built-in editor, completion, and layout primitives.
 
 ```
 REPL Loop
@@ -53,7 +53,7 @@ pi-tui terminal editor
 
 | Factor | Decision Rationale |
 |--------|-------------------|
-| Single dependency | `@mariozechner/pi-tui` replaces `ink` + `react` + `@inkjs/ui` |
+| Single dependency | `@earendil-works/pi-tui` replaces `ink` + `react` + `@inkjs/ui` |
 | No JSX required | Plain TypeScript, no transform needed |
 | Built-in editor | Handles input, cursor, history natively |
 | Completion support | Built-in completion list rendering |
@@ -98,7 +98,7 @@ pi-tui terminal editor
 ## Maintenance
 
 **Update Triggers:**
-- If `@mariozechner/pi-tui` introduces breaking API changes
+- If `@earendil-works/pi-tui` introduces breaking API changes
 - When adding new TUI features (split panes, scrollable output)
 
 **Last Updated:** 2026-02-24

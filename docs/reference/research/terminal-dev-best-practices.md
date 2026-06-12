@@ -1,6 +1,6 @@
 # Terminal Development Best Practices (Node.js/TypeScript)
 
-> ⚠️ **HISTORICAL DOCUMENT** — This research was written when the project's TUI was built on **Ink**. Ink was replaced by [`@mariozechner/pi-tui`](https://www.npmjs.com/package/@mariozechner/pi-tui) on 2026-02-24 (see [ADR-004](../adrs/adr-004-repl-input-handling.md)). The Ink-specific guidance below (rendering pipeline, anti-flicker tactics, `<Static>` patterns) no longer reflects the current implementation. Retained as a reference for the analysis that informed the migration.
+> ⚠️ **HISTORICAL DOCUMENT** — This research was written when the project's TUI was built on **Ink**. Ink was replaced by [`@earendil-works/pi-tui`](https://www.npmjs.com/package/@earendil-works/pi-tui) on 2026-02-24 (see [ADR-004](../adrs/adr-004-repl-input-handling.md)). The Ink-specific guidance below (rendering pipeline, anti-flicker tactics, `<Static>` patterns) no longer reflects the current implementation. Retained as a reference for the analysis that informed the migration.
 
 <!-- SCOPE: Historical research on rendering/input/performance for Ink-based TUI apps. Retained for ADR-004 context. Current TUI uses pi-tui — see docs/project/architecture.md and ADR-004. -->
 <!-- Last Updated: 2026-02-16 (frozen — pre-pi-tui migration) -->

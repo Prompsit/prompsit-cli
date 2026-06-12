@@ -1,5 +1,5 @@
 import { createInterface } from "node:readline";
-import { SelectList, type SelectItem, type SelectListTheme } from "@mariozechner/pi-tui";
+import { SelectList, type SelectItem, type SelectListTheme } from "@earendil-works/pi-tui";
 import { chalkStderr } from "chalk";
 import { terminal } from "../output/index.ts";
 

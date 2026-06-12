@@ -60,7 +60,7 @@ Prompsit CLI is built with Node.js 22+ and TypeScript in strict mode. The stack 
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| **@mariozechner/pi-tui** | ^0.55.1 | Terminal UI primitives for REPL editor, completion list, and status layout |
+| **@earendil-works/pi-tui** | ^0.74.2 | Terminal UI primitives for REPL editor, completion list, and status layout |
 
 ### Distribution
 

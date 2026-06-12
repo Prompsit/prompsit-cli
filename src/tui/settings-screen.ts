@@ -17,7 +17,7 @@ import {
   type Component,
   matchesKey,
   Key,
-} from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-tui";
 import { terminal } from "../output/terminal.ts";
 import {
   getSettings,

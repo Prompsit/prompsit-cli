@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **English Only (Project)** | All project content | Code, docs, tasks, commits, variables - everything in English. Chat communication must be in Russian (per user's global instructions) |
 | **MCP Hashline-Edit Preferred** | File editing | When `hashline-edit` MCP is available, prefer `mcp__hashline-edit__*` methods over standard Read/Edit for verified edits |
 | **TypeScript Strict Mode** | All code | Strict mode enforced via tsconfig.json. `tsc --noEmit` must pass with zero errors |
-| **REPL Architecture** | REPL development | `@mariozechner/pi-tui` for TUI. See [ADR-004](docs/reference/adrs/adr-004-repl-input-handling.md) |
+| **REPL Architecture** | REPL development | `@earendil-works/pi-tui` for TUI. See [ADR-004](docs/reference/adrs/adr-004-repl-input-handling.md) |
 
 ## Navigation
 
@@ -73,7 +73,7 @@ All project documentation accessible through **[docs/README.md](docs/README.md)*
 
 **Unique to this project** (not generic Node.js/TypeScript patterns):
 
-- **pi-tui REPL with persistent TUI:** Interactive mode uses `@mariozechner/pi-tui` for terminal editor, completion list, and persistent layout. See [ADR-004](docs/reference/adrs/adr-004-repl-input-handling.md)
+- **pi-tui REPL with persistent TUI:** Interactive mode uses `@earendil-works/pi-tui` for terminal editor, completion list, and persistent layout. See [ADR-004](docs/reference/adrs/adr-004-repl-input-handling.md)
 - **Triple config precedence:** Environment variables (`PROMPSIT_*`) > `config.toml` > Zod defaults. Nested keys use `__` delimiter (e.g., `PROMPSIT_API__BASE_URL`). See [tech_stack.md](docs/project/tech_stack.md#configuration-management)
 - **OAuth2 credential storage:** Tokens stored in `~/.prompsit/credentials.json` (not system keyring). No plaintext secrets in config files
 - **CalVer versioning from git:** Version format `YY.MMDD.HHMM` auto-generated from git commit timestamp via `release` script
@@ -108,7 +108,7 @@ src/
 
 ## Technology Stack
 
-**Core:** Node.js 22+ • TypeScript 5.9+ • Commander.js + extra-typings • got • Zod • @mariozechner/pi-tui • chalk + cli-table3
+**Core:** Node.js 22+ • TypeScript 5.9+ • Commander.js + extra-typings • got • Zod • @earendil-works/pi-tui • chalk + cli-table3
 
 **For complete stack, versions, and dependencies:** See [docs/project/tech_stack.md](docs/project/tech_stack.md)
 
@@ -117,7 +117,7 @@ src/
 **Core:**
 - TypeScript strict mode (`strict: true` in tsconfig.json)
 - ESM-only (`"type": "module"` in package.json)
-- TUI via `@mariozechner/pi-tui` (replaced Ink)
+- TUI via `@earendil-works/pi-tui` (replaced Ink)
 
 **For complete technology stack and build system:** See [docs/project/tech_stack.md](docs/project/tech_stack.md)
 

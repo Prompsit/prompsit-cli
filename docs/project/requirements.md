@@ -145,7 +145,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 **FR-REPL-001** (SHOULD): Users shall enter interactive REPL mode
 - **AC1**: Running CLI without arguments starts REPL
 - **AC2**: REPL provides autocomplete and suggestion list in terminal editor
-- **AC3**: Uses `@mariozechner/pi-tui` for persistent TUI layout
+- **AC3**: Uses `@earendil-works/pi-tui` for persistent TUI layout
 
 **FR-REPL-002** (COULD): REPL shall provide command history
 - **AC1**: History persists across sessions in `~/.prompsit/history`
@@ -178,7 +178,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 - **Configuration**: Zod + smol-toml (type-safe, env var integration)
 - **Security**: credentials.json for auth state; no secrets in source code or config.toml
 - **Terminal Output**: chalk + cli-table3
-- **REPL**: @mariozechner/pi-tui
+- **REPL**: @earendil-works/pi-tui
 
 ### 5.2 Regulatory Constraints
 - **Data Privacy**: No translation data logged or stored locally (GDPR)

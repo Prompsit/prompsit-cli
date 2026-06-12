@@ -226,7 +226,7 @@ All 4 systemic issues from 2026-02-28 audit have been resolved:
 - Batch processing patterns in TypeScript: <https://www.harshajayamanna.com/2026/02/micro-batch-processing-in-python-java-and-typescript-node.html>
 - Got retry API: <https://github.com/sindresorhus/got/blob/main/documentation/7-retry.md>
 - Zod parsing and safeParse guidance: <https://zod.dev/basics>
-- pi-tui package info: <https://www.npmjs.com/package/@mariozechner/pi-tui>
+- pi-tui package info: <https://www.npmjs.com/package/@earendil-works/pi-tui>
 
 ---
 

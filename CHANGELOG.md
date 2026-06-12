@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - GitHub Release auto-creation from CHANGELOG.md Unreleased section
 
 ### Fixed
+- `npm install -g prompsit-cli` no longer pulls deprecated `@mariozechner/pi-tui`; the TUI dependency now uses `@earendil-works/pi-tui`
 - `prompsit eval ...` now works from the CLI — the command was registered as `evaluate` while all docs/examples used `eval`, so the bare CLI printed root help. The command is now `eval` everywhere (CLI + REPL); the `evaluate` keyword is removed
 - Device-token polling no longer retries semantic `400 authorization_pending` responses when a `Retry-After` header is present, removing the observed ~60s post-Google-login delay
 - Device-flow login lag after Google sign-in — the CLI now honors the server-advertised polling interval instead of starting below it, which previously tripped the server's `slow_down` and locked polling at 10s. Post-auth detection is now bounded by the server interval (≤2s with the matching API change)

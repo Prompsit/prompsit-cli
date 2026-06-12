@@ -3,7 +3,7 @@
 // No left-side label — the command is visible in history above the bar.
 
 import chalk from "chalk";
-import type { TUI, Component } from "@mariozechner/pi-tui";
+import type { TUI, Component } from "@earendil-works/pi-tui";
 import { REPL_COLORS } from "../data.ts";
 
 const FILLED = "\u2588"; // █

@@ -1,5 +1,5 @@
-import type { Component } from "@mariozechner/pi-tui";
-import { truncateToWidth, wrapTextWithAnsi } from "@mariozechner/pi-tui";
+import type { Component } from "@earendil-works/pi-tui";
+import { truncateToWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { formatOutputEvent } from "../../history/output-render.ts";
 import { outputBridge } from "../../core/output-bridge.ts";
 import { stripAnsi } from "../../../output/ansi-utils.ts";

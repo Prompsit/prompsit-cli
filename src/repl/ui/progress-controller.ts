@@ -1,7 +1,7 @@
 // Progress bar lifecycle — show/hide/update the progress bar in TUI.
 // Extracted from controller.ts to isolate timer + addChild/removeChild logic.
 
-import type { TUI, Component } from "@mariozechner/pi-tui";
+import type { TUI, Component } from "@earendil-works/pi-tui";
 import { ProgressBar } from "./components/progress-bar.ts";
 import type { ProgressEvent } from "../core/progress-types.ts";
 

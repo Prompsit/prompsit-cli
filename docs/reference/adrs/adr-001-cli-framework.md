@@ -9,7 +9,7 @@
 
 ## Context
 
-The CLI requires a framework for a translation API client with 12 command files, nested subcommands (`translate text`, `translate file`, `evaluate metrics`), and type-safe option parsing. REPL mode is handled separately by `@mariozechner/pi-tui`, so the framework only needs to cover command parsing and routing. TypeScript strict mode demands full type inference for `.opts()` and `.action()` parameters.
+The CLI requires a framework for a translation API client with 12 command files, nested subcommands (`translate text`, `translate file`, `evaluate metrics`), and type-safe option parsing. REPL mode is handled separately by `@earendil-works/pi-tui`, so the framework only needs to cover command parsing and routing. TypeScript strict mode demands full type inference for `.opts()` and `.action()` parameters.
 
 ---
 

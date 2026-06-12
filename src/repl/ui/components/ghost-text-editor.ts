@@ -13,7 +13,7 @@ import {
   type EditorTheme,
   type Focusable,
   type TUI,
-} from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-tui";
 import { computeGhostText } from "../../input/ghost-text.ts";
 
 // ANSI: dim + bright black (gray). Raw codes avoid chalk overhead in render loop.

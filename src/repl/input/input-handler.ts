@@ -1,7 +1,7 @@
 // TUI input listener — handles raw key/mouse events for the REPL.
 // Extracted from controller.ts to keep the controller focused on lifecycle/wiring.
 
-import { Key, matchesKey } from "@mariozechner/pi-tui";
+import { Key, matchesKey } from "@earendil-works/pi-tui";
 import { showStatusHint } from "../ui/hint-state.ts";
 import { isCurlEnabled } from "../../api/curl.ts";
 import { getRawCurl } from "../ui/curl-store.ts";

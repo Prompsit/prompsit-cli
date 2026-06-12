@@ -10,7 +10,8 @@ import {
   CombinedAutocompleteProvider,
   type AutocompleteProvider,
   type AutocompleteItem,
-} from "@mariozechner/pi-tui";
+  type AutocompleteSuggestions,
+} from "@earendil-works/pi-tui";
 import { completer } from "./completer.ts";
 import { getDropdownCommands } from "../registry.ts";
 import { getAllowedExtensions } from "../../runtime/format-extensions.ts";
@@ -31,16 +32,20 @@ export function isInAtFileContext(line: string, cursorCol: number): boolean {
 }
 
 export class ReplAutocompleteProvider implements AutocompleteProvider {
-  getSuggestions(
+  async getSuggestions(
     lines: string[],
     cursorLine: number,
-    cursorCol: number
-  ): { items: AutocompleteItem[]; prefix: string } | null {
+    cursorCol: number,
+    options: { signal: AbortSignal; force?: boolean }
+  ): Promise<AutocompleteSuggestions | null> {
     const currentLine = lines[cursorLine] ?? "";
 
     // --- @"file" completion: delegate to pi-tui, then filter by command formats ---
     if (isInAtFileContext(currentLine, cursorCol)) {
-      const result = getFileProvider().getForceFileSuggestions(lines, cursorLine, cursorCol);
+      const result = await getFileProvider().getSuggestions(lines, cursorLine, cursorCol, {
+        ...options,
+        force: true,
+      });
       if (!result) return null;
 
       const command = parseCommandName(lines[0] ?? "");

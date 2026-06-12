@@ -3,7 +3,7 @@
 // Pattern: same as ProgressBar (stateless Component, reads external state each render).
 
 import chalk from "chalk";
-import { truncateToWidth, type Component } from "@mariozechner/pi-tui";
+import { truncateToWidth, type Component } from "@earendil-works/pi-tui";
 import { getSanitizedCurl } from "../curl-store.ts";
 import { isCurlEnabled } from "../../../api/curl.ts";
 import { t } from "../../../i18n/index.ts";

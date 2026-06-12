@@ -4,7 +4,7 @@ import type { InputContext } from "../../src/repl/input/input-handler.ts";
 // ── Mocks ───────────────────────────────────────────────────────────
 
 // pi-tui: matchesKey must return false for keyboard checks so SGR mouse path is reached
-vi.mock("@mariozechner/pi-tui", () => ({
+vi.mock("@earendil-works/pi-tui", () => ({
   matchesKey: () => false,
   Key: { ctrl: () => "", f8: "", escape: "" },
 }));

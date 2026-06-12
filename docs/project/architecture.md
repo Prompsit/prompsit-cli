@@ -43,7 +43,7 @@ CLI for the Prompsit Translation API (translate, evaluate, manage engines/auth/c
 - **TC-2**: TypeScript strict mode enforced (`strict: true` in tsconfig.json)
 - **TC-3**: Internet access required (API-dependent)
 - **TC-4**: ESM-only (`"type": "module"` in package.json)
-- **TC-5**: Terminal UI stack is `@mariozechner/pi-tui` (no JSX runtime dependency)
+- **TC-5**: Terminal UI stack is `@earendil-works/pi-tui` (no JSX runtime dependency)
 
 ### 2.2 Organizational Constraints
 - **OC-1**: Open source (Apache-2.0 License)
@@ -55,7 +55,7 @@ CLI for the Prompsit Translation API (translate, evaluate, manage engines/auth/c
 - **CON-2**: chalk for terminal styling, cli-table3 for tables
 - **CON-3**: Zod for all data validation (config, API responses, CLI options)
 - **CON-4**: Vitest for testing
-- **CON-5**: `@mariozechner/pi-tui` for REPL TUI
+- **CON-5**: `@earendil-works/pi-tui` for REPL TUI
 
 ---
 
@@ -85,7 +85,7 @@ graph LR
 | **Configuration** | Zod + smol-toml | Type-safe config with env var overrides |
 | **CLI Framework** | Commander.js | Command-line interface with type-safe options |
 | **Terminal Output** | chalk + cli-table3 | Styled text, tables |
-| **Interactive Mode** | @mariozechner/pi-tui | REPL with interactive editor + completion list |
+| **Interactive Mode** | @earendil-works/pi-tui | REPL with interactive editor + completion list |
 
 ---
 

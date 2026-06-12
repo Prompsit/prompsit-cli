@@ -11,7 +11,7 @@ See [CLAUDE.md § Folder Structure](CLAUDE.md#folder-structure) and [architectur
 
 - TypeScript strict mode (`strict: true` in tsconfig.json)
 - ESM modules (`"type": "module"` in package.json)
-- TUI via `@mariozechner/pi-tui` (replaced Ink)
+- TUI via `@earendil-works/pi-tui` (replaced Ink)
 - Commander.js with `@commander-js/extra-typings` for type-safe CLI
 - Prefer clear module boundaries: CLI wiring in `commands/`, API calls in `api/`, config in `config/`
 

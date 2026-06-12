@@ -8,13 +8,14 @@ import {
 import {
   ProcessTerminal,
   TUI,
-  getEditorKeybindings,
-  setEditorKeybindings,
-  EditorKeybindingsManager,
+  getKeybindings,
+  setKeybindings,
+  KeybindingsManager,
+  TUI_KEYBINDINGS,
   wrapTextWithAnsi,
   type EditorTheme,
   type SelectListTheme,
-} from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-tui";
 import { GhostTextEditor } from "./ui/components/ghost-text-editor.ts";
 import { getVersion } from "../shared/version.ts";
 import { getLatestVersion, isNewerVersion } from "../runtime/update-check.ts";
@@ -124,7 +125,7 @@ export class ReplController {
   private removeInputListener: (() => void) | null = null;
   private resizeListener: (() => void) | null = null;
   private exitResolve: (() => void) | null = null;
-  private previousEditorKeybindings: EditorKeybindingsManager | null = null;
+  private previousKeybindings: KeybindingsManager | null = null;
   private stopped = false;
 
   private isRunning = false;
@@ -182,8 +183,8 @@ export class ReplController {
       formatBannerLines
     );
 
-    this.previousEditorKeybindings = getEditorKeybindings();
-    setEditorKeybindings(new EditorKeybindingsManager({ copy: "ctrl+shift+c" }));
+    this.previousKeybindings = getKeybindings();
+    setKeybindings(new KeybindingsManager(TUI_KEYBINDINGS, { "tui.input.copy": "ctrl+shift+c" }));
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias, unicorn/no-this-assignment -- needed for InputContext getters
     const self = this;
@@ -337,9 +338,9 @@ export class ReplController {
 
     this.progress.dispose();
 
-    if (this.previousEditorKeybindings) {
-      setEditorKeybindings(this.previousEditorKeybindings);
-      this.previousEditorKeybindings = null;
+    if (this.previousKeybindings) {
+      setKeybindings(this.previousKeybindings);
+      this.previousKeybindings = null;
     }
 
     this.tui?.stop();
