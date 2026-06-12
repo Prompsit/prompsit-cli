@@ -35,7 +35,7 @@ This directory contains reusable knowledge base and architecture decisions:
 - [02-TOML Config Management (smol-toml)](../../docs/guides/02-toml-config-management-smol-toml.md) | 2026-02-13
 - [03-Error Handling (RFC 9457)](../../docs/guides/03-error-handling-rfc9457.md) | 2026-02-13
 - [04-HTTP Retry & Rate Limiting (got)](../../docs/guides/04-http-retry-rate-limiting.md) | 2026-02-13
-- [05-OAuth2 ROPC CLI Authentication](../../docs/guides/05-oauth2-ropc-cli-authentication.md) | 2026-02-13
+- [05-OAuth2 Device Flow and ROPC Fallback](../../docs/guides/05-oauth2-ropc-cli-authentication.md) | 2026-06-12
 - [06-CLI Patterns & Signal Handling (Commander.js)](../../docs/guides/06-cli-patterns-signal-handling.md) | 2026-02-13
 - [07-SSE Streaming Patterns](../../docs/guides/07-sse-streaming-patterns.md) | 2026-02-15
 

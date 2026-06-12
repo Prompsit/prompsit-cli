@@ -60,13 +60,13 @@ Prompsit CLI is built with Node.js 22+ and TypeScript in strict mode. The stack 
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| **@mariozechner/pi-tui** | ^0.54.1 | Terminal UI primitives for REPL editor, completion list, and status layout |
+| **@mariozechner/pi-tui** | ^0.55.1 | Terminal UI primitives for REPL editor, completion list, and status layout |
 
 ### Distribution
 
 | Channel | Purpose |
 |---------|---------|
-| **npmjs (`prompsit-cli`)** | Global install/update via npm (`npm install -g prompsit-cli`) |
+| **npmjs (`prompsit-cli`)** | Global install/update via npm (`npm install -g prompsit-cli`); latest verified published version `26.610.1154` |
 
 ---
 
@@ -84,7 +84,7 @@ Prompsit CLI is built with Node.js 22+ and TypeScript in strict mode. The stack 
 |---------|---------|---------|
 | **typescript** | ^5.9.3 | Compiler + type checker (strict mode) |
 | **tsx** | ^4.21.0 | Dev-time esbuild loader (TS/ESM transform) |
-| **@types/node** | ^25.3.0 | Node.js type definitions |
+| **@types/node** | ^25.3.1 | Node.js type definitions |
 
 ---
 

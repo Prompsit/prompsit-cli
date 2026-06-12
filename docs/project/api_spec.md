@@ -19,7 +19,35 @@
 
 ## 1. Authentication
 
-### POST /v1/auth/token (Login)
+### POST /v1/auth/device (Device Authorization)
+
+Starts the primary CLI sign-in flow used by `prompsit login`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `device_code` | string | Yes | Opaque polling token |
+| `user_code` | string | Yes | One-time code shown to the user |
+| `verification_uri` | string | Yes | URL where the user authorizes the device |
+| `verification_uri_complete` | string | No | Authorization URL with embedded user code |
+| `expires_in` | integer | Yes | Device-code TTL in seconds; client default is 600 |
+| `interval` | integer | Yes | Minimum polling interval in seconds; client default is 5 |
+
+### POST /v1/auth/device/token (Device Token Poll)
+
+The CLI polls this endpoint with `grant_type=urn:ietf:params:oauth:grant-type:device_code`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `grant_type` | string | Yes | Must be `urn:ietf:params:oauth:grant-type:device_code` |
+| `device_code` | string | Yes | Device code from `/v1/auth/device` |
+
+**Success response:** `access_token`, `refresh_token`, `token_type`, `expires_in`, `plan`, `email`, `account_id`, and optional `prompsit_secret`.
+
+**Polling errors:** `authorization_pending`, `slow_down`, `expired_token`, `access_denied`.
+
+### POST /v1/auth/token (Password Fallback Login)
+
+Backward-compatible fallback used by `prompsit login -a "EMAIL" -s "SECRET"`.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -414,11 +442,13 @@ Recommended retry: exponential backoff with jitter (configured via `retry_attemp
 
 | Step | Description |
 |------|-------------|
-| 1. Obtain | POST /v1/auth/token with credentials |
+| 1. Obtain | `prompsit login` starts POST /v1/auth/device and polls POST /v1/auth/device/token |
 | 2. Validity | 3600s (1 hour) default |
 | 3. Storage | `~/.prompsit/credentials.json` |
 | 4. Refresh | POST /v1/auth/token with grant_type=refresh_token |
 | 5. Expiry | Client detects expiry, auto-refreshes before request |
+
+Password fallback: `prompsit login -a "EMAIL" -s "SECRET"` obtains tokens via POST /v1/auth/token with `grant_type=password`.
 
 ---
 

@@ -192,7 +192,7 @@ Patterns detected by keywords but excluded after applicability verification.
 | 4 | Message Queue | Baseline | `Queue`/`Job` keywords | Polling/SSE job tracking present, but no broker consumer/producer architecture | 2026-02-22 |
 | 5 | Saga | Baseline | `step`/`workflow` tokens | No compensation workflow orchestration detected | 2026-02-22 |
 | 6 | API Gateway | Baseline | `gateway`/`proxy` terms in docs | CLI is client app, not gateway/router service boundary | 2026-02-22 |
-| 7 | Package Manager Update | Previous inventory | `src/update/`, `src/commands/update.ts` | Code fully deleted; update delegated to npm directly (`npm install -g`) | 2026-02-24 |
+| 7 | Package Manager Update | Previous inventory | Previous in-app update command | Code fully deleted; update delegated to npm directly (`npm install -g`) | 2026-02-24 |
 
 ---
 

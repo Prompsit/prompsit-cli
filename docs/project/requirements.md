@@ -52,7 +52,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 - Command-line interface using Commander.js framework
 - Terminal output with chalk styling and cli-table3 tables
 - Configuration management via TOML files and environment variables
-- Secure credential storage in `~/.prompsit/credentials.json`
+- Auth state storage in `~/.prompsit/credentials.json`
 
 ### 2.2 User Classes and Characteristics
 1. **Developers** - Tech-proficient, integrate translation into CI/CD pipelines, prefer CLI/scripting
@@ -68,7 +68,7 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 
 **Server (External Dependency):**
 - Prompsit Translation API (https://api.prompsit.com)
-- Requires: Active API account with Account email and API Secret
+- Requires: Active API account; primary CLI sign-in uses Google device-flow
 
 ---
 
@@ -76,10 +76,11 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 
 ### 3.1 Authentication (FR-AUTH)
 
-**FR-AUTH-001** (MUST): Users shall authenticate using Account email and API Secret
-- **AC1**: CLI accepts credentials via flags (`-a`, `-s`) or interactive input
-- **AC2**: Credentials stored in `~/.prompsit/credentials.json`
-- **AC3**: OAuth2 token obtained from `/v1/auth/token` endpoint
+**FR-AUTH-001** (MUST): Users shall authenticate using browser/device-flow login
+- **AC1**: `prompsit login` starts Google device-flow sign-in and displays a one-time code and URL
+- **AC2**: CLI attempts to open the browser and copy the sign-in URL to the clipboard
+- **AC3**: OAuth2 tokens are stored in `~/.prompsit/credentials.json`
+- **AC4**: Backward-compatible `-a`/`-s` login works for already-issued Prompsit API secrets
 
 **FR-AUTH-002** (MUST): Users shall check authentication status
 - **AC1**: `status` command displays authentication state
@@ -175,14 +176,14 @@ Prompsit CLI is a standalone command-line application that interfaces with the P
 - **CLI Framework**: Commander.js with `@commander-js/extra-typings`
 - **HTTP Client**: got (built-in retry, hooks, granular timeouts)
 - **Configuration**: Zod + smol-toml (type-safe, env var integration)
-- **Security**: credentials.json (no plaintext secrets in config)
+- **Security**: credentials.json for auth state; no secrets in source code or config.toml
 - **Terminal Output**: chalk + cli-table3
 - **REPL**: @mariozechner/pi-tui
 
 ### 5.2 Regulatory Constraints
 - **Data Privacy**: No translation data logged or stored locally (GDPR)
-- **API Credentials**: Must use secure storage, never commit secrets
-- **License**: MIT License
+- **API auth state**: Must use dedicated credential storage; never commit secrets
+- **License**: Apache-2.0 License
 
 ---
 

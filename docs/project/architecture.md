@@ -19,7 +19,7 @@ CLI for the Prompsit Translation API (translate, evaluate, manage engines/auth/c
 
 | Priority | Quality Attribute | Scenario | Metric |
 |----------|------------------|----------|--------|
-| 1 | **Security** | API credentials stored securely, never in plaintext | 100% credential file usage |
+| 1 | **Security** | API auth state stored outside project files and config | 100% credential file usage |
 | 2 | **Usability** | CLI commands intuitive, autocomplete in REPL | User feedback |
 | 3 | **Reliability** | API failures handled gracefully with retries | 99% success rate |
 | 4 | **Performance** | Batch translation with progress tracking | < 2s overhead per 100 segments |
@@ -46,8 +46,8 @@ CLI for the Prompsit Translation API (translate, evaluate, manage engines/auth/c
 - **TC-5**: Terminal UI stack is `@mariozechner/pi-tui` (no JSX runtime dependency)
 
 ### 2.2 Organizational Constraints
-- **OC-1**: Open source (MIT License)
-- **OC-2**: Git repository on GitLab (Prompsit)
+- **OC-1**: Open source (Apache-2.0 License)
+- **OC-2**: Public GitHub mirror at `github.com/Prompsit/prompsit-cli`; internal source remote is GitLab
 - **OC-3**: Documentation in English only
 
 ### 2.3 Conventions
@@ -81,7 +81,7 @@ graph LR
 | Interface | Technology | Purpose |
 |-----------|-----------|---------|
 | **API Communication** | got (HTTP/1.1) | REST API calls with OAuth2 authentication |
-| **Credential Storage** | credentials.json | OAuth2 tokens (access, refresh, account, plan) |
+| **Credential Storage** | credentials.json | OAuth2 tokens, account, plan, and optional Prompsit secret |
 | **Configuration** | Zod + smol-toml | Type-safe config with env var overrides |
 | **CLI Framework** | Commander.js | Command-line interface with type-safe options |
 | **Terminal Output** | chalk + cli-table3 | Styled text, tables |
@@ -241,16 +241,23 @@ sequenceDiagram
     participant CLI as prompsit login
     participant APIClient
     participant API as Prompsit API
+    participant Browser
     participant FS as credentials.json
 
-    User->>CLI: prompsit login -a email -s secret
-    CLI->>APIClient: POST /v1/auth/token (form body)
-    APIClient->>API: email + api_secret (form-urlencoded)
-    API-->>APIClient: OAuth2 token
+    User->>CLI: prompsit login
+    CLI->>APIClient: POST /v1/auth/device
+    API-->>APIClient: device_code + user_code + verification_uri
+    CLI->>User: Print code and URL; copy URL when possible
+    CLI->>Browser: Open verification_uri_complete when available
+    Browser->>API: Google sign-in and user authorization
+    APIClient->>API: Poll POST /v1/auth/device/token
+    API-->>APIClient: OAuth2 tokens + account metadata
     APIClient-->>CLI: Zod-validated TokenResponse
     CLI->>FS: Save tokens
     CLI->>User: Authentication successful
 ```
+
+Backward-compatible fallback: `prompsit login -a email -s secret` uses `POST /v1/auth/token` with form-encoded `grant_type=password`, `username`, and `password`.
 
 ---
 
@@ -324,9 +331,9 @@ See [docs/reference/adrs/](../reference/adrs/) for detailed ADRs.
 
 ```
 Security (Priority 1)
-├── No plaintext credentials
-├── Secure token storage (credentials.json)
-└── HTTPS-only API communication
+- No secrets in source code or config.toml
+- Credential file isolated in ~/.prompsit/credentials.json
+- HTTPS-only API communication
 
 Usability (Priority 2)
 ├── Intuitive CLI commands

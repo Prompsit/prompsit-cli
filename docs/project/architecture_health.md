@@ -38,7 +38,7 @@ Remediation target: break SCCs in (`config <-> logging`) and (`cli/output/repl/i
 | Pattern: Registry | 85/82/84/85 | 85/82/84/85 | 0 | WARNING |
 
 **Key Changes:**
-- Pattern #12 (Package Manager Update) **REMOVED** — `src/update/` code fully deleted
+- Pattern #12 (Package Manager Update) **REMOVED** — in-app update code fully deleted
 - Large SCC (`cli/output/repl/i18n/errors/api`) **RESOLVED** — modules now singletons
 - `config <-> logging` cycle **MUTATED** → `logging <-> runtime` cycle (same root cause, different path)
 - Previous 3 layer violations **ALL RESOLVED**, 14 new violations detected (2H, 5M, 7L)

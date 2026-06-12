@@ -20,21 +20,28 @@ npm run dev -- --help              # Verify
 | Method | For | Command |
 |--------|-----|---------|
 | **npmjs (global)** | Testers, end-users | `npm install -g prompsit-cli` |
+| **npx** | Occasional one-off use | `npx prompsit-cli --help` |
 | **Local dev** | Developers | `npm install && npm run dev` |
 
 ### 2.1 Prerequisites (clean Linux)
 
-```bash
-# Install Node.js 22+ (Ubuntu/Debian)
-sudo apt-get update && sudo apt-get install -y ca-certificates curl gnupg build-essential xclip
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
+Preferred: install Node.js 22+ and npm with a Node version manager (`nvm`, `fnm`, or Volta). This keeps global npm packages inside the user's home directory and avoids `sudo npm install -g`.
 
-# Configure npm global directory (no sudo for npm install -g)
-mkdir -p ~/.npm-global
-npm config set prefix ~/.npm-global
-echo 'export PATH=$HOME/.npm-global/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
+```bash
+# Example with nvm
+nvm install 22
+nvm use 22
+node -v
+npm -v
+```
+
+Fallback for system Node/npm: configure a user-owned npm prefix before global install.
+
+```bash
+mkdir -p ~/.local
+npm config set prefix ~/.local
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile
+source ~/.profile
 ```
 
 ### 2.2 npmjs Global Install
@@ -44,6 +51,7 @@ source ~/.bashrc
 | Install | `npm install -g prompsit-cli` |
 | Verify | `prompsit --version` |
 | Update | `npm install -g prompsit-cli@latest --prefer-online` |
+| Occasional use | `npx prompsit-cli --help` |
 
 ### 2.3 Local Development
 
@@ -125,9 +133,12 @@ OAuth2 tokens stored in `~/.prompsit/credentials.json`:
 
 | Action | Command |
 |--------|---------|
-| Login | `prompsit login -a "ACCOUNT_ID" -s "SECRET"` |
+| Login/register | `prompsit login` |
+| Fallback login | `prompsit login -a "EMAIL" -s "SECRET"` |
 | Logout | `prompsit logout` |
 | Check session | `prompsit status` |
+
+`prompsit login` starts the Google device-flow sign-in. It prints a one-time code and URL, attempts to copy the sign-in URL to the clipboard, and opens the default browser when available. On headless machines, copy the printed URL into a browser on another machine and enter the one-time code.
 
 ---
 
@@ -258,10 +269,10 @@ Each HTTP request gets an 8-char `X-Request-ID` header (trace_id) for end-to-end
 |---------|-----|
 | `ERR_MODULE_NOT_FOUND` | Run `npm install` in project root |
 | `ERR_UNKNOWN_FILE_EXTENSION .tsx` | Use `npm run dev` (tsx loader), not `node` directly |
-| `npm ERR! code EACCES` on `npm install -g` | Configure user-level prefix (`~/.npm-global`) and retry without sudo |
-| `prompsit: command not found` | Ensure `$HOME/.npm-global/bin` is in PATH and restart shell |
+| `npm ERR! code EACCES` on `npm install -g` | Use a Node version manager, or configure a user-level prefix (`~/.local`) and retry without sudo |
+| `prompsit: command not found` | Ensure `$(npm prefix -g)/bin` is in PATH and restart shell |
 | Connection refused | Check `prompsit config api-url` and `prompsit health` |
-| REPL hangs on login | Use flags: `login -a EMAIL -s SECRET` (interactive input unavailable in REPL) |
+| Browser does not open on login | Copy the printed URL; the CLI also tries system clipboard and OSC 52 terminal clipboard |
 | No logs in Grafana/Loki | Check `prompsit config telemetry-enabled` |
 | REPL paste not working (Linux) | Install `wl-clipboard` (Wayland) or `xclip` (X11). See section 2.2 |
 | Right-click opens terminal menu | Terminal intercepts right-click. Use Ctrl+V or Shift+Right-click |

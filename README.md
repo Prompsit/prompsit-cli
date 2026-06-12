@@ -12,7 +12,8 @@ One CLI for the entire Prompsit Translation API. Translate text and documents, e
 ```bash
 npm install -g prompsit-cli
 
-prompsit login -a "EMAIL" -s "SECRET"
+prompsit login
+prompsit health
 prompsit translate "Hello world" -s "en" -t "es"
 prompsit translate @"report.docx" -s "en" -t "es"
 prompsit                                            # Interactive REPL
@@ -21,8 +22,12 @@ prompsit                                            # Interactive REPL
 > [!TIP]
 > Run `prompsit` with no arguments to enter the **interactive REPL** with tab completion, command history, and bundled example files in `~/.prompsit/examples/`.
 
+> [!IMPORTANT]
+> Requires Node.js 22+. On Linux, use a Node version manager such as `nvm` or configure npm to use a user-owned prefix; do not use `sudo npm install -g`.
+
 **Update:** `npm install -g prompsit-cli@latest`
 **Uninstall:** `npm uninstall -g prompsit-cli`
+**Occasional use:** `npx prompsit-cli --help`
 
 ---
 
@@ -50,8 +55,8 @@ Supports XLIFF, CSV, PDF, DOCX, TMX, TSV, TXT, JSONL, and more. Run `prompsit tr
 ### Authentication
 
 ```bash
-prompsit login -a "EMAIL" -s "SECRET"    # Authenticate
-prompsit login                           # Open contact page (no credentials)
+prompsit login                           # Sign in or register with Google
+prompsit login -a "EMAIL" -s "SECRET"    # Fallback for issued API secrets
 prompsit logout                          # Clear stored credentials
 prompsit status                          # Show auth state and token expiry
 ```
@@ -127,9 +132,24 @@ prompsit language "es"                   # Set interface language
 ## FAQ
 
 <details>
-<summary><b>How do I get API credentials?</b></summary>
+<summary><b>How do I get access?</b></summary>
 
-Run `prompsit login` without arguments to open the contact page. You'll receive an account email and API secret from Prompsit.
+Run `prompsit login` without arguments. The CLI starts the Google device-flow sign-in, prints a one-time code and URL, tries to open the browser, and copies the sign-in URL to the clipboard when possible. On first registration, the API can return a Prompsit secret; the CLI stores it in `~/.prompsit/credentials.json` and prints a fallback `login -a ... -s ...` command.
+
+</details>
+
+<details>
+<summary><b>Linux install fails with EACCES?</b></summary>
+
+This is usually an npm prefix permissions issue, not a Prompsit CLI issue. The preferred fix is to install Node.js 22+ with a version manager such as `nvm`, `fnm`, or Volta. If you use system Node/npm, configure a user-owned npm prefix:
+
+```bash
+mkdir -p ~/.local
+npm config set prefix ~/.local
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile
+source ~/.profile
+npm install -g prompsit-cli
+```
 
 </details>
 
@@ -173,7 +193,9 @@ Translations are fetched from the API on first use and cached in `~/.prompsit/tr
 
 ```bash
 # Check global npm bin is on PATH
-echo "$PATH" | tr ':' '\n' | grep '.npm-global/bin'
+NPM_PREFIX="$(npm prefix -g)"
+echo "$NPM_PREFIX/bin"
+echo "$PATH" | tr ':' '\n' | grep -E '(\.local|node_modules)/bin'
 command -v prompsit
 ```
 

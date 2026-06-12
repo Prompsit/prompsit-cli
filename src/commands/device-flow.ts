@@ -3,6 +3,7 @@
 // Works in both CLI mode (ora spinner) and REPL mode (terminal.dim).
 
 import { openBrowser } from "../runtime/browser.ts";
+import { setClipboardText, writeOsc52 } from "../runtime/clipboard.ts";
 import ora, { type Ora } from "ora";
 import type { AuthResource } from "../api/resources/auth.ts";
 import { getApiClient } from "../api/client.ts";
@@ -16,6 +17,28 @@ import { DEVICE_FLOW_DEFAULT_INTERVAL } from "../shared/constants.ts";
 const log = getLogger(import.meta.url);
 
 const SLOW_DOWN_INCREMENT = 5; // RFC 8628 §3.5: increase interval by 5s on slow_down
+
+async function copySignInUrl(url: string): Promise<void> {
+  let copied: boolean;
+  try {
+    copied = await setClipboardText(url);
+  } catch {
+    copied = false;
+  }
+
+  if (copied) {
+    terminal.dim(t("auth.device.url_copied"));
+    return;
+  }
+
+  if (process.stdout.isTTY) {
+    writeOsc52(url);
+    terminal.dim(t("auth.device.url_sent_osc52"));
+    return;
+  }
+
+  terminal.dim(t("auth.device.url_copy_unavailable"));
+}
 
 /** Result from a completed device flow. */
 export interface DeviceFlowResult {
@@ -67,6 +90,8 @@ export async function runDeviceFlow(
   terminal.info("");
   terminal.info(`  ${t("auth.device.visit_url", { url: browseUrl })}`);
   terminal.info("");
+
+  await copySignInUrl(browseUrl);
 
   // 3. Open browser (prefer complete URL with embedded user_code)
   const opened = await openBrowser(browseUrl);

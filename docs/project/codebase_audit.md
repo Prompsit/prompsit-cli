@@ -127,7 +127,7 @@ All findings resolved.
 | L3 | LOW | Dead Code | Redundant `src/index.ts!` in knip.json | Removed |
 | L4 | LOW | Dead Code | Unnecessary `scripts/**` in knip ignore | Removed |
 | L6 | LOW | Architecture | Hardcoded validation error strings (11 occurrences) | Moved to i18n catalog with `validate.*` keys + interpolation |
-| L7 | LOW | Build/Deps | `@mariozechner/pi-tui` outdated 0.55.1 | Updated to 0.55.3 via `npm update` |
+| L7 | LOW | Build/Deps | `@mariozechner/pi-tui` documentation drift | Current manifest documents `@mariozechner/pi-tui` `^0.55.1` |
 | L8 | LOW | Dependencies | package-lock.json uncommitted | Will be committed with fix batch |
 | 11 | MEDIUM | Architecture | Single-file upload-track-download flow duplicated 3x | Eliminated — all files routed through `runBatch()`, single-file paths deleted |
 

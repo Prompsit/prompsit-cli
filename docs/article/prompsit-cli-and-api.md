@@ -72,7 +72,7 @@ The CLI repository includes machine-readable *skill* descriptions that enable mo
 
 This integration is a thin interface layer: the AI assistant interprets user intent and invokes CLI commands. The computational cost of translation services remains unchanged regardless of whether the request originates from a human or an AI assistant. 
 
-| 8 Access and pricing Access is via user and secret key: an API token is generated for each session. Users will enjoy a freemium pricing model for different types of usage: free users may use machine translation indefinitely with monthly translation limits. Paid users, in a number of tiers, have larger limits and may also access evaluation, scoring and annotation services. |  |
+| 8 Access and pricing Access is via `prompsit login` with Google device-flow sign-in; an OAuth2 token is generated for each session. Users will enjoy a freemium pricing model for different types of usage: free users may use machine translation indefinitely with monthly translation limits. Paid users, in a number of tiers, have larger limits and may also access evaluation, scoring and annotation services. |  |
 | :---- | ----- |
 
-Visit [prompsit.com/en/contact](http://prompsit.com/en/contact) for free API access. A secret key will be sent to your email. Install the CLI with npm install \-g prompsit-cli and authenticate with the provided login.
+Install the CLI with `npm install -g prompsit-cli` and run `prompsit login` to create or recover access through Google sign-in. The CLI opens the browser when available, prints a one-time code and URL, and stores credentials automatically after authorization.
