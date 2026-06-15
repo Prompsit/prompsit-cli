@@ -1,5 +1,9 @@
 name: CI
 
+# Release topology: GitLab (origin, branch `master`) is primary; this repo is a GitHub MIRROR
+# whose default branch is `main`. Each GitLab push mirrors a squashed snapshot to `main`, which
+# triggers this workflow (lint/typecheck/test/build → CalVer npm publish). The `main` triggers
+# below are CORRECT for the mirror — do NOT repoint them to `master`. See docs/project/runbook.md §7.
 on:
   push:
     branches: [main]

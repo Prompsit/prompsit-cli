@@ -19,6 +19,7 @@ import type { LogLevel } from "./logger.ts";
 
 let _initialized = false;
 let _fileDestination: pino.DestinationStream | null = null;
+let _lokiHandler: LokiHandler | null = null;
 let _consoleEnabled = true;
 
 /** Silence the console handler (use in REPL mode to avoid raw stderr noise in TUI). */
@@ -80,6 +81,8 @@ export function setupLogging(consoleOverride?: LogLevel): void {
         {},
         settings.telemetry.loki_timeout * 1000
       );
+      // Retain a module reference so flushTelemetry() can drain it on forced shutdown.
+      _lokiHandler = lokiHandler;
       streams.push({ stream: createLokiAdapter(lokiHandler), level: "warn" });
     }
   }
@@ -103,6 +106,17 @@ export function setupLogging(consoleOverride?: LogLevel): void {
       "Invalid env overrides detected and dropped"
     );
   }
+}
+
+/**
+ * Drain in-flight Loki telemetry before a forced exit (signal handlers). Bounded; never throws.
+ *
+ * The normal CLI completion path keeps the event loop alive until in-flight fetches settle,
+ * but a forced process.exit() (Ctrl+C) would otherwise drop them — exactly the WARN/ERROR
+ * events Loki exists to capture.
+ */
+export async function flushTelemetry(timeoutMs?: number): Promise<void> {
+  await _lokiHandler?.flush(timeoutMs);
 }
 
 /** Flush and close file destination on shutdown. */

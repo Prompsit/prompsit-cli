@@ -14,7 +14,7 @@ import {
 } from "@earendil-works/pi-tui";
 import { completer } from "./completer.ts";
 import { getDropdownCommands } from "../registry.ts";
-import { getAllowedExtensions } from "../../runtime/format-extensions.ts";
+import { getAllowedExtensions } from "../../api/format-cache.ts";
 
 // pi-tui file provider (no fd — third arg null → uses readdirSync internally)
 let _fileProvider: CombinedAutocompleteProvider | null = null;

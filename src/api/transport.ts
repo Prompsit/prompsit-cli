@@ -35,7 +35,8 @@ import {
   HttpStatus,
 } from "../shared/constants.ts";
 import { ErrorCode } from "../errors/codes.ts";
-import { APIError, CancelledError, NetworkError, RateLimitError, parseApiError } from "./errors.ts";
+import { APIError, CancelledError, NetworkError, RateLimitError } from "../errors/contracts.ts";
+import { parseApiError } from "./errors.ts";
 import { getLogger } from "../logging/index.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
 

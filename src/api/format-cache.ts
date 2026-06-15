@@ -5,12 +5,15 @@
 //
 // Format API endpoints are public (no auth required), so we warm on REPL startup.
 // --formats command also updates the cache as a side effect.
+//
+// Layer: Infrastructure (API-owned cache). Lives in api/ because it fetches and caches
+// API discovery responses — not a generic runtime/platform utility.
 
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getConfigDir } from "../config/paths.ts";
 import { atomicWriteFile } from "../config/file-utils.ts";
-import { getApiClient } from "../api/client.ts";
+import { getApiClient } from "./client.ts";
 import { getLogger } from "../logging/index.ts";
 import { toErrorMessage } from "../errors/contracts.ts";
 

@@ -87,8 +87,11 @@ describe("trackJob abort propagation (P1 regression)", () => {
       })
     ).rejects.toThrow(CancelledError);
 
-    // Best-effort server cancel should fire (catch block cleanup)
-    expect(cancelMock).toHaveBeenCalledWith("job-abort-test");
+    // Best-effort server cancel should fire with a FRESH, non-aborted signal so the
+    // in-flight shutdown abort can't pre-abort the cleanup DELETE (C-6 regression guard).
+    expect(cancelMock).toHaveBeenCalledWith("job-abort-test", expect.any(AbortSignal));
+    const cancelSignal = cancelMock.mock.calls[0][1] as AbortSignal;
+    expect(cancelSignal.aborted).toBe(false);
 
     // Proves the P1 fix: if trackJob throws, caller cannot reach download
     expect(downloadMock).not.toHaveBeenCalled();
@@ -107,7 +110,7 @@ describe("trackJob abort propagation (P1 regression)", () => {
       trackJob(client as any, "job-dlq-test", { strategy: "polling" })
     ).rejects.toThrow(JobError);
 
-    expect(cancelMock).toHaveBeenCalledWith("job-dlq-test");
+    expect(cancelMock).toHaveBeenCalledWith("job-dlq-test", expect.any(AbortSignal));
   });
 
   it("throws JobError on unknown status (fail-safe)", async () => {
@@ -123,7 +126,7 @@ describe("trackJob abort propagation (P1 regression)", () => {
       trackJob(client as any, "job-unknown-test", { strategy: "polling" })
     ).rejects.toThrow(JobError);
 
-    expect(cancelMock).toHaveBeenCalledWith("job-unknown-test");
+    expect(cancelMock).toHaveBeenCalledWith("job-unknown-test", expect.any(AbortSignal));
   });
 
   it("throws JobError (not CancelledError) on job timeout", async () => {
@@ -139,6 +142,6 @@ describe("trackJob abort propagation (P1 regression)", () => {
       })
     ).rejects.toThrow(JobError);
 
-    expect(cancelMock).toHaveBeenCalledWith("job-timeout-test");
+    expect(cancelMock).toHaveBeenCalledWith("job-timeout-test", expect.any(AbortSignal));
   });
 });

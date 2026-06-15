@@ -99,15 +99,17 @@ export function sanitizeCurl(curl: string): string {
   // Replace Bearer tokens
   let result = curl.replaceAll(/(Bearer )\S+/g, "$1[token]");
 
-  // Hide sensitive query params and form data
+  // Hide sensitive query params and form data.
+  // `\w*secret` covers secret, prompsit_secret, client_secret, etc.
   result = result.replaceAll(
-    /((?:refresh_token|password|access_token|secret)=)[^&'\s]{1,1000}/g,
+    /((?:refresh_token|password|access_token|\w*secret)=)[^&'\s]{1,1000}/g,
     "$1[hidden]"
   );
 
-  // Hide sensitive JSON body fields: "key": "value" or "key":"value"
+  // Hide sensitive JSON body fields: "key": "value" or "key":"value".
+  // `\w*secret` covers any key ending in `secret` (e.g. prompsit_secret).
   result = result.replaceAll(
-    /("(?:password|secret|token|(?:access_|refresh_)token)":\s{0,100}")[^"]{0,10000}"/g,
+    /("(?:password|\w*secret|token|(?:access_|refresh_)token)":\s{0,100}")[^"]{0,10000}"/g,
     '$1[hidden]"'
   );
 

@@ -11,8 +11,8 @@ import {
 } from "../errors/contracts.ts";
 import { HttpStatus } from "../shared/constants.ts";
 
-// Re-export only symbols that external consumers actually import.
 // ForbiddenError, ValidationError, ProblemDetailSchema are used internally by parseApiError().
+// Error classes are owned by errors/contracts.ts — import them from there directly, not via this module.
 
 // Parse API response and return appropriate exception
 // Supports RFC 9457 ProblemDetail format with fallback payload normalization.
@@ -111,12 +111,3 @@ function mapStatusToError(statusCode: number, message: string): APIError {
 function httpStatusMessage(statusCode: number): string {
   return STATUS_CODES[statusCode] ?? `HTTP error ${statusCode}`;
 }
-
-export {
-  CancelledError,
-  NetworkError,
-  APIError,
-  AuthenticationError,
-  RateLimitError,
-  ServerError,
-} from "../errors/contracts.ts";

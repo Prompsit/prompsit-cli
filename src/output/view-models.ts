@@ -60,3 +60,32 @@ export interface FormatEntryVM {
   output_formats: string[];
   examples: string;
 }
+
+/** Display model for `tm show` (TM list) — decoupled from the API DTO wire shape. */
+export interface TmListVM {
+  items: {
+    sourceLang: string;
+    targetLang: string;
+    segmentCount: number;
+    createdAt: string;
+  }[];
+}
+
+/** Display model for `tm show -s -t` (segment list). */
+export interface TmSegmentListVM {
+  items: {
+    sourceText: string;
+    targetText: string;
+    createdAt: string;
+  }[];
+}
+
+/** Display model for `tm search` results. */
+export interface TmSearchVM {
+  hits: {
+    sourceText: string;
+    targetText: string;
+    similarity: number;
+    matchType: string;
+  }[];
+}

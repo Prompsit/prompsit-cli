@@ -141,11 +141,6 @@ export class CredentialStore {
     return this.loadCache()?.plan ?? null;
   }
 
-  /** @returns Prompsit API secret or null if not stored. */
-  getPrompsitSecret(): string | null {
-    return this.loadCache()?.prompsit_secret ?? null;
-  }
-
   /** Delete credentials file and reset in-memory cache. */
   clearTokens(): void {
     const credsPath = getCredsFile();
@@ -269,11 +264,6 @@ export function isAuthenticated(): boolean {
 
 export function getPlan(): string | null {
   return getCredentialStore().getPlan();
-}
-
-/** @internal Internal credential accessor kept for module symmetry. */
-export function getPrompsitSecret(): string | null {
-  return getCredentialStore().getPrompsitSecret();
 }
 
 export function isTokenExpired(bufferSeconds?: number): boolean {

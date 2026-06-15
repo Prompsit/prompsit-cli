@@ -8,6 +8,7 @@ import { getApiClient } from "../../api/client.ts";
 import { t } from "../../i18n/index.ts";
 import { terminal } from "../../output/terminal.ts";
 import { createTmSearchTableModel } from "../../output/tables/index.ts";
+import { toTmSearchVM } from "../mappers.ts";
 import { TM_DEFAULT_SEARCH_LIMIT } from "../../shared/constants.ts";
 import { ErrorCode } from "../../errors/codes.ts";
 import { failCommand, handleCommandError } from "../error-handler.ts";
@@ -64,7 +65,7 @@ export function registerTmSearch(tmCommand: Command): void {
         });
 
         terminal.info(t("tm.search.header", { total: String(result.total_count) }));
-        terminal.table(createTmSearchTableModel(result));
+        terminal.table(createTmSearchTableModel(toTmSearchVM(result)));
       } catch (error: unknown) {
         handleCommandError(log, error, { command: "tm search" });
       }

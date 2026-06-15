@@ -30,16 +30,15 @@ import { createInputListener } from "./input/input-handler.ts";
 import { HistoryComponent } from "./ui/components/history-component.ts";
 import { CurlPanel } from "./ui/components/curl-panel.ts";
 import { ProgressController } from "./ui/progress-controller.ts";
+import { SettingsOverlayController } from "./ui/settings-overlay-controller.ts";
 import { setCurlPair, clearCurl } from "./ui/curl-store.ts";
 import { setCurlOutputFn } from "../api/curl.ts";
 import { terminal } from "../output/terminal.ts";
 import { toErrorMessage } from "../errors/contracts.ts";
 import { outputBridge, type OutputItem } from "./core/output-bridge.ts";
 import type { ReplService } from "./service.ts";
-import type { ProgressEvent, ProgressPhase } from "./core/progress-types.ts";
-import { runWithProgressContext, type ProgressContext } from "../runtime/progress-context.ts";
+import type { ProgressEvent } from "./core/progress-types.ts";
 import { setInvalidateCallback } from "../runtime/ui-invalidate.ts";
-import { createSettingsOverlay, type SettingsInputInterceptor } from "../tui/settings-screen.ts";
 
 // System clipboard preferred. OSC 52 only as fallback when system clipboard fails.
 // Avoids Windows race condition where OSC 52 locks clipboard before our Win32 API call.
@@ -122,6 +121,7 @@ export class ReplController {
   private historyComponent: HistoryComponent | null = null;
 
   private readonly progress = new ProgressController();
+  private readonly settingsOverlay = new SettingsOverlayController();
   private removeInputListener: (() => void) | null = null;
   private resizeListener: (() => void) | null = null;
   private exitResolve: (() => void) | null = null;
@@ -130,8 +130,6 @@ export class ReplController {
 
   private isRunning = false;
   private isContinuation = false;
-  private isInSettingsMode = false;
-  private settingsInterceptor: SettingsInputInterceptor | null = null;
 
   private readonly boundOnOutputBatch: (items: OutputItem[]) => void;
   private readonly boundOnStateChange: (state: { isRunning: boolean }) => void;
@@ -191,7 +189,7 @@ export class ReplController {
     this.removeInputListener = this.tui.addInputListener(
       createInputListener({
         get isInSettingsMode() {
-          return self.isInSettingsMode;
+          return self.settingsOverlay.isActive;
         },
         get editor() {
           return self.editor;
@@ -200,7 +198,7 @@ export class ReplController {
           return self.historyComponent;
         },
         get settingsInterceptor() {
-          return self.settingsInterceptor;
+          return self.settingsOverlay.inputInterceptor;
         },
         computeHistoryMaxLines: () => this.computeHistoryMaxLines(),
         requestRender: () => {
@@ -224,7 +222,7 @@ export class ReplController {
             .catch(() => {});
         },
         closeSettings: () => {
-          this.closeSettings();
+          this.settingsOverlay.close();
         },
         onCtrlC: () => {
           this.handleCtrlC();
@@ -261,6 +259,7 @@ export class ReplController {
     this.tui.addChild(this.editor);
     this.tui.addChild(this.statusBar);
     this.progress.attach(this.tui, this.statusBar);
+    this.settingsOverlay.attach(this.tui, this.progress);
 
     const entries = this.service.commandHistory.getEntries(100);
     for (const entry of entries) {
@@ -337,6 +336,7 @@ export class ReplController {
     }
 
     this.progress.dispose();
+    this.settingsOverlay.detach();
 
     if (this.previousKeybindings) {
       setKeybindings(this.previousKeybindings);
@@ -445,7 +445,7 @@ export class ReplController {
       }
 
       if (result.kind === "settings") {
-        this.openSettings();
+        this.settingsOverlay.open();
         return;
       }
 
@@ -523,53 +523,5 @@ export class ReplController {
     this.editor.borderColor = this.isContinuation
       ? (s: string) => chalk.hex(REPL_COLORS.statusLabel)(s) // #888888 — multiline indicator
       : (s: string) => chalk.hex(REPL_COLORS.statusSep)(s); // #555555 — normal
-  }
-
-  private openSettings(): void {
-    if (!this.tui) return;
-    this.isInSettingsMode = true;
-    const { container, focusTarget, inputInterceptor } = createSettingsOverlay(
-      () => {
-        this.closeSettings();
-      },
-      (applyFn) => {
-        this.runSettingsApply(applyFn);
-      },
-      () => {
-        this.tui?.requestRender();
-      }
-    );
-    this.settingsInterceptor = inputInterceptor;
-    this.tui.showOverlay(container, {
-      anchor: "bottom-left",
-      width: "100%",
-    });
-    this.tui.setFocus(focusTarget);
-    this.tui.requestRender(true);
-  }
-
-  private runSettingsApply(applyFn: () => Promise<void>): void {
-    const commandId = crypto.randomUUID();
-    const emit = (phase: ProgressPhase, opts?: { percent?: number; message?: string }) => {
-      this.progress.onProgress({ commandId, phase, ...opts, timestamp: Date.now() });
-    };
-    const ctx: ProgressContext = {
-      commandId,
-      emit: (phase, opts) => {
-        emit(phase, opts);
-      },
-    };
-    runWithProgressContext(ctx, applyFn).catch((error: unknown) => {
-      terminal.warn(toErrorMessage(error));
-      emit("failed");
-    });
-  }
-
-  private closeSettings(): void {
-    if (!this.tui) return;
-    this.tui.hideOverlay();
-    this.isInSettingsMode = false;
-    this.settingsInterceptor = null;
-    this.tui.requestRender(true);
   }
 }

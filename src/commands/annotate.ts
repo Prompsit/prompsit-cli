@@ -6,7 +6,7 @@ import { basename } from "node:path";
 import { Command, Option } from "@commander-js/extra-typings";
 import { getApiClient } from "../api/client.ts";
 import { terminal } from "../output/index.ts";
-import { trackJob } from "./job-tracking.ts";
+import { runJobPipeline } from "./job-pipeline.ts";
 import { runBatch } from "./batch-processor.ts";
 import { t } from "../i18n/index.ts";
 import { showFormats } from "./show-formats.ts";
@@ -160,34 +160,27 @@ export const annotateCommand = new Command("annotate")
     await runBatch({
       items: resolvedFiles,
       label: (f) => basename(f),
-      process: async (filePath, index, onProgress) => {
-        // Phase 1: Upload (0-5%)
-        const resp = await withWarmupRetry(
-          () =>
-            client.data.annotate({ filePath, ...annotateBase }, (p) => {
-              onProgress(Math.round(p.percent * 5));
-            }),
-          {
-            signal,
-            onStatus: (m) => {
-              terminal.dim(m);
-            },
-          }
-        );
-        // Phase 2: Server processing (5-95%)
-        const resultUrl = await trackJob(client, resp.job_id, {
+      process: (filePath, index, onProgress) =>
+        runJobPipeline({
+          client,
           description: basename(filePath),
-          silent: true,
+          outputPath: outputPaths[index],
           signal,
-          onProgress: (pct) => {
-            onProgress(5 + Math.round(pct * 0.9));
-          },
-        });
-        // Phase 3: Download (95-100%)
-        return client.jobs.download(resultUrl, outputPaths[index], signal, (p) => {
-          onProgress(95 + Math.round(p.percent * 5));
-        });
-      },
+          onProgress,
+          upload: (reportUpload) =>
+            withWarmupRetry(
+              () =>
+                client.data.annotate({ filePath, ...annotateBase }, (p) => {
+                  reportUpload(p.percent);
+                }),
+              {
+                signal,
+                onStatus: (m) => {
+                  terminal.dim(m);
+                },
+              }
+            ),
+        }),
       formatSuccess: (path) => `${t("annotate.success")} ${path}`,
       command: "annotate",
       signal,

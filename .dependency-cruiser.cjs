@@ -47,6 +47,21 @@ module.exports = {
       from: { path: "^src/runtime/" },
       to: { path: "^src/(commands|repl|tui)/" },
     },
+    {
+      name: "output-no-api",
+      severity: "error",
+      comment:
+        "Presentation tables/formatters must consume view-models, not API DTOs/clients (map via commands/mappers.ts).",
+      from: { path: "^src/output/" },
+      to: { path: "^src/api/" },
+    },
+    {
+      name: "runtime-no-api",
+      severity: "error",
+      comment: "Runtime/platform utilities must not depend on the API layer (API-owned caches belong in api/).",
+      from: { path: "^src/runtime/" },
+      to: { path: "^src/api/" },
+    },
   ],
   options: {
     doNotFollow: {

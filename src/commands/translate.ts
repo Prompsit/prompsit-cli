@@ -9,7 +9,7 @@ import { terminal, createTranslationTableModel } from "../output/index.ts";
 import { toTranslationResponseVM } from "./mappers.ts";
 import { showFormats } from "./show-formats.ts";
 import { showLanguages } from "./show-languages.ts";
-import { trackJob } from "./job-tracking.ts";
+import { runJobPipeline } from "./job-pipeline.ts";
 import { runBatch } from "./batch-processor.ts";
 import { t } from "../i18n/index.ts";
 import { ErrorCode } from "../errors/codes.ts";
@@ -219,33 +219,26 @@ async function translateFileMode(files: string[], opts: FileOpts): Promise<void>
   await runBatch({
     items: resolvedFiles,
     label: (f) => basename(f),
-    process: async (filePath, index, onProgress) => {
-      // Phase 1: Upload (0-5%)
-      const resp = await client.translation.uploadDocument(
-        {
-          filePath,
-          sourceLang,
-          targetLang,
-          outputFormat: opts.outputFormat,
-        },
-        (p) => {
-          onProgress(Math.round(p.percent * 5));
-        }
-      );
-      // Phase 2: Server processing (5-95%)
-      const resultUrl = await trackJob(client, resp.job_id, {
+    process: (filePath, index, onProgress) =>
+      runJobPipeline({
+        client,
         description: basename(filePath),
-        silent: true,
+        outputPath: targetPaths[index],
         signal,
-        onProgress: (pct) => {
-          onProgress(5 + Math.round(pct * 0.9));
-        },
-      });
-      // Phase 3: Download (95-100%)
-      return client.jobs.download(resultUrl, targetPaths[index], signal, (p) => {
-        onProgress(95 + Math.round(p.percent * 5));
-      });
-    },
+        onProgress,
+        upload: (reportUpload) =>
+          client.translation.uploadDocument(
+            {
+              filePath,
+              sourceLang,
+              targetLang,
+              outputFormat: opts.outputFormat,
+            },
+            (p) => {
+              reportUpload(p.percent);
+            }
+          ),
+      }),
     formatSuccess: (path) => `${t("translate.file.success")} ${path}`,
     command: "translate",
     signal,

@@ -31,7 +31,7 @@ export class LokiHandler {
   private readonly lokiKey: string;
   private readonly labels: Record<string, string>;
   private readonly timeoutMs: number;
-  private _inFlight = 0;
+  private readonly inFlight = new Set<Promise<unknown>>();
   private readonly maxInFlight = 10;
 
   constructor(
@@ -88,11 +88,10 @@ export class LokiHandler {
     }
 
     // Backpressure: drop entries when too many in-flight requests
-    if (this._inFlight >= this.maxInFlight) return;
-    this._inFlight++;
+    if (this.inFlight.size >= this.maxInFlight) return;
 
-    // Fire-and-forget: never await, never throw
-    requestJsonOrNull(this.pushUrl, {
+    // Fire-and-forget: never await, never throw. Tracked so flush() can drain on shutdown.
+    const request = requestJsonOrNull(this.pushUrl, {
       method: "POST",
       headers,
       body,
@@ -104,7 +103,29 @@ export class LokiHandler {
         // Telemetry is best-effort only.
       })
       .finally(() => {
-        this._inFlight--;
+        this.inFlight.delete(request);
       });
+    this.inFlight.add(request);
+  }
+
+  /**
+   * Await all in-flight pushes, bounded by timeoutMs. Best-effort; never throws.
+   *
+   * Used on forced shutdown (signal handlers) so the WARN/ERROR telemetry this handler
+   * exists to capture is not dropped when the short-lived CLI process exits.
+   */
+  async flush(timeoutMs: number = this.timeoutMs): Promise<void> {
+    if (this.inFlight.size === 0) return;
+    const drained = Promise.allSettled(this.inFlight).then(() => {});
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const capped = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, timeoutMs);
+      timer.unref();
+    });
+    try {
+      await Promise.race([drained, capped]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 }

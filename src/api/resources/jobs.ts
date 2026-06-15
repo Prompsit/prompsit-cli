@@ -35,12 +35,15 @@ export class JobsResource {
 
   /**
    * Cancel a pending or running job (best-effort, fire-and-forget safe).
+   *
+   * @param signal - Pass a FRESH signal when cancelling during shutdown: the ambient
+   *   request-context signal is already aborted at that point and would pre-abort this DELETE.
    */
-  async cancel(jobId: string): Promise<void> {
+  async cancel(jobId: string, signal?: AbortSignal): Promise<void> {
     const baseUrl = this.baseUrl;
     const url = `${baseUrl}${Endpoint.JOB.replace("{job_id}", jobId)}`;
 
-    await this.session.request<unknown>("DELETE", url);
+    await this.session.request<unknown>("DELETE", url, {}, signal);
   }
 
   /**

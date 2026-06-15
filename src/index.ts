@@ -10,6 +10,8 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { CommanderError } from "@commander-js/extra-typings";
 import { setupSignalHandlers } from "./cli/signals.ts";
+import { getShutdownSignal } from "./cli/shutdown.ts";
+import { runWithAbortSignal } from "./runtime/request-context.ts";
 import { setupLogging, shutdownLogging } from "./logging/setup.ts";
 import { t } from "./i18n/index.ts";
 import { fmtCmd } from "./runtime/execution-mode.ts";
@@ -53,23 +55,27 @@ if (isEntryPoint) {
     const { traceStore } = await import("./logging/index.ts");
     const { generateTraceId } = await import("./api/trace.ts");
     const traceId = generateTraceId();
-    await traceStore.run(traceId, async () => {
-      try {
-        await program.parseAsync(process.argv);
-      } catch (error: unknown) {
-        // CommanderError from exitOverride — already handled (exitCode set)
-        // --help and --version throw with exitCode 0
-        if (error instanceof CommanderError) {
-          if (error.exitCode === 0) {
-            setExitCode(0);
+    // Wrap in the shutdown AbortSignal so SIGINT/SIGTERM can cancel in-flight work
+    // (e.g. trackJob issues a best-effort server-side job cancel on Ctrl+C).
+    await traceStore.run(traceId, () =>
+      runWithAbortSignal(getShutdownSignal(), async () => {
+        try {
+          await program.parseAsync(process.argv);
+        } catch (error: unknown) {
+          // CommanderError from exitOverride — already handled (exitCode set)
+          // --help and --version throw with exitCode 0
+          if (error instanceof CommanderError) {
+            if (error.exitCode === 0) {
+              setExitCode(0);
+            } else {
+              terminal.warn(t("cli.usage_error.hint", { cmd: fmtCmd("--help") }));
+            }
           } else {
-            terminal.warn(t("cli.usage_error.hint", { cmd: fmtCmd("--help") }));
+            throw error;
           }
-        } else {
-          throw error;
         }
-      }
-    });
+      })
+    );
   } else {
     const { runRepl } = await import("./repl/index.ts");
     await runRepl();

@@ -4,7 +4,7 @@
 import { getApiClient } from "../api/client.ts";
 import { terminal, createFormatsTableModel } from "../output/index.ts";
 import type { FormatEntryVM } from "../output/view-models.ts";
-import { saveFormatExtensions, type FormatSource } from "../runtime/format-extensions.ts";
+import { saveFormatExtensions, type FormatSource } from "../api/format-cache.ts";
 import { handleCommandError } from "./error-handler.ts";
 import { getLogger } from "../logging/index.ts";
 import { isTsvOutput, writeTsvRows, type InfoOutputOptions } from "./info-output.ts";

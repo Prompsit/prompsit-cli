@@ -7,6 +7,7 @@ import { getApiClient } from "../../api/client.ts";
 import { t } from "../../i18n/index.ts";
 import { terminal } from "../../output/terminal.ts";
 import { createTmListTableModel, createTmSegmentTableModel } from "../../output/tables/index.ts";
+import { toTmListVM, toTmSegmentListVM } from "../mappers.ts";
 import { TM_DEFAULT_PAGE_SIZE } from "../../shared/constants.ts";
 import { ErrorCode } from "../../errors/codes.ts";
 import { failCommand, handleCommandError } from "../error-handler.ts";
@@ -51,12 +52,12 @@ export function registerTmShow(tmCommand: Command): void {
               total: String(result.total),
             })
           );
-          terminal.table(createTmSegmentTableModel(result));
+          terminal.table(createTmSegmentTableModel(toTmSegmentListVM(result)));
         } else {
           // List all TMs for profile
           const result = await client.tm.list({ profileId: opts.profile });
           terminal.info(t("tm.show.header", { total: String(result.total) }));
-          terminal.table(createTmListTableModel(result));
+          terminal.table(createTmListTableModel(toTmListVM(result)));
         }
       } catch (error: unknown) {
         handleCommandError(log, error, { command: "tm show" });

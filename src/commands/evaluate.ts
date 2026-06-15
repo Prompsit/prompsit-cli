@@ -127,8 +127,11 @@ async function parseTsvRows(filePath: string, cols: number): Promise<string[][] 
   return rows;
 }
 
-/** Parse a 3-column TSV (source, hypothesis, reference) into Segment array. */
-async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
+/**
+ * Parse a 3-column TSV (source, hypothesis, reference) into Segment array.
+ * @internal Exported for unit tests (inbound corpus parsing).
+ */
+export async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
   const rows = await parseTsvRows(filePath, 3);
   if (!rows) return null;
   return rows.map((parts) => ({
@@ -138,8 +141,11 @@ async function parseTsvFile(filePath: string): Promise<Segment[] | null> {
   }));
 }
 
-/** Parse a 2-column TSV (source, hypothesis) into TagSegment array (reference-free). */
-async function parseTagsTsvFile(filePath: string): Promise<TagSegment[] | null> {
+/**
+ * Parse a 2-column TSV (source, hypothesis) into TagSegment array (reference-free).
+ * @internal Exported for unit tests (inbound corpus parsing).
+ */
+export async function parseTagsTsvFile(filePath: string): Promise<TagSegment[] | null> {
   const rows = await parseTsvRows(filePath, 2);
   if (!rows) return null;
   return rows.map((parts) => ({

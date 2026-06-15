@@ -19,7 +19,7 @@ import { currentLang, needsRefresh, clearRefreshFlag, setTranslations } from "..
 import { translateCatalog } from "../i18n/translator.ts";
 import { createTranslator } from "../api/translator-adapter.ts";
 import { NULL_SINK } from "../runtime/progress-sink.ts";
-import { warmFormatExtensions } from "../runtime/format-extensions.ts";
+import { warmFormatExtensions } from "../api/format-cache.ts";
 import { warmUpdateCheck } from "../runtime/update-check.ts";
 import { enterReplMode } from "../runtime/execution-mode.ts";
 

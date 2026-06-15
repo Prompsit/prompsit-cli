@@ -3,7 +3,7 @@
 import chalk from "chalk";
 import { TM_SIMILARITY_GOOD } from "../../shared/constants.ts";
 import { t } from "../../i18n/index.ts";
-import type { TMListResponse, TMSegmentListResponse, TMSearchResponse } from "../../api/models.ts";
+import type { TmListVM, TmSegmentListVM, TmSearchVM } from "../view-models.ts";
 import type { TableModel } from "./types.ts";
 
 const TEXT_TRUNCATE = 80;
@@ -14,12 +14,12 @@ function truncate(text: string, max = TEXT_TRUNCATE): string {
 }
 
 /** TM list table (tm show without lang flags). */
-export function createTmListTableModel(data: TMListResponse): TableModel {
+export function createTmListTableModel(data: TmListVM): TableModel {
   const rows: Record<string, string>[] = data.items.map((tm) => ({
-    source_lang: tm.source_lang,
-    target_lang: tm.target_lang,
-    segment_count: String(tm.segment_count),
-    created_at: new Date(tm.created_at).toLocaleDateString(),
+    source_lang: tm.sourceLang,
+    target_lang: tm.targetLang,
+    segment_count: String(tm.segmentCount),
+    created_at: new Date(tm.createdAt).toLocaleDateString(),
   }));
 
   return {
@@ -54,11 +54,11 @@ export function createTmListTableModel(data: TMListResponse): TableModel {
 }
 
 /** TM segment list table (tm show -s -t). */
-export function createTmSegmentTableModel(data: TMSegmentListResponse): TableModel {
+export function createTmSegmentTableModel(data: TmSegmentListVM): TableModel {
   const rows: Record<string, string>[] = data.items.map((seg) => ({
-    source_text: truncate(seg.source_text),
-    target_text: truncate(seg.target_text),
-    created_at: new Date(seg.created_at).toLocaleDateString(),
+    source_text: truncate(seg.sourceText),
+    target_text: truncate(seg.targetText),
+    created_at: new Date(seg.createdAt).toLocaleDateString(),
   }));
 
   return {
@@ -86,17 +86,17 @@ export function createTmSegmentTableModel(data: TMSegmentListResponse): TableMod
 }
 
 /** TM search results table (tm search). F7: green >= 0.9, yellow for rest. */
-export function createTmSearchTableModel(data: TMSearchResponse): TableModel {
+export function createTmSearchTableModel(data: TmSearchVM): TableModel {
   const rows: Record<string, string>[] = data.hits.map((hit) => {
     const sim = hit.similarity;
     const simStr = (sim * 100).toFixed(0) + "%";
     const coloredSim = sim >= TM_SIMILARITY_GOOD ? chalk.green(simStr) : chalk.yellow(simStr);
     const coloredType =
-      hit.match_type === "exact" ? chalk.green(hit.match_type) : chalk.yellow(hit.match_type);
+      hit.matchType === "exact" ? chalk.green(hit.matchType) : chalk.yellow(hit.matchType);
 
     return {
-      source_text: truncate(hit.source_text),
-      target_text: truncate(hit.target_text),
+      source_text: truncate(hit.sourceText),
+      target_text: truncate(hit.targetText),
       similarity: coloredSim,
       match_type: coloredType,
     };

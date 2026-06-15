@@ -19,12 +19,16 @@ import {
   MAX_POLL_INTERVAL,
 } from "../shared/constants.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
+import { trackShutdownTask } from "../cli/shutdown.ts";
 import { getLogger } from "../logging/index.ts";
 import { ProgressAnimator } from "./progress-animator.ts";
 import { getSettings } from "../config/index.ts";
 import { sleep } from "../runtime/async-utils.ts";
 
 const log = getLogger(import.meta.url);
+
+/** Bounded lifetime for the best-effort server-side cancel issued during shutdown. */
+const CANCEL_GRACE_MS = 2000;
 
 // --- Types ---
 
@@ -304,8 +308,12 @@ export async function trackJob(
     // Cleanup animator + sink on any error (including SIGINT / KeyboardInterrupt)
     animator.stop();
     sink?.stop();
-    // Best-effort cancel on server (fire-and-forget, don't block shutdown)
-    client.jobs.cancel(jobId).catch(() => {});
+    // Best-effort cancel on server. Pass a FRESH bounded signal so the in-flight shutdown
+    // abort (ambient via AsyncLocalStorage) can't pre-abort this cleanup DELETE before it is
+    // sent. Registered as a shutdown task so the SIGINT handler awaits it before exit (C-6).
+    trackShutdownTask(
+      client.jobs.cancel(jobId, AbortSignal.timeout(CANCEL_GRACE_MS)).catch(() => {})
+    );
     // Timeout: convert CancelledError → JobError (Ctrl+C passes through unchanged)
     if (
       error instanceof CancelledError &&

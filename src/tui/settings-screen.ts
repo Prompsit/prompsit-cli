@@ -26,11 +26,10 @@ import {
   writeConfigToml,
   reloadSettings,
   API_URL_PRESETS,
-  clearTokens,
   isAuthenticated,
 } from "../config/index.ts";
-import { getApiClient, resetApiClient } from "../api/client.ts";
-import { setCurlEnabled } from "../api/curl.ts";
+import { getApiClient } from "../api/client.ts";
+import { applyCurlSetting, applyApiUrlChange } from "../cli/settings-service.ts";
 import { t, setTranslations } from "../i18n/index.ts";
 import { translateCatalog } from "../i18n/translator.ts";
 import { createTranslator } from "../api/translator-adapter.ts";
@@ -213,11 +212,10 @@ async function applyDraftChanges(draft: DraftState): Promise<void> {
 
   // Phase 4: Safe side-effects (after persist)
   if (changes.has("show-curl")) {
-    setCurlEnabled(changes.get("show-curl") === "true");
+    applyCurlSetting(changes.get("show-curl") === "true");
   }
   if (changes.has("api-base-url")) {
-    clearTokens();
-    resetApiClient();
+    applyApiUrlChange();
     terminal.warn(t("config.tui.logout_warning"));
   }
 

@@ -8,7 +8,7 @@ import type { HttpTransport, RawResponse } from "./transport.ts";
 
 export type { Progress } from "./transport.ts";
 import { AuthResource } from "./resources/auth.ts";
-import { AuthenticationError, NetworkError, ServerError } from "./errors.ts";
+import { AuthenticationError, NetworkError, ServerError } from "../errors/contracts.ts";
 import {
   getRefreshToken,
   getAccountId,
