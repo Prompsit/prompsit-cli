@@ -4,11 +4,31 @@ name: CI
 # whose default branch is `main`. Each GitLab push mirrors a squashed snapshot to `main`, which
 # triggers this workflow (lint/typecheck/test/build → CalVer npm publish). The `main` triggers
 # below are CORRECT for the mirror — do NOT repoint them to `master`. See docs/project/runbook.md §7.
+#
+# `paths:` below scopes the whole workflow to package-relevant files, so a docs/README-only
+# push does not run CI and does not bump the npm CalVer version. Keep this list in sync with
+# whatever actually ships in the published package (see package.json "files").
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "examples/**"
+      - "assets/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "src/**"
+      - "examples/**"
+      - "assets/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/ci.yml"
 
 permissions:
   contents: read

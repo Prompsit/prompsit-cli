@@ -230,7 +230,7 @@ PROMPSIT_API__BASE_URL=http://localhost:8080 TEST_ACCOUNT=local@test.com TEST_SE
 | npmjs update | `npm install -g prompsit-cli@latest --prefer-online` |
 | Local install | `npm install .` |
 
-**Publishing:** Automated. Each push to `master` triggers [.gitlab-ci.yml](../../.gitlab-ci.yml), which mirrors a filtered, squashed snapshot to `github.com/Prompsit/prompsit-cli` `main` (one `Mirror <gitlab-sha> (<date>)` commit per push, after a leak-scan gate). GitHub Actions on `main` then runs lint/typecheck/test/build and, on success, derives a CalVer version (`YY.MMDD.HHMM`) from the commit timestamp, runs `npm publish`, and creates a GitHub Release if `## Unreleased` in [../../CHANGELOG.md](../../CHANGELOG.md) has entries. **No developer-side `git tag` push is required** — versions are derived from commit timestamps automatically.
+**Publishing:** Automated. Each push to `master` triggers [.gitlab-ci.yml](../../.gitlab-ci.yml), which mirrors a filtered, squashed snapshot to `github.com/Prompsit/prompsit-cli` `main` (one `Mirror <gitlab-sha> (<date>)` commit per push, after a leak-scan gate). [ci.yml](../../.github/workflows/ci.yml) scopes its `push`/`pull_request` triggers with a `paths:` filter (`src/**`, `examples/**`, `assets/**`, `package.json`, `package-lock.json`, `tsconfig.json`, the workflow file itself) — a docs/README-only push matches none of these, so the whole workflow is skipped: no lint/test run, no version bump, no `npm publish`. When package-relevant files do change, CI runs lint/typecheck/test/build and, on success, derives a CalVer version (`YY.MMDD.HHMM`) from the commit timestamp, runs `npm publish`, and creates a GitHub Release if `## Unreleased` in [../../CHANGELOG.md](../../CHANGELOG.md) has entries. **No developer-side `git tag` push is required** — versions are derived from commit timestamps automatically.
 
 **Manual fallback:** `npm run release` builds and publishes from a local checkout using the current local time for the version. Use only when GitHub Actions CI is unavailable.
 
@@ -288,6 +288,6 @@ Each HTTP request gets an 8-char `X-Request-ID` header (trace_id) for end-to-end
 
 ---
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-07-01
 
 **Update Triggers:** New config keys, CLI commands, operational procedures, or troubleshooting scenarios.

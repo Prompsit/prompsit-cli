@@ -58,7 +58,6 @@ Supports XLIFF, CSV, PDF, DOCX, TMX, TSV, TXT, JSONL, and more. Run `prompsit tr
 prompsit login                           # Sign in or register with Google
 prompsit login -a "EMAIL" -s "SECRET"    # Fallback for issued API secrets
 prompsit logout                          # Clear stored credentials
-prompsit status                          # Show auth state and token expiry
 ```
 
 ### Translation
@@ -83,7 +82,7 @@ prompsit translate --formats
 prompsit eval -s "Hello" -h "Hola" -r "Hola"                    # Inline
 prompsit eval -s "Hello" -h "Hola" -r "Hola" -m "bleu,metricx"  # Custom metrics
 prompsit eval "segments.tsv" -m "bleu,chrf"                      # Batch from TSV
-prompsit eval @"report.txt" -s "en" -t "es"                      # File scoring
+prompsit eval @"report.txt" --output-format "tsv"                # File scoring
 ```
 
 Tag quality (reference-free, no `-r`): checks that inline tags/placeholders are
@@ -114,15 +113,24 @@ prompsit config show                     # Show current configuration
 prompsit config "api-base-url"           # Get a value
 prompsit config "api-base-url" "URL"     # Set a value
 prompsit config api-url "test"           # Switch API endpoint preset
-prompsit language "es"                   # Set interface language
+prompsit config language "es"            # Set interface language
 ```
 
 ### System
+
+CLI + REPL:
 
 | Command | Description |
 |---------|-------------|
 | `health` | API health check |
 | `usage` | Show plan usage and quotas |
+| `contact` | Open the Prompsit contact page |
+| `feedback` | Open the GitHub issues page |
+
+REPL only:
+
+| Command | Description |
+|---------|-------------|
 | `help` | Show all commands (also: `?`) |
 | `clear` | Clear screen |
 | `exit` | Quit REPL (also: `quit`, `q`) |
@@ -180,8 +188,8 @@ Three-level precedence: **environment variables** (`PROMPSIT_API__BASE_URL`) > *
 <summary><b>How do I change the interface language?</b></summary>
 
 ```bash
-prompsit language "es"     # CLI
-> language "es"            # REPL
+prompsit config language "es"     # CLI
+> language "es"                   # REPL
 ```
 
 Translations are fetched from the API on first use and cached in `~/.prompsit/translations/`.
@@ -205,9 +213,8 @@ command -v prompsit
 <summary><b>Something is broken — where do I start?</b></summary>
 
 1. `prompsit health` — verify API connectivity
-2. `prompsit status` — check authentication state
-3. `prompsit config show` — review active configuration
-4. See the [runbook](docs/project/runbook.md) for common errors and fixes
+2. `prompsit config show` — review active configuration and authentication state
+3. See the [runbook](docs/project/runbook.md) for common errors and fixes
 
 </details>
 
@@ -229,6 +236,7 @@ src/
 ├── errors/               # Error contracts
 ├── cli/                  # Global options, exit codes
 ├── runtime/              # Platform abstractions
+├── shared/               # Cross-cutting constants and version info
 └── logging/              # Telemetry transport
 ```
 
