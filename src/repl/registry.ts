@@ -238,7 +238,11 @@ export const COMMANDS: readonly ReplCommand[] = [
     commanderPath: "config language",
     argsSyntax: "[code]",
     group: G_CONFIG,
-    cliExamples: ['prompsit language "es"', 'prompsit language "en"', "prompsit config language"],
+    cliExamples: [
+      'prompsit config language "es"',
+      'prompsit config language "en"',
+      "prompsit config language",
+    ],
     replExamples: ['language "es"'],
   },
 
