@@ -121,3 +121,16 @@ jobs:
             --title "v${{ steps.version.outputs.version }}" \
             --notes-file /tmp/release-notes.md \
             --latest
+
+      - name: Delete older GitHub Releases
+        if: steps.publish.outcome == 'success' && steps.notes.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT="v${{ steps.version.outputs.version }}"
+          gh release list --limit 200 --json tagName --jq '.[].tagName' | while IFS= read -r tag; do
+            if [ -n "$tag" ] && [ "$tag" != "$CURRENT" ]; then
+              echo "Deleting old release: $tag"
+              gh release delete "$tag" --yes --cleanup-tag
+            fi
+          done
