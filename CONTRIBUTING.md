@@ -1,55 +1,45 @@
 # Contributing to Prompsit CLI
 
-Thank you for your interest in contributing! This guide covers the development workflow and conventions for this project.
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) 22+
-- npm (bundled with Node.js)
-
 ## Setup
+
+The supported runtime is defined only by `package.json#engines`.
 
 ```bash
 git clone https://github.com/Prompsit/prompsit-cli.git
 cd prompsit-cli
 npm install
-npm run dev -- --help   # Verify setup
+npm run dev -- --help
 ```
 
-## Development
+## Change workflow
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Run CLI in development mode (tsx) |
-| `npm run build` | Compile TypeScript |
-| `npm run typecheck` | Type-check without emitting |
-| `npm run test` | Run unit tests (Vitest) |
-| `npm run lint:all` | Full lint suite (tsc + ESLint + Prettier + knip + depcruise) |
+1. Create a focused branch from the repository's default branch.
+2. Follow [AGENTS.md](AGENTS.md) for code and test conventions.
+3. Update the canonical document that owns any changed public or operational behavior.
+4. Run the required checks.
+5. Open a pull request describing the behavior change and verification performed.
 
-## Code Style
+```bash
+npm run lint:all
+npm run test:unit
+npm run build
+```
 
-- **TypeScript strict mode** — `strict: true` in tsconfig.json, zero `tsc --noEmit` errors
-- **ESM-only** — `"type": "module"` in package.json
-- **ESLint + Prettier** — run `npm run lint:fix` and `npm run format` before committing
-- **No unused exports** — enforced by [knip](https://knip.dev/)
-- **Layer boundaries** — enforced by [dependency-cruiser](https://github.com/sverweij/dependency-cruiser)
+E2E tests use a real API stand and require valid `TEST_ACCOUNT` and `TEST_SECRET` values.
 
-## Pull Request Process
+For CLI UX changes, include a short command/output example in the pull request. Do not commit credentials, telemetry keys, generated `dist/` output, or local configuration.
 
-1. Fork the repository and create a feature branch from `main`
-2. Make your changes following the code style above
-3. Ensure all checks pass: `npm run lint:all && npm run test`
-4. Submit a pull request with a clear description of what and why
+## Documentation ownership
 
-## Reporting Issues
+- User-facing installation and examples: [README.md](README.md)
+- Development, verification, and release operations: [runbook.md](docs/project/runbook.md)
+- Module boundaries and runtime flows: [architecture.md](docs/project/architecture.md)
+- CLI-consumed endpoints: [api_spec.md](docs/project/api_spec.md)
+- Stable architectural rationale: [ADRs](docs/reference/adrs/)
+- Release history: [CHANGELOG.md](CHANGELOG.md)
 
-Use [GitHub Issues](https://github.com/Prompsit/prompsit-cli/issues). Include:
+Avoid copying option lists, dependency versions, defaults, endpoint paths, or test counts into prose when code can remain their source of truth.
 
-- CLI version (`prompsit --version`)
-- Node.js version (`node -v`)
-- OS and shell
-- Steps to reproduce
+## Issues
 
-## License
-
-By contributing, you agree that your contributions will be licensed under the [Apache License 2.0](LICENSE).
+Use [GitHub Issues](https://github.com/Prompsit/prompsit-cli/issues). Include the CLI version, Node.js version, operating system, shell, and minimal reproduction.

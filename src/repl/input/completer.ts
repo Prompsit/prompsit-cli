@@ -1,4 +1,3 @@
-// See API-501: Fuzzy command completion for REPL.
 //
 // Provides Tab completion and inline suggestions for readline.
 // Uses simple prefix + fuzzy matching (no external dependency needed).

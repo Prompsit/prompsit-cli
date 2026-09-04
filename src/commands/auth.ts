@@ -1,5 +1,3 @@
-// See API-455: Refactored status command to use global state from cli/options.ts
-// See API-452: Login + Logout Commands with Interactive Input
 // Commander.js commands for OAuth2 authentication flow.
 
 import { Command } from "@commander-js/extra-typings";

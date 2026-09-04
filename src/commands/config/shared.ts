@@ -1,16 +1,11 @@
-import { API_URL_PRESETS, clearTokens, getValidConfigKeys } from "../../config/index.ts";
-import { resetApiClient } from "../../api/client.ts";
+import { API_URL_PRESETS, getValidConfigKeys } from "../../config/index.ts";
+import { applyApiUrlChange } from "../../cli/settings-service.ts";
 import { ErrorCode } from "../../errors/codes.ts";
 import { t } from "../../i18n/index.ts";
 import { terminal } from "../../output/index.ts";
 import { failCommand } from "../error-handler.ts";
 
 export type ConfigValueSource = "env" | "file" | "default";
-
-function applyApiUrlChange(): void {
-  clearTokens();
-  resetApiClient();
-}
 
 /**
  * Apply API URL change side-effects and show a unified user warning/success.

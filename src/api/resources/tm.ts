@@ -1,4 +1,3 @@
-// See API-535: Translation Memory resource — list, segments, import, search
 // Uses AuthSession (authenticated requests with auto-refresh).
 // F1: profile_id is a query param in import, NOT a form field.
 

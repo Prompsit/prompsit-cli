@@ -1,5 +1,3 @@
-// See API-438: Settings singleton with env override, CLI key map, and Loki resolver
-
 import {
   ApiConfigSchema,
   CliConfigSchema,
@@ -7,7 +5,7 @@ import {
   TelemetryConfigSchema,
   type Settings,
 } from "./schemas.ts";
-import { readConfigToml } from "./toml-io.ts";
+import { readConfigToml, writeConfigToml } from "./toml-io.ts";
 import { parseEnvOverrides } from "./env-parser.ts";
 import { API_URL_PRESETS, LOKI_URL_PRESETS, LOKI_KEY_PRESETS } from "./constants.ts";
 
@@ -39,7 +37,13 @@ export function getSettings(): Settings {
   diagnostics = [];
 
   // Step 1: Read TOML config
-  const tomlConfig = readConfigToml();
+  let tomlConfig: Settings;
+  try {
+    tomlConfig = readConfigToml();
+  } catch (error: unknown) {
+    diagnostics.push(error instanceof Error ? error.message : "Unable to load configuration");
+    tomlConfig = SettingsSchema.parse({});
+  }
 
   // Step 2: Parse env overrides
   const envOverrides = getEnvOverridesSnapshot();
@@ -53,11 +57,13 @@ export function getSettings(): Settings {
   if (result.success) {
     cached = result.data;
   } else {
-    diagnostics = result.error.issues.map((issue) => {
-      const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
-      return `${path}: ${issue.message}`;
-    });
-    cached = SettingsSchema.parse(tomlConfig);
+    diagnostics.push(
+      ...result.error.issues.map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+        return `environment ${path}: ${issue.message}`;
+      })
+    );
+    cached = tomlConfig;
   }
 
   return cached;
@@ -169,29 +175,56 @@ export function getConfigValue(cliKey: string): unknown {
  * @param value - String value to coerce
  */
 export function setConfigValue(cliKey: string, value: string): void {
+  setConfigValues(new Map([[cliKey, value]]));
+}
+
+/** Validate and persist one or more settings as a single transaction. */
+export function setConfigValues(values: ReadonlyMap<string, string>): void {
   const settings = getSettings();
+  if (diagnostics.length > 0) {
+    throw new Error(`Configuration is invalid: ${diagnostics.join("; ")}`);
+  }
   const map = buildCliKeyMap();
-  const path = map[cliKey] as [string, string] | undefined;
+  const candidate = structuredClone(settings);
 
-  if (!path) {
-    throw new Error(`Unknown CLI key: ${cliKey}`);
-  }
-  const [section, field] = path;
-  const sectionObj = settings[section as keyof Settings] as Record<string, unknown>;
-  const currentValue = sectionObj[field];
-  // Type coercion based on current value type
-  let coercedValue: string | number | boolean = value;
-  if (currentValue === null || typeof currentValue === "boolean") {
-    coercedValue = value === "true";
-  } else if (typeof currentValue === "number") {
-    const numValue = Number(value);
-    if (Number.isNaN(numValue)) {
-      throw new TypeError(`Invalid number value for ${cliKey}: ${value}`);
+  for (const [cliKey, value] of values) {
+    const path = map[cliKey] as [string, string] | undefined;
+    if (!path) throw new Error(`Unknown CLI key: ${cliKey}`);
+
+    const [section, field] = path;
+    const candidateSection = candidate[section as keyof Settings] as Record<string, unknown>;
+    const currentValue = candidateSection[field];
+    let coercedValue: string | number | boolean = value;
+
+    if (currentValue === null || typeof currentValue === "boolean") {
+      if (value !== "true" && value !== "false") {
+        throw new TypeError(`Invalid boolean value for ${cliKey}: ${value}`);
+      }
+      coercedValue = value === "true";
+    } else if (typeof currentValue === "number") {
+      const numValue = Number(value);
+      if (!Number.isFinite(numValue)) {
+        throw new TypeError(`Invalid number value for ${cliKey}: ${value}`);
+      }
+      coercedValue = numValue;
     }
-    coercedValue = numValue;
+
+    candidateSection[field] = coercedValue;
   }
 
-  sectionObj[field] = coercedValue;
+  const validated = SettingsSchema.parse(candidate);
+  writeConfigToml(validated);
+  cached = validated;
+}
+
+/** Prevent network clients from silently using fallback settings after a configuration error. */
+export function assertNetworkConfiguration(): void {
+  getSettings();
+  if (diagnostics.length > 0) {
+    throw new Error(
+      `Network access is disabled until the configuration is fixed: ${diagnostics.join("; ")}`
+    );
+  }
 }
 
 /**

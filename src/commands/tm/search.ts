@@ -1,4 +1,3 @@
-// See API-535: tm search — fuzzy search with source_lang auto-resolve.
 // F8: auto-resolve and search must use the same profileId.
 // F5: list() accepts targetLang filter for efficient auto-resolve.
 // F7: color bands — green >= 0.9, yellow for rest.

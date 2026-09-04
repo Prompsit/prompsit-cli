@@ -1,245 +1,42 @@
-# Unified Logging Policy
+# Logging contract
 
-<!-- SCOPE: Complete logging standards for CLI. Log level semantics, layer rules, console.log vs logger,
-     metadata conventions, TypeScript patterns, anti-patterns.
-     DO NOT add here: Handler configuration → src/logging/index.ts, Error codes → src/api/errors.ts -->
+This document defines the behavior that code changes must preserve. The implementation in `src/logging/` and `src/output/terminal.ts` is authoritative.
 
-> Adapted from API Guide 57 (Unified Logging & Error Policy) + Guide 37 (Logging Layer Rules) for CLI context.
+## Output ownership
 
-## Principle
+- User results and actionable messages go through the terminal port.
+- Diagnostic events go through the module logger.
+- Only terminal/logging adapters may write directly to stdout or stderr.
+- API resources normally let errors propagate; the command-level handler classifies, logs, and presents them once.
 
-All diagnostic/operational events MUST use `logger.*()` or `getLogger()`. User-facing output (REPL UI, tables, help) MUST use `console.log()` or `printX()` functions. Logger guarantees: trace_id correlation, file persistence (`~/.prompsit/debug.log`), remote telemetry (WARNING+).
+| Content | Channel |
+|---|---|
+| Translation/data result or table | terminal stdout event |
+| Status, warning, hint, or user-facing error | terminal system event / CLI stderr |
+| Debug, lifecycle, retry, and exception diagnostics | logger |
+| Remote telemetry | warning/error logger events only |
 
----
+## Levels
 
-## 1. Log Level Semantics
+- `debug`: request flow and troubleshooting detail.
+- `info`: expected lifecycle events and cancellation.
+- `warn`: degraded behavior or successful recovery.
+- `error`: operation failure requiring user action.
 
-| Level | Priority | CLI Use When | Examples |
-|-------|----------|-------------|----------|
-| **ERROR** | 40 | Unrecoverable failure requiring user action | API unreachable, auth failed (401), file not found |
-| **WARNING** | 30 | Degraded mode, automatic recovery, retries | SSE→polling fallback, retry attempt 2/3, deprecated flag |
-| **INFO** | 20 | Normal operation milestone, audit trail | Command started/completed, config loaded, REPL session |
-| **DEBUG** | 10 | Detailed diagnostic flow | REPL dispatch args, token refresh, metadata enrichment |
+Do not log the same exception at both the resource and command layers.
 
-**CLI-specific rules:**
-- Cancelled operations (Ctrl+C): **INFO** (expected user action, not error)
-- Network errors (DNS, timeout, ECONNREFUSED): **ERROR**
-- GOT retries: **WARNING** per attempt, **ERROR** only after exhaustion
-- User input validation (invalid lang code): **ERROR** (command fails)
+## Structured metadata
 
----
+Use stable messages and put variable data in metadata. Metadata values are strings. Common keys are `module`, `trace_id`, `command`, `duration_ms`, `error_code`, `endpoint`, `job_id`, and `attempt`.
 
-## 2. Exception → Log Level Decision Tree
+Never log access tokens, refresh tokens, account secrets, telemetry keys, authorization headers, or raw sensitive commands. Redaction must occur before validation/debug branches can emit input.
 
-```
-Exception caught?
-├─ CancelledError (Ctrl+C)         → propagate (REPL handles)
-├─ APIError
-│  ├─ AuthenticationError (401)     → ERROR
-│  ├─ ForbiddenError (403)          → ERROR
-│  ├─ RateLimitError (429)          → ERROR (retry exhausted)
-│  ├─ ValidationError (422)         → ERROR
-│  ├─ ServerError (5xx)             → ERROR
-│  └─ Other APIError                → ERROR
-├─ NetworkError (DNS/timeout)       → ERROR
-├─ JobError (async job failed)      → ERROR
-├─ ZodError (response mismatch)    → ERROR (API contract broken)
-└─ Unknown Error                    → ERROR (catch-all)
-```
+## Trace propagation
 
-**Anti-double-logging:** Log at CATCH point only. The layer that catches and handles logs it. Do NOT log at both throw and catch sites.
+CLI execution establishes an async trace context; REPL dispatch establishes one per command. The HTTP transport forwards it as `X-Request-ID`. Command code should read the current context and must not create competing trace IDs.
 
-**Where to log:** Exception handlers in commands (final catch). NOT in domain constructors, NOT in resource layer (let errors bubble).
+## Destinations and shutdown
 
----
+The console level comes from `--verbose` or `cli.log_level`. The file stream always records debug events in `~/.prompsit/debug.log`. Opt-in Loki receives warning/error events and is drained for a bounded interval during forced shutdown.
 
-## 3. Layer-Specific Rules
-
-### 3.1 Command Layer (`src/commands/*.ts`)
-
-| What | Level | When |
-|------|-------|------|
-| Command lifecycle | INFO | Start (with args summary), completion (with duration_ms) |
-| Command failure | ERROR | Via `handleCommandError()` — logs + shows user error |
-| Input validation | ERROR | Invalid args before API call |
-
-```typescript
-const log = getLogger(import.meta.url);
-
-.action(async (texts, opts) => {
-  const startMs = Date.now();
-  log.info("Command started", { command: "translate text" });
-  try {
-    const response = await getApiClient().translation.translate(...);
-    log.info("Command completed", { command: "translate text", duration_ms: String(Date.now() - startMs) });
-    // User output: console.log / printTable / printJson
-  } catch (error: unknown) {
-    handleCommandError(log, error, { command: "translate text", duration_ms: String(Date.now() - startMs) });
-  }
-});
-```
-
-### 3.2 API Resource Layer (`src/api/resources/*.ts`)
-
-| What | Level | When |
-|------|-------|------|
-| API call | DEBUG | Method + endpoint + key params |
-| API response | DEBUG | Status + response size |
-| Errors | — | Do NOT catch — let bubble to command |
-
-### 3.3 HTTP Transport (`src/api/transport.ts`)
-
-| What | Level | When |
-|------|-------|------|
-| Retry attempt | WARNING | Before each retry (url, attempt, reason) |
-| Error classification | DEBUG | After classifying error type |
-| Request cancelled | INFO | Ctrl+C abort signal |
-| Every request | — | Do NOT log (use show_curl setting for curl) |
-
-### 3.4 Config Layer (`src/config/*.ts`)
-
-| What | Level | When |
-|------|-------|------|
-| Parse failure + fallback | WARNING | TOML parse error, using defaults |
-| Env override | DEBUG | When PROMPSIT_* overrides config |
-
-### 3.5 REPL Layer (`src/repl/*.ts`)
-
-| What | Level | When |
-|------|-------|------|
-| Command dispatch | DEBUG | Parsed command + args |
-| Session lifecycle | INFO | Start/end of REPL session |
-| User output | — | console.log (pi-tui UI requirement) |
-
----
-
-## 4. Trace ID Propagation
-
-Each CLI command execution gets a single trace_id that correlates all logs and HTTP requests.
-
-```
-CLI/REPL entry point
-  └─ traceStore.run(traceId, async () => { ... })
-       ├─ log.info("Command started")        → trace_id in meta (auto)
-       ├─ transport.request(...)
-       │    └─ beforeRequest hook             → X-Request-ID = getTraceId()
-       ├─ log.info("Command completed")       → same trace_id
-       └─ handleCommandError(log, error, ...) → same trace_id
-```
-
-| Entry Point | File | Wrapping |
-|------------|------|----------|
-| CLI mode | `src/index.ts` | `traceStore.run(traceId, () => program.parseAsync(...))` |
-| REPL mode | `src/repl/executor.ts` | `traceStore.run(traceId, () => dispatch block)` |
-| HTTP header | `src/api/transport.ts` | `getTraceId() \|\| generateTraceId()` (fallback for edge cases) |
-
-**Rule:** Never call `generateTraceId()` in command code. Trace context is established at entry points.
-
----
-
-## 5. Standard Metadata Fields
-
-| Field | Type | Source | Example |
-|-------|------|--------|---------|
-| `module` | string | Auto (getLogger) | `"commands/translate"` |
-| `trace_id` | string | Auto (AsyncLocalStorage) | `"a1b2c3d4"` |
-| `command` | string | Command layer | `"translate text"` |
-| `duration_ms` | string | Command completion | `"1234"` |
-| `error_code` | string | Error logs | `"E4001"` |
-| `endpoint` | string | API resource | `"/v1/translate"` |
-| `job_id` | string | Job tracking | `"uuid-..."` |
-| `attempt` | string | Retry logs | `"2"` |
-
-**Rules:** All values as strings (`Record<string, string>`). Use `String(value)` for numbers. Use snake_case.
-
----
-
-## 6. CLI Verbosity Flag
-
-| Flag | Console Level | Use Case |
-|------|--------------|----------|
-| _(none)_ | config `log_level` (default: `"warn"`) | Normal usage |
-| `--verbose` / `-v` | `"debug"` | Troubleshooting |
-
-**Precedence** (highest wins): `--verbose` > `PROMPSIT_CLI__LOG_LEVEL` env var > `config.toml` `[cli] log_level` > `"warn"` default.
-
-The flag is pre-scanned from `process.argv` before `setupLogging()`, so it captures all startup diagnostics. File logging (`~/.prompsit/debug.log`) always captures DEBUG regardless of this flag.
-
----
-
-## 7. Handler Output Formats
-
-| Handler | Destination | Format | Example |
-|---------|------------|--------|---------|
-| **Console** | stderr | `[LEVEL] message` (verbose: `+timestamp +module`) | `[ERROR] Command failed` |
-| **File** | `~/.prompsit/debug.log` | `timestamp [LEVEL] [trace_id] module - message {meta}` | `2026-02-15 18:30:45 [ERROR   ] [a3f5c8d2] commands/translate - Command failed {error_code=E1003, duration_ms=1234}` |
-| **Loki** | Remote telemetry | JSON streams with structured metadata | `{stream: {service, level}, values: [[ns, msg, meta]]}` |
-
-**File handler rules:**
-- `trace_id` in brackets after level (only if non-empty)
-- Metadata as `{key=val}` suffix (excludes `module`, `trace_id`, `stack`)
-- Stack traces on separate indented line
-
-**Loki handler rules:**
-- WARNING+ only (never DEBUG or INFO)
-- Fire-and-forget with in-flight cap (max 10 concurrent requests)
-- Labels: `service=prompsit-cli`, `os=platform`, `level`, `version`
-
----
-
-## 8. Message Conventions
-
-| Rule | Good | Bad |
-|------|------|-----|
-| Imperative, no periods | `"Config loaded"` | `"The config has been loaded."` |
-| Action first | `"Command started"` | `"Starting the command now"` |
-| Data in metadata, not message | `"Command completed"` + `{duration_ms}` | `"Command completed in 1234ms"` |
-| Grep-friendly keywords | `"auth failed"`, `"retry"`, `"timeout"` | Unique messages per case |
-
----
-
-## 9. console.log vs logger
-
-| Output Type | Tool | Destination |
-|-------------|------|-------------|
-| Translation result | `process.stdout.write()` | stdout (pipeable) |
-| Help text, REPL greeting | `console.log()` | stdout (pi-tui UI) |
-| Error message to user | `printError()` | stderr (chalk) |
-| Table output | `printTable()` | stdout |
-| Diagnostic logs | `logger.info/debug()` | debug.log + stderr |
-| Error logging | `logger.error()` | debug.log + Loki |
-
-**pi-tui rule:** REPL uses pi-tui for input area. All command output MUST use `console.log()` to appear above TUI. This is user output, NOT diagnostic logging.
-
----
-
-## 10. Anti-Patterns & Fixes
-
-| Anti-Pattern | Fix |
-|-------------|-----|
-| `console.log("[DEBUG] ...")` | `logger.debug("...", {...})` |
-| No logging in command catch | `handleCommandError(log, error, meta)` |
-| Catch without logging | Always `log.error()` before `printError()` |
-| Double-logging (resource + command) | Log at final handler (command) only |
-| String interpolation in message | Use metadata: `log.info("Done", { duration_ms })` |
-| Logging user output | Use `console.log` or `printX()` for user-facing |
-| Numeric metadata values | `String(value)` — metadata is `Record<string, string>` |
-
----
-
-## Maintenance
-
-**Update Triggers:**
-- New command or layer type added
-- Error hierarchy changes (new exception types)
-- New standard metadata fields
-- Logging infrastructure changes (new handlers)
-
-**Last Updated:** 2026-03-18
-
-## Sources
-
-- API Guide 57: Unified Logging & Error Policy (adapted)
-- API Guide 37: Logging Layer Rules (adapted)
-- [Node.js AsyncLocalStorage](https://nodejs.org/api/async_context.html)
-- [ADR-004: REPL Input Handling](../adrs/adr-004-repl-input-handling.md) (console.log for pi-tui UI)
+Operational configuration and investigation steps live in [observability-operations.md](../../project/observability-operations.md).

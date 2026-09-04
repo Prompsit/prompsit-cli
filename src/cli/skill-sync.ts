@@ -27,8 +27,7 @@ import {
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { getSettings, reloadSettings } from "../config/settings.ts";
-import { writeConfigToml } from "../config/toml-io.ts";
+import { getSettings, reloadSettings, setConfigValue } from "../config/settings.ts";
 import { getConfigDir } from "../config/paths.ts";
 import { getVersion } from "../shared/version.ts";
 import { getLogger } from "../logging/index.ts";
@@ -216,9 +215,7 @@ export function performSkillRemoval(): void {
 
 /** Persist skill_sync value to config. */
 function persistSkillSync(value: boolean): void {
-  const settings = getSettings();
-  settings.cli.skill_sync = value;
-  writeConfigToml(settings);
+  setConfigValue("skill-sync", String(value));
   reloadSettings();
 }
 

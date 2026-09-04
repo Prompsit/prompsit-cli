@@ -1,4 +1,3 @@
-// See API-500: Prompt session with dynamic status bar.
 // Provides status bar text generation.
 
 import chalk from "chalk";

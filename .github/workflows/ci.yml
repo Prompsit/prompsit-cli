@@ -3,11 +3,10 @@ name: CI
 # Release topology: GitLab (origin, branch `master`) is primary; this repo is a GitHub MIRROR
 # whose default branch is `main`. Each GitLab push mirrors a squashed snapshot to `main`, which
 # triggers this workflow (lint/typecheck/test/build → CalVer npm publish). The `main` triggers
-# below are CORRECT for the mirror — do NOT repoint them to `master`. See docs/project/runbook.md §7.
+# below are CORRECT for the mirror — do NOT repoint them to `master`. See docs/project/runbook.md.
 #
-# `paths:` below scopes push/PR runs to package-relevant files, so a docs/README-only push does
-# not bump the npm CalVer version. `workflow_dispatch` remains available for release recovery.
-# Keep the path lists in sync with whatever actually ships (see package.json "files").
+# Checks run for package code and their test/policy inputs. A separate job decides whether a
+# push is publishable, so test-only and workflow-only changes cannot bump the npm CalVer version.
 on:
   workflow_dispatch:
   push:
@@ -19,6 +18,20 @@ on:
       - "package.json"
       - "package-lock.json"
       - "tsconfig.json"
+      - "tests/unit/**"
+      - "docs/**"
+      - "*.md"
+      - ".agents/**/*.md"
+      - ".claude/commands/**/*.md"
+      - "scripts/check-terminal-io.mjs"
+      - "scripts/check-markdown-links.mjs"
+      - "scripts/clean-build.mjs"
+      - "vitest.config.ts"
+      - "eslint.config.ts"
+      - ".prettierrc"
+      - "knip.json"
+      - ".dependency-cruiser.cjs"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
     paths:
@@ -28,11 +41,53 @@ on:
       - "package.json"
       - "package-lock.json"
       - "tsconfig.json"
+      - "tests/unit/**"
+      - "docs/**"
+      - "*.md"
+      - ".agents/**/*.md"
+      - ".claude/commands/**/*.md"
+      - "scripts/check-terminal-io.mjs"
+      - "scripts/check-markdown-links.mjs"
+      - "scripts/clean-build.mjs"
+      - "vitest.config.ts"
+      - "eslint.config.ts"
+      - ".prettierrc"
+      - "knip.json"
+      - ".dependency-cruiser.cjs"
+      - ".github/workflows/ci.yml"
 
 permissions:
   contents: read
 
 jobs:
+  package-changes:
+    name: Detect package changes
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.filter.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check publishable paths
+        id: filter
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          BEFORE="${{ github.event.before }}"
+          if git cat-file -e "${BEFORE}^{commit}" 2>/dev/null && \
+             git diff --quiet "$BEFORE" "$GITHUB_SHA" -- \
+               src examples assets package.json package-lock.json tsconfig.json scripts/clean-build.mjs; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
   check:
     name: Lint & Test
     runs-on: ubuntu-latest
@@ -46,14 +101,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format check
-        run: npm run format:check
+      - name: Static checks
+        run: npm run lint:all
 
       - name: Unit tests
         run: npm run test:unit
@@ -63,8 +112,8 @@ jobs:
 
   publish:
     name: Publish to npm
-    needs: [check]
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [check, package-changes]
+    if: needs.package-changes.outputs.publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

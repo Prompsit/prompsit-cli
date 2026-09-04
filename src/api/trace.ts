@@ -1,4 +1,3 @@
-// See API-444: Trace ID generation for X-Request-ID header
 // Provides correlation between CLI and API logs.
 // Format: 8-char hex (matches prompsit-api RequestIDMiddleware validation).
 

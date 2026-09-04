@@ -62,16 +62,18 @@ import { trackJob } from "../../src/commands/job-tracking.ts";
 describe("trackJob abort propagation (P1 regression)", () => {
   let cancelMock: ReturnType<typeof vi.fn>;
   let downloadMock: ReturnType<typeof vi.fn>;
+  let statusMock: ReturnType<typeof vi.fn>;
   let client: { baseUrl: string; session: unknown; jobs: unknown };
 
   beforeEach(() => {
     vi.clearAllMocks();
     cancelMock = vi.fn().mockResolvedValue();
     downloadMock = vi.fn().mockResolvedValue("/tmp/result.txt");
+    statusMock = vi.fn();
     client = {
       baseUrl: "http://localhost:8080",
       session: { tryRefresh: vi.fn(), request: vi.fn() },
-      jobs: { cancel: cancelMock, download: downloadMock },
+      jobs: { status: statusMock, cancel: cancelMock, download: downloadMock },
     };
   });
 
@@ -98,7 +100,7 @@ describe("trackJob abort propagation (P1 regression)", () => {
   });
 
   it("throws JobError when job status is 'dlq' (dead-letter queue)", async () => {
-    (client.session as any).request = vi.fn().mockResolvedValue({
+    statusMock.mockResolvedValue({
       status: "dlq",
       progress_percentage: 80,
       current_step: null,
@@ -106,15 +108,15 @@ describe("trackJob abort propagation (P1 regression)", () => {
       result_url: null,
     });
 
-    await expect(
-      trackJob(client as any, "job-dlq-test", { strategy: "polling" })
-    ).rejects.toThrow(JobError);
+    await expect(trackJob(client as any, "job-dlq-test", { strategy: "polling" })).rejects.toThrow(
+      JobError
+    );
 
     expect(cancelMock).toHaveBeenCalledWith("job-dlq-test", expect.any(AbortSignal));
   });
 
   it("returns the side-effect result for a completed TMX import", async () => {
-    (client.session as any).request = vi.fn().mockResolvedValue({
+    statusMock.mockResolvedValue({
       status: "completed",
       progress_percentage: 100,
       current_step: null,
@@ -128,23 +130,24 @@ describe("trackJob abort propagation (P1 regression)", () => {
       },
     });
 
-    await expect(
-      trackJob(client as any, "job-tmx-test", { strategy: "polling" })
-    ).resolves.toEqual({
-      resultUrl: undefined,
-      tmImportResult: {
-        tm_id: "tm-1",
-        segment_count: 12,
-        source_lang: "en",
-        target_lang: "es",
-      },
-    });
+    await expect(trackJob(client as any, "job-tmx-test", { strategy: "polling" })).resolves.toEqual(
+      {
+        resultUrl: undefined,
+        tmImportResult: {
+          tm_id: "tm-1",
+          segment_count: 12,
+          source_lang: "en",
+          target_lang: "es",
+        },
+      }
+    );
 
     expect(cancelMock).not.toHaveBeenCalled();
+    expect(statusMock).toHaveBeenCalledWith("job-tmx-test", undefined);
   });
 
   it("throws JobError on unknown status (fail-safe)", async () => {
-    (client.session as any).request = vi.fn().mockResolvedValue({
+    statusMock.mockResolvedValue({
       status: "some_future_status",
       progress_percentage: 0,
       current_step: null,

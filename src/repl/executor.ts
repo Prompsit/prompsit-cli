@@ -1,4 +1,3 @@
-// See API-502: REPL command execution - dispatch user input to Commander.js.
 //
 // program: lazy-cached dynamic import to avoid circular (index.ts → repl → program).
 
@@ -30,6 +29,7 @@ import { runWithAbortSignal } from "../runtime/request-context.ts";
 import { getRawCurl } from "./ui/curl-store.ts";
 import { isCurlEnabled } from "../api/curl.ts";
 import { setClipboardText, writeOsc52 } from "../runtime/clipboard.ts";
+import { isSensitiveCommand } from "./sensitive-command.ts";
 
 const log = getLogger(import.meta.url);
 
@@ -219,6 +219,7 @@ function resolveReplCommand(
 export async function executeCommand(text: string): Promise<ExecuteResult> {
   const parts = parseInput(text);
   if (parts.length === 0) return { outcome: "continue" };
+  const sensitive = isSensitiveCommand(text);
 
   const cmd = parts[0].toLowerCase();
   const args = parts.slice(1);
@@ -281,7 +282,7 @@ export async function executeCommand(text: string): Promise<ExecuteResult> {
       const syntax = getCommandArgs().get(cmd) ?? "";
       terminal.error(
         "VALIDATION",
-        `"${unquoted}" -- ${t("repl.error.unquoted_value")}`,
+        `${sensitive ? "[redacted]" : `"${unquoted}"`} -- ${t("repl.error.unquoted_value")}`,
         `Usage: ${cmd} ${syntax}`
       );
       return { outcome: "continue" };
@@ -341,7 +342,9 @@ export async function executeCommand(text: string): Promise<ExecuteResult> {
       }) as typeof process.exit;
 
       try {
-        log.debug("REPL dispatch", { command: fullArgs.join(" ") });
+        log.debug("REPL dispatch", {
+          command: sensitive ? "[redacted]" : fullArgs.join(" "),
+        });
         log.debug("Commander parseAsync start");
         await program.parseAsync(["node", "", ...fullArgs]);
         log.debug("Commander parseAsync done");

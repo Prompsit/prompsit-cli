@@ -1,4 +1,3 @@
-// See API-443: Error catalog with pattern matching and actionable hints.
 // Classification only: this module must not depend on i18n runtime.
 
 import type { APIError } from "./contracts.ts";

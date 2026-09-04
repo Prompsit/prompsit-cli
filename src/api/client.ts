@@ -1,4 +1,3 @@
-// See API-448, API-469, API-477, API-484, API-490, API-496: API Client facade with singleton pattern
 // Composes resource instances over shared HttpTransport.
 // Pattern: Module-level singleton with explicit invalidation.
 
@@ -14,7 +13,7 @@ import { JobsResource } from "./resources/jobs.ts";
 import { DataResource } from "./resources/data.ts";
 import { UserResource } from "./resources/user.ts";
 import { TMResource } from "./resources/tm.ts";
-import { getSettings } from "../config/settings.ts";
+import { assertNetworkConfiguration, getSettings } from "../config/settings.ts";
 
 /**
  * API Client facade composing resource instances.
@@ -38,6 +37,7 @@ export class APIClient {
   public readonly tm: TMResource;
 
   constructor() {
+    assertNetworkConfiguration();
     this.baseUrl = getSettings().api.base_url.replace(/\/{1,100}$/, "");
     this.transport = new HttpTransport();
     this.auth = new AuthResource(this.transport, this.baseUrl);

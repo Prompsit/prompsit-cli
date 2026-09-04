@@ -1,4 +1,3 @@
-// See API-448: Health resource - GET /health with Zod validation
 // Uses public transport (no auth required).
 
 import type { HttpTransport } from "../transport.ts";

@@ -24,11 +24,11 @@ export class JobsResource {
   /**
    * Get detailed status of a specific job (used by PollingTracker).
    */
-  async status(jobId: string): Promise<JobStatusResponse> {
+  async status(jobId: string, signal?: AbortSignal): Promise<JobStatusResponse> {
     const baseUrl = this.baseUrl;
     const url = `${baseUrl}${Endpoint.JOB.replace("{job_id}", jobId)}`;
 
-    const data = await this.session.request<unknown>("GET", url);
+    const data = await this.session.request<unknown>("GET", url, {}, signal);
 
     return JobStatusResponseSchema.parse(data);
   }

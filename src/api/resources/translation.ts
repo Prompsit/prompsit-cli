@@ -1,4 +1,3 @@
-// See API-469, API-494: Translation resource - text translation + document upload
 // Uses AuthSession (authenticated requests with auto-refresh).
 
 import type { AuthSession, Progress } from "../auth-session.ts";
@@ -79,7 +78,7 @@ export class TranslationResource {
     const { filePath, sourceLang, targetLang, outputFormat } = params;
     const baseUrl = this.baseUrl;
 
-    // See API-494: openAsBlob streams from disk without buffering entire file
+    // Stream from disk without buffering the entire file.
     const fileBlob = await openAsBlob(filePath);
     const fileName = basename(filePath);
 

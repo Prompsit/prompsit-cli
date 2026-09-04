@@ -1,4 +1,3 @@
-// See API-495: DataResource - multipart upload for data annotation and scoring
 // Uses AuthSession (authenticated requests with auto-refresh).
 // Pattern: FormData + Blob for multipart file upload via got.
 

@@ -1,55 +1,25 @@
 ---
 name: prompsit-annotate
-description: |
-  Annotate monolingual data with Monotextor metadata using the Prompsit
-  Translation API. Use when the user needs language identification, PII detection,
-  deduplication, or text annotation.
+description: Annotate monolingual data with Monotextor metadata through the Prompsit Translation API.
 license: Apache-2.0
 ---
 
-# Prompsit Annotate
+# Prompsit annotate
 
-Annotate monolingual data with Monotextor metadata.
-
-## Basic Usage
+Prefix files or directories with `@`.
 
 ```bash
-prompsit annotate corpus.jsonl -l en --metadata "lid,docscorer"
-prompsit annotate corpus.jsonl -l es --metadata "lid,pii,dedup"
+prompsit annotate @corpus.jsonl -l en
+prompsit annotate @corpus.jsonl -l en --metadata lid,docscorer
+prompsit annotate @./data -l es --out ./annotated
 ```
 
-## Batch with Filters
+Do not assume metadata types or formats. Query the live capability sources:
 
 ```bash
-prompsit annotate @"./data/" -l fr --metadata "lid" --min-len 100
-prompsit annotate @"./data/" -l en --metadata "lid,pii" --min-avg-words 5
+prompsit annotate --metadata
+prompsit annotate --formats
+prompsit annotate --help
 ```
 
-## Discovery
-
-```bash
-prompsit annotate --metadata    # available metadata types
-prompsit annotate --formats     # supported file formats
-```
-
-## Flags
-
-| Flag | Description |
-|------|-------------|
-| `-l, --lang <code>` | Language code |
-| `--metadata [options]` | Metadata types to compute (comma-separated) |
-| `--min-len <n>` | Minimum text length filter |
-| `--min-avg-words <n>` | Minimum average words filter |
-| `--lid-model <model>` | Language identification model |
-| `--out <dir>` | Output directory |
-| `--output-format <fmt>` | Output format |
-| `--formats` | List supported file formats |
-
-## Definition of Done
-
-- [ ] Metadata annotations computed for all requested types
-- [ ] Output files written to specified directory
-
----
-**Version:** 1.0.0
-**Last Updated:** 2026-03-13
+Verify that the result is non-empty and contains the requested annotations for the submitted records.

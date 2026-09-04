@@ -96,8 +96,8 @@ For each `(key, text)` pair in the source:
    - path matches `hero|title|eyebrow|tagline|og|seo|faq.*.question` → witness
    - path matches `body|lead|boundary|description|content|faq.*.answer` → body
    - path matches `actions|buttons|status|filter|aria|error|label` → ui
-   - length < 30 chars, no sentence-end punctuation, not already classified → ui
-   - length > 50 chars with sentence punctuation → body
+   - short labels attached to interface controls, without sentence structure → ui
+   - explanatory prose with sentence structure → body
    - default → body (safer than guessing witness or ui)
 
 ### Phase 2 — Translate per tier
@@ -144,7 +144,7 @@ string, record:
         "output": "...",
         "tier": "witness",
         "needs_review": true,
-        "generated_at": "2026-04-28T12:00:00Z",
+        "generated_at": "<ISO-8601 timestamp>",
         "glossary_hits": ["open source"]
       }
     }
@@ -172,7 +172,7 @@ When enabled, **body** strings only:
 Witness and UI tiers ignore the pre-pass: witness needs creative generation (MT will be flat
 by definition), UI needs glossary lookup (MT can drift from frozen terminology).
 
-Skip the pre-pass when content is under ~500 strings, sensitive in tone, or when locale
+Skip the pre-pass when the corpus is small, sensitive in tone, or when locale
 consistency matters more than throughput.
 
 ## Diff-Aware Re-Run
@@ -210,7 +210,3 @@ checklist. The user clears flags after review, not the skill.
 - [ ] Output written to project storage in original format.
 - [ ] `localization/.translation-state.json` updated with hashes and review flags.
 - [ ] Review checklist printed; user knows count of strings pending native review.
-
----
-**Version:** 0.1.0
-**Last Updated:** 2026-04-28

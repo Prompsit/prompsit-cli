@@ -34,8 +34,9 @@ opencode_analysis/
 # Local scratch / test output
 tmp/
 
-# AI tool config
-.claude/
+# Local AI tool state (shared commands remain tracked)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
 .codex/
 /.playwright-mcp
 /.hex-skills

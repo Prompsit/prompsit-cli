@@ -1,7 +1,7 @@
-// See API-436: Atomic file write utility (temp + rename pattern)
 // Prevents partial writes on crash or concurrent access
 
 import * as fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import * as path from "node:path";
 import { FILE_MODE_OWNER_RW } from "../shared/constants.ts";
 import { getConfigFile } from "./paths.ts";
@@ -18,7 +18,7 @@ import { getConfigFile } from "./paths.ts";
 export function atomicWriteFile(filePath: string, content: string | Buffer): void {
   const dir = path.dirname(filePath);
   const basename = path.basename(filePath);
-  const tmpPath = path.join(dir, `.${basename}.tmp`);
+  const tmpPath = path.join(dir, `.${basename}.${process.pid}.${randomUUID()}.tmp`);
 
   try {
     // Step 1: Write to temp file

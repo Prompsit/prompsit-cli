@@ -1,4 +1,3 @@
-// See API-501: REPL keybinding handlers.
 //
 // Shared snippet-style keybinding helpers used by the REPL input layer.
 

@@ -1,5 +1,3 @@
-// See API-500: REPL help display — unified single-page help with optional per-command filtering.
-
 import chalk from "chalk";
 import type { StringKey } from "../i18n/catalog.ts";
 import { t } from "../i18n/index.ts";

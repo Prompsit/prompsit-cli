@@ -1,4 +1,3 @@
-// See API-436: TOML config file I/O with smol-toml
 // TOML 1.0 compliant read/write for CLI settings.
 // Diff-based write: only user-customized values are persisted.
 // Absent keys round-trip as Zod defaults, so schema default changes
@@ -66,8 +65,9 @@ export function readConfigToml(): Settings {
     }
 
     return settings;
-  } catch {
-    return SettingsSchema.parse({});
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "unknown configuration error";
+    throw new Error(`Unable to load ${configPath}: ${message}`, { cause: error });
   }
 }
 
@@ -128,8 +128,9 @@ function computeOverrides(settings: Settings): Record<string, Record<string, unk
  * in schemas.ts propagates automatically to all users.
  */
 export function writeConfigToml(settings: Settings): void {
+  const validated = SettingsSchema.parse(settings);
   const configPath = getConfigFile();
-  const overrides = computeOverrides(settings);
+  const overrides = computeOverrides(validated);
 
   const payload: Record<string, unknown> = { _version: CONFIG_VERSION, ...overrides };
   const tomlContent = smolToml.stringify(payload);

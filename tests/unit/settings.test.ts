@@ -11,9 +11,13 @@ vi.mock("../../src/logging/index.ts", () => ({
 }));
 
 import { getConfigValue, setConfigValue, reloadSettings } from "../../src/config/settings.ts";
+import * as tomlIo from "../../src/config/toml-io.ts";
+
+const mockWriteConfigToml = vi.mocked(tomlIo.writeConfigToml);
 
 describe("setConfigValue type coercion", () => {
   beforeEach(() => {
+    mockWriteConfigToml.mockReset();
     reloadSettings();
   });
 
@@ -44,5 +48,27 @@ describe("setConfigValue type coercion", () => {
     const value = getConfigValue("api-connect-timeout");
     expect(value).toBe(7.5);
     expect(typeof value).toBe("number");
+  });
+
+  it("rejects values outside the schema without mutating the cache", () => {
+    expect(() => setConfigValue("file-concurrency", "11")).toThrow();
+    expect(getConfigValue("file-concurrency")).toBe(3);
+    expect(() => setConfigValue("telemetry-enabled", "yes")).toThrow();
+    expect(getConfigValue("telemetry-enabled")).toBe(false);
+  });
+
+  it("rejects cleartext remote API URLs and accepts loopback HTTP", () => {
+    expect(() => setConfigValue("api-base-url", "http://example.com")).toThrow();
+    setConfigValue("api-base-url", "http://127.0.0.1:8080");
+    expect(getConfigValue("api-base-url")).toBe("http://127.0.0.1:8080");
+  });
+
+  it("keeps the cached value when persistence fails", () => {
+    mockWriteConfigToml.mockImplementationOnce(() => {
+      throw new Error("disk full");
+    });
+
+    expect(() => setConfigValue("batch-size", "75")).toThrow("disk full");
+    expect(getConfigValue("batch-size")).toBe(50);
   });
 });

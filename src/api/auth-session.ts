@@ -1,4 +1,3 @@
-// See API-451: Auth Session with proactive + reactive token refresh
 // Wraps HttpTransport with optimistic auth and automatic token lifecycle management.
 // Pattern: public fallback -> proactive refresh -> request -> reactive 401 retry
 
@@ -8,14 +7,17 @@ import type { HttpTransport, RawResponse } from "./transport.ts";
 
 export type { Progress } from "./transport.ts";
 import { AuthResource } from "./resources/auth.ts";
-import { AuthenticationError, NetworkError, ServerError } from "../errors/contracts.ts";
+import { AuthenticationError } from "../errors/contracts.ts";
 import {
+  getAccessToken,
   getRefreshToken,
   getAccountId,
   saveTokens,
   clearTokens,
   isAuthenticated,
   isTokenExpired,
+  resetAuthCache,
+  withCredentialLock,
 } from "../config/credentials.ts";
 
 /**
@@ -112,7 +114,6 @@ export class AuthSession {
     if (isTokenExpired()) {
       const refreshed = await this.tryRefresh();
       if (!refreshed) {
-        clearTokens();
         throw new AuthenticationError("Session expired.");
       }
     }
@@ -127,7 +128,6 @@ export class AuthSession {
         if (refreshed) {
           return await fn(false, signal);
         }
-        clearTokens();
         throw new AuthenticationError("Authentication failed.");
       }
       throw error;
@@ -154,36 +154,56 @@ export class AuthSession {
   }
 
   private async _doRefresh(): Promise<boolean> {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return false;
+    const observedRefreshToken = getRefreshToken();
+    const observedAccessToken = getAccessToken();
 
-    try {
-      const response = await this.authResource.refreshToken(refreshToken);
+    return withCredentialLock(async () => {
+      resetAuthCache();
+      const refreshToken = getRefreshToken();
+      const accessToken = getAccessToken();
 
-      // Save new tokens; preserve existing refresh token if server omits new one
-      saveTokens({
-        accessToken: response.access_token,
-        refreshToken: response.refresh_token ?? refreshToken,
-        accountId: getAccountId() ?? undefined,
-        expiresIn: response.expires_in ?? undefined,
-        plan: response.plan,
-      });
-
-      // Force new Bearer header on next request
-      this.transport.resetAuthClient();
-
-      return true;
-    } catch (error: unknown) {
-      // Auth errors (401/invalid_grant): refresh token expired
-      if (error instanceof AuthenticationError) {
+      // Another process completed authentication or rotation while this one waited.
+      if (refreshToken !== observedRefreshToken || accessToken !== observedAccessToken) {
+        this.transport.resetAuthClient();
+        return accessToken !== null;
+      }
+      if (!refreshToken) {
+        clearTokens();
         return false;
       }
-      // Network/server errors: preserve tokens, propagate retryable error
-      if (error instanceof NetworkError || error instanceof ServerError) {
+
+      try {
+        const response = await this.authResource.refreshToken(
+          refreshToken,
+          AbortSignal.timeout(60_000)
+        );
+
+        // Login/logout/secret rotation may update credentials without waiting for this lock.
+        // Never overwrite a newer state that appeared while the network request was in flight.
+        resetAuthCache();
+        if (getRefreshToken() !== refreshToken) {
+          const currentAccessToken = getAccessToken();
+          this.transport.resetAuthClient();
+          return currentAccessToken !== null;
+        }
+
+        saveTokens({
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token ?? refreshToken,
+          accountId: getAccountId() ?? undefined,
+          expiresIn: response.expires_in ?? undefined,
+          plan: response.plan,
+        });
+        this.transport.resetAuthClient();
+        return true;
+      } catch (error: unknown) {
+        if (error instanceof AuthenticationError) {
+          resetAuthCache();
+          if (getRefreshToken() === refreshToken) clearTokens();
+          return false;
+        }
         throw error;
       }
-      // Unknown error: treat as auth failure
-      return false;
-    }
+    });
   }
 }

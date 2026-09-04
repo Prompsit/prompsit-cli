@@ -6,13 +6,17 @@ vi.mock("../../src/config/toml-io.ts", async () => {
   const { SettingsSchema } = await import("../../src/config/schemas.ts");
   return {
     readConfigToml: vi.fn(() =>
-      SettingsSchema.parse({ api: { base_url: "http://toml.example/" }, cli: { batch_size: 11 } })
+      SettingsSchema.parse({ api: { base_url: "https://toml.example/" }, cli: { batch_size: 11 } })
     ),
     writeConfigToml: vi.fn(),
   };
 });
 
-import { getSettings, reloadSettings } from "../../src/config/settings.ts";
+import {
+  assertNetworkConfiguration,
+  getSettings,
+  reloadSettings,
+} from "../../src/config/settings.ts";
 
 // Snapshot + strip ALL ambient PROMPSIT_* before each test so a developer's or CI's real
 // environment can't leak into precedence assertions; restore the original env afterward.
@@ -68,15 +72,23 @@ describe("parseEnvOverrides", () => {
 
 describe("config precedence: env > TOML > defaults", () => {
   it("TOML overrides the schema default when no env var is set", () => {
-    expect(getSettings().api.base_url).toBe("http://toml.example/");
+    expect(getSettings().api.base_url).toBe("https://toml.example/");
     expect(getSettings().cli.batch_size).toBe(11);
   });
 
   it("env overrides TOML (and the schema default)", () => {
-    process.env.PROMPSIT_API__BASE_URL = "http://env.example/";
+    process.env.PROMPSIT_API__BASE_URL = "https://env.example/";
     process.env.PROMPSIT_CLI__BATCH_SIZE = "99";
     reloadSettings();
-    expect(getSettings().api.base_url).toBe("http://env.example/");
+    expect(getSettings().api.base_url).toBe("https://env.example/");
     expect(getSettings().cli.batch_size).toBe(99);
+  });
+
+  it("blocks network use instead of silently routing after an invalid override", () => {
+    process.env.PROMPSIT_API__BASE_URL = "http://remote.example/";
+    reloadSettings();
+
+    expect(getSettings().api.base_url).toBe("https://toml.example/");
+    expect(() => assertNetworkConfiguration()).toThrow(/network access is disabled/iu);
   });
 });

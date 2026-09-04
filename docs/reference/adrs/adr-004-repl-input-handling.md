@@ -1,104 +1,21 @@
-# ADR-004: REPL Input Handling — pi-tui
+# ADR-004: pi-tui REPL
 
-**Date:** 2026-02-24 | **Status:** Accepted | **Category:** Technical | **Decision Makers:** Engineering Team
-
-<!-- SCOPE: Architecture Decision Record for REPL input handling approach ONLY. Contains context, decision, rationale, alternatives. -->
-
----
-
-## Revision History
-
-| Date | Change |
-|------|--------|
-| 2026-02-15 | Initial: readline + keypress events |
-| 2026-02-15 | Superseded: Migrated to Ink (React terminal UI) after readline layout issues |
-| 2026-02-24 | **Current:** Migrated from Ink to `@earendil-works/pi-tui` for simpler, lighter TUI |
-
----
+**Status:** Accepted; supersedes the earlier readline and Ink implementations.
 
 ## Context
 
-The REPL needs interactive features: command completion, persistent status bar, history navigation. Previously used Ink (React for terminal), which added 3 runtime deps (`ink`, `react`, `@inkjs/ui`) and required JSX transform (`tsx` loader).
-
-### Why Ink was replaced
-
-| Issue | Impact |
-|-------|--------|
-| 3 runtime dependencies (ink, react, @inkjs/ui) | Bundle bloat, version conflicts |
-| JSX transform required | `tsx` loader in dev, `react-jsx` in tsconfig |
-| React component model overhead | Overkill for a prompt + status bar |
-| Ink v6 maintenance uncertainty | Single maintainer project |
-
----
+Interactive mode needs a persistent layout, editor, completion, history navigation, selectable output, progress, and cross-platform input handling without maintaining a second command implementation.
 
 ## Decision
 
-Use **`@earendil-works/pi-tui`** — a lightweight terminal UI library with built-in editor, completion, and layout primitives.
-
-```
-REPL Loop
-    ↓
-pi-tui terminal editor
-    ↓
-┌─────────────────────────────┐
-│ › user input here           │ ← pi-tui editor with completion
-│ ────────────────────────    │ ← separator
-│ tip | auth | env | lang     │ ← status bar
-└─────────────────────────────┘
-```
-
----
-
-## Rationale
-
-| Factor | Decision Rationale |
-|--------|-------------------|
-| Single dependency | `@earendil-works/pi-tui` replaces `ink` + `react` + `@inkjs/ui` |
-| No JSX required | Plain TypeScript, no transform needed |
-| Built-in editor | Handles input, cursor, history natively |
-| Completion support | Built-in completion list rendering |
-| Lighter runtime | No React reconciler overhead |
-
----
-
-## Alternatives Considered
-
-| Alternative | Why Rejected |
-|-------------|-------------|
-| **Ink v6 (React)** | 3 deps, JSX required, React overhead — was previous solution |
-| **readline + keypress** | Architecturally incompatible with persistent multi-line layout (see Revision History) |
-| **terminal-kit** | +19 deps; 1 maintainer; CJS; no TS types |
-
----
+Use `@earendil-works/pi-tui` for terminal UI primitives. Dispatch commands through the shared Commander program. Keep command metadata in the REPL registry and route output through structured terminal events.
 
 ## Consequences
 
-| Type | Consequence |
-|------|------------|
-| Positive | Single dependency instead of 3 |
-| Positive | No JSX transform — plain TypeScript throughout |
-| Positive | Lighter runtime footprint |
-| Positive | Built-in editor with history and completion |
-| Negative | Less ecosystem support than React/Ink |
+- REPL UI code is plain TypeScript without React/JSX.
+- CLI and REPL share command behavior and differ only at the presentation adapter.
+- Command history and output history are separate; sensitive commands enter neither persistent history nor command echo.
+- Rendering must preserve event ordering, width-aware wrapping, selection, scrolling, and bounded history.
+- TUI upgrades must be validated through these contracts rather than library-internal behavior.
 
----
-
-## Implementation
-
-| File | Role |
-|------|------|
-| `src/repl/loop.ts` | REPL main loop using pi-tui |
-| `src/repl/controller.ts` | Input processing and dispatch |
-| `src/repl/executor.ts` | Command execution with process.exit guard |
-| `src/repl/registry.ts` | Command registry for completion |
-| `src/tui/settings-screen.ts` | TUI settings screen using pi-tui |
-
----
-
-## Maintenance
-
-**Update Triggers:**
-- If `@earendil-works/pi-tui` introduces breaking API changes
-- When adding new TUI features (split panes, scrollable output)
-
-**Last Updated:** 2026-02-24
+The prior implementations are historical git state, not maintained documentation.

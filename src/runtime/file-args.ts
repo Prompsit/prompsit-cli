@@ -169,15 +169,16 @@ export function resolveOutputPaths(
     const dir = outputDir ? resolve(outputDir) : dirname(filePath);
     const outExt = extOverride ? `.${extOverride}` : inputExt;
 
-    let targetPath = join(dir, `${inputBase}${suffix}${outExt}`);
+    const baseTargetPath = join(dir, `${inputBase}${suffix}${outExt}`);
 
     // Disambiguate collisions
-    const count = seen.get(targetPath) ?? 0;
+    const count = seen.get(baseTargetPath) ?? 0;
+    let targetPath = baseTargetPath;
     if (count > 0) {
-      const [tBase, tExt] = splitExtension(basename(targetPath));
-      targetPath = join(dirname(targetPath), `${tBase}_${count + 1}${tExt}`);
+      const [targetBase, targetExt] = splitExtension(basename(baseTargetPath));
+      targetPath = join(dirname(baseTargetPath), `${targetBase}_${count + 1}${targetExt}`);
     }
-    seen.set(targetPath, count + 1);
+    seen.set(baseTargetPath, count + 1);
     paths.push(targetPath);
   }
 

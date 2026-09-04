@@ -4,6 +4,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { getConfigDir } from "../../config/paths.ts";
+import { isSensitiveCommand } from "../sensitive-command.ts";
 
 const MAX_ENTRIES = 1000;
 
@@ -131,7 +132,7 @@ export class CommandHistory {
       const filtered: string[] = [];
       for (const raw of lines) {
         const line = raw.trim();
-        if (!line || line.startsWith("#")) continue;
+        if (!line || line.startsWith("#") || isSensitiveCommand(line)) continue;
         // Consecutive dedup
         if (filtered.length > 0 && filtered.at(-1) === line) continue;
         filtered.push(line);

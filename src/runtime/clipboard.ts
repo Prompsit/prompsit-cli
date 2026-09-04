@@ -1,4 +1,3 @@
-// See API-502: Cross-platform clipboard access.
 //
 // Leaf module -- no internal repl/ imports.
 // Windows: clip.exe (write) + powershell.exe Get-Clipboard (read).

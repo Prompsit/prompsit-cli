@@ -1,4 +1,3 @@
-// See API-444: Curl command output for API requests
 // Shows API requests as curl commands for --debug flag and show_curl setting.
 // Layer: Infrastructure. Output is injected via setCurlOutputFn() callback.
 

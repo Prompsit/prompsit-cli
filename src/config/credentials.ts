@@ -1,12 +1,64 @@
-// See API-440: Credential Store (JSON Cross-Compatible)
-// See API-441: Token Expiry with Monotonic Clock
-
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import { getCredsFile } from "./paths.ts";
 import { atomicWriteFile } from "./file-utils.ts";
 import { TOKEN_EXPIRY_BUFFER } from "./constants.ts";
 import { FILE_MODE_OWNER_RW } from "../shared/constants.ts";
+
+const LOCK_RETRY_MS = 50;
+const LOCK_TIMEOUT_MS = 15_000;
+const LOCK_STALE_MS = 120_000;
+
+/** Serialize refresh-token rotation across CLI processes sharing credentials.json. */
+export async function withCredentialLock<T>(operation: () => Promise<T>): Promise<T> {
+  const lockPath = `${getCredsFile()}.lock`;
+  const owner = `${process.pid}:${randomUUID()}`;
+  const startedAt = Date.now();
+
+  for (;;) {
+    try {
+      const handle = await fs.promises.open(lockPath, "wx", FILE_MODE_OWNER_RW);
+      try {
+        await handle.writeFile(owner, "utf8");
+      } finally {
+        await handle.close();
+      }
+
+      break;
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+
+      try {
+        const stat = await fs.promises.stat(lockPath);
+        if (Date.now() - stat.mtimeMs > LOCK_STALE_MS) {
+          await fs.promises.unlink(lockPath);
+          continue;
+        }
+      } catch (statError: unknown) {
+        if ((statError as NodeJS.ErrnoException).code === "ENOENT") continue;
+      }
+
+      if (Date.now() - startedAt >= LOCK_TIMEOUT_MS) {
+        throw new Error("Timed out waiting for the credential refresh lock", { cause: error });
+      }
+      await delay(LOCK_RETRY_MS);
+    }
+  }
+
+  try {
+    return await operation();
+  } finally {
+    try {
+      if ((await fs.promises.readFile(lockPath, "utf8")) === owner) {
+        await fs.promises.unlink(lockPath);
+      }
+    } catch {
+      // The lock was already removed or replaced; never delete another owner's lock.
+    }
+  }
+}
 
 // ===== Zod Schema =====
 

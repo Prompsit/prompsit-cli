@@ -1,4 +1,3 @@
-// See API-442: Error hierarchy with codes & RFC 9457 ProblemDetail
 import { STATUS_CODES } from "node:http";
 import {
   APIError,

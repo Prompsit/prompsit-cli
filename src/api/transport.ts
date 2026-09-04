@@ -1,9 +1,11 @@
-// See API-445: HTTP Transport with Got Retry & Resilience
 // Provides: retry config, Retry-After handling, error classification, curl hooks.
 // Three request methods: request<T> (JSON), requestRaw (buffer+headers), requestToFile (streaming).
 
+import { randomUUID } from "node:crypto";
 import { createWriteStream } from "node:fs";
+import { rename, unlink } from "node:fs/promises";
 import * as os from "node:os";
+import { basename, dirname, join } from "node:path";
 import { pipeline } from "node:stream/promises";
 
 import got, {
@@ -326,6 +328,10 @@ export class HttpTransport {
     onDownloadProgress?: (progress: Progress) => void
   ): Promise<string> {
     const gotInstance = publicFlag ? this.publicClient : this.client;
+    const tempPath = join(
+      dirname(outputPath),
+      `.${basename(outputPath)}.${process.pid}.${randomUUID()}.part`
+    );
 
     try {
       const effectiveSignal = signal ?? getCurrentAbortSignal();
@@ -337,11 +343,13 @@ export class HttpTransport {
 
       if (onDownloadProgress) stream.on("downloadProgress", onDownloadProgress);
 
-      const fileStream = createWriteStream(outputPath);
+      const fileStream = createWriteStream(tempPath, { flags: "wx" });
       await pipeline(stream, fileStream, ...(effectiveSignal ? [{ signal: effectiveSignal }] : []));
+      await rename(tempPath, outputPath);
 
       return outputPath;
     } catch (error: unknown) {
+      await unlink(tempPath).catch(() => {});
       throw this.handleError(error);
     }
   }

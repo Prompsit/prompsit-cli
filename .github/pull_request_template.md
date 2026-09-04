@@ -14,7 +14,7 @@
 
 - [ ] `npm run lint:all` passes
 - [ ] `npm run test` passes
-- [ ] Changes follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
+- [ ] Changes follow [CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
 - [ ] Documentation updated (if applicable)
 
 ## Related Issues

@@ -1,4 +1,3 @@
-// See API-436: Config directory and file path utilities
 // Resolves config paths with mkdir -p behavior.
 // E2E and automation can override the base directory via PROMPSIT_DATA_DIR.
 
@@ -39,7 +38,6 @@ export function getConfigFile(): string {
 
 /**
  * Get credentials file path (~/.prompsit/credentials.json)
- * Used by T004 (Credential Store)
  */
 export function getCredsFile(): string {
   return path.join(getConfigDir(), "credentials.json");

@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthSession } from "../../src/api/auth-session.ts";
-import { AuthenticationError } from "../../src/errors/contracts.ts";
+import { AuthenticationError, NetworkError } from "../../src/errors/contracts.ts";
 
 vi.mock("../../src/config/credentials.ts", () => ({
   isAuthenticated: vi.fn(() => true),
   isTokenExpired: vi.fn(() => false),
   getRefreshToken: vi.fn(() => "mock-refresh-token"),
+  getAccessToken: vi.fn(() => "mock-access-token"),
   getAccountId: vi.fn(() => "acc-test"),
   saveTokens: vi.fn(),
   clearTokens: vi.fn(),
+  resetAuthCache: vi.fn(),
+  withCredentialLock: vi.fn(async (operation: () => Promise<unknown>) => operation()),
 }));
 
 import * as creds from "../../src/config/credentials.ts";
@@ -16,6 +19,7 @@ import * as creds from "../../src/config/credentials.ts";
 const mockIsAuthenticated = vi.mocked(creds.isAuthenticated);
 const mockIsTokenExpired = vi.mocked(creds.isTokenExpired);
 const mockGetRefreshToken = vi.mocked(creds.getRefreshToken);
+const mockGetAccessToken = vi.mocked(creds.getAccessToken);
 const mockClearTokens = vi.mocked(creds.clearTokens);
 
 function createMocks() {
@@ -36,6 +40,7 @@ describe("AuthSession", () => {
     mockIsAuthenticated.mockReturnValue(true);
     mockIsTokenExpired.mockReturnValue(false);
     mockGetRefreshToken.mockReturnValue("mock-refresh-token");
+    mockGetAccessToken.mockReturnValue("mock-access-token");
   });
 
   it("unauthenticated requests use public transport (no auth header)", async () => {
@@ -46,7 +51,14 @@ describe("AuthSession", () => {
     const result = await session.request("GET", "/v1/engines");
     expect(result).toEqual({ data: "public" });
     // publicFlag=true means no Authorization header
-    expect(transport.request).toHaveBeenCalledWith("GET", "/v1/engines", {}, true, undefined, undefined);
+    expect(transport.request).toHaveBeenCalledWith(
+      "GET",
+      "/v1/engines",
+      {},
+      true,
+      undefined,
+      undefined
+    );
   });
 
   it("expired token triggers proactive refresh", async () => {
@@ -120,5 +132,35 @@ describe("AuthSession", () => {
 
     expect(results).toEqual([true, true, true]);
     expect(authResource.refreshToken).toHaveBeenCalledTimes(1);
+  });
+
+  it("adopts credentials rotated while waiting for the cross-process lock", async () => {
+    mockGetRefreshToken.mockReturnValueOnce("old-refresh").mockReturnValue("new-refresh");
+    mockGetAccessToken.mockReturnValueOnce("old-access").mockReturnValue("new-access");
+    const { session, authResource, transport } = createMocks();
+
+    await expect(session.tryRefresh()).resolves.toBe(true);
+    expect(authResource.refreshToken).not.toHaveBeenCalled();
+    expect(transport.resetAuthClient).toHaveBeenCalledOnce();
+  });
+
+  it("preserves credentials when refresh fails for a network reason", async () => {
+    const { session, authResource } = createMocks();
+    authResource.refreshToken.mockRejectedValue(new NetworkError("offline"));
+
+    await expect(session.tryRefresh()).rejects.toThrow(NetworkError);
+    expect(mockClearTokens).not.toHaveBeenCalled();
+  });
+
+  it("does not clear credentials replaced during a rejected refresh", async () => {
+    mockGetRefreshToken
+      .mockReturnValueOnce("old-refresh")
+      .mockReturnValueOnce("old-refresh")
+      .mockReturnValue("new-refresh");
+    const { session, authResource } = createMocks();
+    authResource.refreshToken.mockRejectedValue(new AuthenticationError("rejected"));
+
+    await expect(session.tryRefresh()).resolves.toBe(false);
+    expect(mockClearTokens).not.toHaveBeenCalled();
   });
 });

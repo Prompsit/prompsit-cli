@@ -1,4 +1,3 @@
-// See API-482: Job Tracking Module (Strategy Pattern)
 //
 // Strategy pattern: JobTracker interface -> SSETracker (real-time) / PollingTracker (fallback)
 // Facade: trackJob() hides strategy selection. SSE-first with transparent polling fallback.
@@ -12,12 +11,7 @@ import type { APIClient } from "../api/client.ts";
 import { t } from "../i18n/index.ts";
 import { terminal } from "../output/terminal.ts";
 import { createProgressSink } from "../output/progress-display.ts";
-import {
-  DEFAULT_POLL_INTERVAL,
-  Endpoint,
-  JobStatus,
-  MAX_POLL_INTERVAL,
-} from "../shared/constants.ts";
+import { DEFAULT_POLL_INTERVAL, JobStatus, MAX_POLL_INTERVAL } from "../shared/constants.ts";
 import { getCurrentAbortSignal } from "../runtime/request-context.ts";
 import { trackShutdownTask } from "../cli/shutdown.ts";
 import { getLogger } from "../logging/index.ts";
@@ -128,14 +122,12 @@ export class PollingTracker implements JobTracker {
     signal?: AbortSignal
   ): Promise<JobResult | null> {
     let interval = this.pollInterval;
-    const jobUrl = `${this.client.baseUrl}${Endpoint.JOB.replace("{job_id}", jobId)}`;
-
     for (;;) {
       if (signal?.aborted) return null;
 
       let jobStatus: JobStatusResponse;
       try {
-        jobStatus = await this.client.session.request<JobStatusResponse>("GET", jobUrl);
+        jobStatus = await this.client.jobs.status(jobId, signal);
       } catch (error: unknown) {
         if (error instanceof RateLimitError) {
           const wait = error.retryAfter ?? interval * 2;

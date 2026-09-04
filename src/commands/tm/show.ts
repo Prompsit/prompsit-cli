@@ -1,4 +1,3 @@
-// See API-535: tm show — adaptive list TMs or list segments.
 // Without -s/-t: GET /translation/memory (list TMs for profile)
 // With -s + -t: GET /translation/memory/segments (paginated segment list)
 

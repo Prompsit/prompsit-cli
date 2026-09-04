@@ -1,19 +1,36 @@
-// See API-434: Zod Config Schemas & Defaults
-
 import { z } from "zod";
 import { API_URL_PRESETS, DEFAULT_API_URL_PRESET } from "./constants.ts";
+
+const LOOPBACK_HOSTS = new Set(["localhost", "[::1]"]);
+
+function isAllowedApiUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    if (url.username || url.password) return false;
+    if (url.protocol === "https:") return true;
+    if (url.protocol !== "http:") return false;
+    if (LOOPBACK_HOSTS.has(url.hostname)) return true;
+    return /^127(?:\.[0-9]{1,3}){3}$/u.test(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export const ApiBaseUrlSchema = z.string().refine(isAllowedApiUrl, {
+  message: "API URL must use HTTPS; HTTP is allowed only for loopback hosts",
+});
 
 /**
  * API configuration section schema
  */
 export const ApiConfigSchema = z.object({
-  base_url: z.string().default(API_URL_PRESETS[DEFAULT_API_URL_PRESET]),
-  timeout: z.number().int().default(0),
-  connect_timeout: z.number().default(5),
-  write_timeout: z.number().default(0),
-  retry_attempts: z.number().int().default(3),
-  retry_max: z.number().default(10),
-  rate_limit_max_wait: z.number().int().default(300),
+  base_url: ApiBaseUrlSchema.default(API_URL_PRESETS[DEFAULT_API_URL_PRESET]),
+  timeout: z.number().int().min(0).default(0),
+  connect_timeout: z.number().min(0).default(5),
+  write_timeout: z.number().min(0).default(0),
+  retry_attempts: z.number().int().min(0).default(3),
+  retry_max: z.number().min(0).default(10),
+  rate_limit_max_wait: z.number().int().min(0).default(300),
   warmup_timeout: z.number().int().min(0).default(120),
 });
 
@@ -23,8 +40,8 @@ export const ApiConfigSchema = z.object({
 export const CliConfigSchema = z.object({
   contact_url: z.string().default("https://prompsit.com/en/contact"),
   feedback_url: z.string().default("https://github.com/Prompsit/prompsit-cli/issues"),
-  batch_size: z.number().int().default(50),
-  progress_threshold: z.number().int().default(10),
+  batch_size: z.number().int().min(1).default(50),
+  progress_threshold: z.number().int().min(0).default(10),
   language: z.string().default("en"),
   log_level: z
     .string()
@@ -55,7 +72,7 @@ export const CliConfigSchema = z.object({
 export const TelemetryConfigSchema = z.object({
   enabled: z.boolean().default(false),
   loki_key: z.string().default(""),
-  loki_timeout: z.number().default(3),
+  loki_timeout: z.number().min(0).default(3),
 });
 
 /**

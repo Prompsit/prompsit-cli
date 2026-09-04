@@ -1,4 +1,3 @@
-// See API-481: SSE Client with Reconnection
 // Uses eventsource-client (MIT, async iterators, custom fetch) for SSE parsing.
 // Custom fetch wrapper handles Bearer auth, 401 refresh, 404/503 fallback.
 //

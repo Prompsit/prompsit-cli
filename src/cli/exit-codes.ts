@@ -1,4 +1,3 @@
-// See API-456: Exit code constants (POSIX standard)
 // 0=success, 1=app error, 2=usage error, 130=SIGINT, 143=SIGTERM
 
 /** Application error (API error, network error, auth error). */

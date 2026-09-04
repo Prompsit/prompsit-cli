@@ -1,4 +1,3 @@
-// See API-478: SSE Event Models (Zod Schemas)
 // Schema-first design: Zod schemas define runtime validation + TypeScript types.
 //
 // Pattern: z.object() (lenient) because server may add fields.

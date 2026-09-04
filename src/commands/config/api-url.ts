@@ -1,12 +1,7 @@
 import { Command } from "@commander-js/extra-typings";
-import {
-  API_URL_PRESETS,
-  getConfigValue,
-  getSettings,
-  setConfigValue,
-  writeConfigToml,
-} from "../../config/index.ts";
+import { API_URL_PRESETS, getConfigValue, setConfigValue } from "../../config/index.ts";
 import { ErrorCode } from "../../errors/codes.ts";
+import { toErrorMessage } from "../../errors/contracts.ts";
 import { t } from "../../i18n/index.ts";
 import { terminal } from "../../output/index.ts";
 import { failCommand } from "../error-handler.ts";
@@ -57,8 +52,12 @@ export function registerConfigApiUrl(configCommand: Command): void {
         }
       }
 
-      setConfigValue("api-base-url", resolvedUrl);
-      writeConfigToml(getSettings());
+      try {
+        setConfigValue("api-base-url", resolvedUrl);
+      } catch (error: unknown) {
+        failCommand(ErrorCode.CONFIG_WRITE, toErrorMessage(error));
+        return;
+      }
       applyApiUrlChangeAndNotify(resolvedUrl);
     });
 }

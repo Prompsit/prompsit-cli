@@ -1,4 +1,3 @@
-// See API-535: Unit tests for TMResource — boundary mapping tests.
 // Pattern: same as translation-resource.test.ts — mock session, verify camelCase→snake_case mapping.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";

@@ -1,5 +1,3 @@
-// See API-455: Health check command
-
 import { Command } from "@commander-js/extra-typings";
 import { getApiClient } from "../api/client.ts";
 import { terminal, createHealthTableModel } from "../output/index.ts";

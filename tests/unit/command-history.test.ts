@@ -64,10 +64,12 @@ describe("CommandHistory", () => {
       [
         "# 2026-02-16 session start",
         "help",
-        "help",       // consecutive dupe — filtered
+        "help", // consecutive dupe — filtered
+        'login -a "user@example.com" -s "old-secret"',
+        'secret set "old-secret"',
         "translate hi",
-        "",            // empty line — filtered
-        "# comment",   // comment — filtered
+        "", // empty line — filtered
+        "# comment", // comment — filtered
         "translate hi", // consecutive dupe — filtered
         "status",
       ].join("\n")

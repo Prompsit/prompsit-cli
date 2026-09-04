@@ -1,4 +1,3 @@
-// See API-438: Environment variable parser with nested delimiter support
 // Parses PROMPSIT_* env vars with __ nested delimiter (e.g., PROMPSIT_API__BASE_URL)
 
 /**

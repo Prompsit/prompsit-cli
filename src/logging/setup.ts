@@ -103,7 +103,7 @@ export function setupLogging(consoleOverride?: LogLevel): void {
   if (settingsDiagnostics.length > 0) {
     instance.warn(
       { issues: settingsDiagnostics.join("; ") },
-      "Invalid env overrides detected and dropped"
+      "Invalid configuration detected; network access is disabled"
     );
   }
 }

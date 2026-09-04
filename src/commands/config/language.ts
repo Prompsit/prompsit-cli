@@ -1,10 +1,5 @@
 import { Command } from "@commander-js/extra-typings";
-import {
-  isAuthenticated,
-  getSettings,
-  setConfigValue,
-  writeConfigToml,
-} from "../../config/index.ts";
+import { isAuthenticated, setConfigValue } from "../../config/index.ts";
 import { ErrorCode } from "../../errors/codes.ts";
 import { t, currentLang, setTranslations } from "../../i18n/index.ts";
 import { translateCatalog } from "../../i18n/translator.ts";
@@ -34,7 +29,6 @@ export function registerConfigLanguage(configCommand: Command): void {
 
       if (code === "en") {
         setConfigValue("language", "en");
-        writeConfigToml(getSettings());
         setTranslations({}, "en");
         terminal.success(t("config.language.reset_success"));
         return;
@@ -75,9 +69,7 @@ export function registerConfigLanguage(configCommand: Command): void {
         }
 
         setTranslations(result.translations, code);
-        const settings = getSettings();
         setConfigValue("language", code);
-        writeConfigToml(settings);
 
         const catalogSize = 300;
         if (!result.fromCache && total < catalogSize * 0.9) {

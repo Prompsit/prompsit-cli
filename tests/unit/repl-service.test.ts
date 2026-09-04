@@ -70,6 +70,21 @@ describe("ReplService edge cases", () => {
     await service.dispose();
   });
 
+  it.each([
+    'login -a "user@example.com" -s "top-secret"',
+    '  LOGIN -a "user@example.com" -s "top-secret"',
+    'secret set "top-secret"',
+  ])("does not retain sensitive input: %s", async (input) => {
+    const service = new ReplService();
+
+    await service.submit(input);
+
+    expect(mocks.appendFile).not.toHaveBeenCalled();
+    expect(service.commandHistory.getEntries()).toEqual([]);
+    expect(service.getHistory().some((item) => item.text.includes("top-secret"))).toBe(false);
+    await service.dispose();
+  });
+
   it("buffers lines with unclosed quotes and executes on completion", async () => {
     const service = new ReplService();
 

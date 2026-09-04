@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// See API-456, API-480, API-486, API-491, API-498: Signal handling, exit codes, and exitOverride
 //
 // Entry point only — program definition lives in program.ts to avoid ESM TLA deadlock.
 // When REPL is running, this module has a pending top-level await (runRepl never resolves),
@@ -45,7 +44,7 @@ if (isEntryPoint) {
     }
   }
 
-  // See API-503: No-args detection — enter REPL mode when no command specified
+  // No command starts the interactive REPL.
   // Quick-exit flags (--help, --version) must go through Commander.js, not REPL.
   // Other flags (--verbose) alone should not prevent REPL entry.
   const hasCommand = isQuickExit || userArgs.some((a) => !a.startsWith("-"));

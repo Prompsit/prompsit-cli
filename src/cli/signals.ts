@@ -1,4 +1,3 @@
-// See API-456: Signal handling for graceful shutdown
 // Registers process-level SIGINT/SIGTERM handlers.
 // Cleanup: abort in-flight work, drain best-effort cleanup (server job cancel + telemetry)
 // within a bounded window, then exit with signal-specific code.

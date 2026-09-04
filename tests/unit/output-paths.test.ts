@@ -22,9 +22,9 @@ describe("resolveOutputPaths", () => {
   });
 
   it("disambiguates colliding output names with a numeric suffix", () => {
-    // Two different inputs deriving the same output name (same dir + same base + same override).
-    const outs = resolveOutputPaths(["/a/x.tmx", "/a/x.txt"], "_s", undefined, "csv");
-    expect(outs.map((p) => basename(p))).toEqual(["x_s.csv", "x_s_2.csv"]);
+    const outs = resolveOutputPaths(["/a/x.tmx", "/a/x.txt", "/a/x.jsonl"], "_s", undefined, "csv");
+    expect(outs.map((p) => basename(p))).toEqual(["x_s.csv", "x_s_2.csv", "x_s_3.csv"]);
+    expect(new Set(outs).size).toBe(outs.length);
   });
 
   it("places output beside each input by default (no output dir)", () => {

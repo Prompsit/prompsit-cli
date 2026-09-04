@@ -1,4 +1,3 @@
-// See API-535: tm import — upload TMX file into TM.
 // F1: profile_id is a query param, NOT form field.
 // F6: accepts path with or without @ prefix.
 // F4: displays the imported language pair from the completed job result.

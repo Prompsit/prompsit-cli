@@ -1,4 +1,3 @@
-// See API-535: TM parent command with subcommand wiring.
 // Pattern: same as config/command.ts — parent delegates to default subcommand.
 
 import { Command } from "@commander-js/extra-typings";

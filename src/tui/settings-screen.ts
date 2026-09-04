@@ -22,8 +22,7 @@ import { terminal } from "../output/terminal.ts";
 import {
   getSettings,
   getConfigValue,
-  setConfigValue,
-  writeConfigToml,
+  setConfigValues,
   reloadSettings,
   API_URL_PRESETS,
   isAuthenticated,
@@ -205,10 +204,7 @@ async function applyDraftChanges(draft: DraftState): Promise<void> {
 
   // Phase 3: Persist only successful changes
   if (changes.size === 0) return;
-  for (const [id, value] of changes) {
-    setConfigValue(id, value);
-  }
-  writeConfigToml(getSettings());
+  setConfigValues(changes);
 
   // Phase 4: Safe side-effects (after persist)
   if (changes.has("show-curl")) {

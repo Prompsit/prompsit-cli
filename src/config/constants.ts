@@ -1,5 +1,3 @@
-// See API-434: Zod Config Schemas & Defaults
-
 /**
  * Preset API base URLs
  */

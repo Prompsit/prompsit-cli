@@ -2,68 +2,64 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { HistoryComponent } from "../../src/repl/ui/components/history-component.ts";
 import { outputBridge } from "../../src/repl/core/output-bridge.ts";
 
-beforeEach(() => { outputBridge.enable(); });
-afterEach(() => { outputBridge.disable(); }); // disable() clears buffer
+beforeEach(() => {
+  outputBridge.enable();
+});
+afterEach(() => {
+  outputBridge.disable();
+});
 
-function component(maxLines: number): HistoryComponent {
-  return new HistoryComponent(() => maxLines);
+function write(text: string): void {
+  outputBridge.write({
+    kind: "text",
+    timestamp: Date.now(),
+    stream: "stdout",
+    level: "info",
+    text,
+  });
 }
 
-function writeLines(n: number): void {
-  for (let i = 0; i < n; i++) {
-    outputBridge.write({
-      kind: "text",
-      timestamp: Date.now(),
-      stream: "stdout",
-      level: "info",
-      text: `line-${i}`,
-    });
-  }
-}
+describe("HistoryComponent output continuity", () => {
+  it("shows the newest output and includes later appends", () => {
+    const component = new HistoryComponent(() => 3);
+    for (let index = 0; index < 10; index += 1) write(`line-${index}`);
 
-describe("HistoryComponent", () => {
-  it("shows the last N lines, not the first ones", () => {
-    writeLines(10);
-    const result = component(3).render(80).join("\n");
-    expect(result).toContain("line-9");
-    expect(result).not.toContain("line-0");
+    const initial = component.render(80).join("\n");
+    expect(initial).toContain("line-9");
+    expect(initial).not.toContain("line-0");
+
+    write("appended");
+    expect(component.render(80).join("\n")).toContain("appended");
   });
 
-  it("render result never exceeds the height limit", () => {
-    writeLines(200);
-    expect(component(20).render(80).length).toBeLessThanOrEqual(20);
-  });
+  it("does not show stale output after clear resets event IDs", () => {
+    const component = new HistoryComponent(() => 5);
+    write("before-clear");
+    component.render(80);
 
-  it("returns empty content after outputBridge.clear()", () => {
-    writeLines(10);
     outputBridge.clear();
-    const result = component(20).render(80);
-    // Padding ensures editor stays at terminal bottom — all lines are empty but present
-    expect(result.every((line) => line === "")).toBe(true);
+    write("after-clear");
+    const rendered = component.render(80).join("\n");
+    expect(rendered).toContain("after-clear");
+    expect(rendered).not.toContain("before-clear");
   });
 
-  it("wraps long lines instead of truncating them", () => {
-    outputBridge.write({
-      kind: "text",
-      timestamp: Date.now(),
-      stream: "stdout",
-      level: "info",
-      text: "A".repeat(120), // 120 chars, rendered at width 40 → 3 physical lines
-    });
-    const result = component(10).render(40);
-    const nonEmpty = result.filter((line) => line !== "");
-    expect(nonEmpty.length).toBe(3);
-    expect(nonEmpty.join("")).toContain("A".repeat(40));
+  it("re-wraps output when the terminal width changes", () => {
+    const component = new HistoryComponent(() => 20);
+    write("A".repeat(80));
+
+    expect(component.render(80).filter(Boolean)).toHaveLength(1);
+    expect(component.render(20).filter(Boolean)).toHaveLength(4);
   });
 
-  it("height limit re-evaluated on each render — no stale state from previous call", () => {
-    writeLines(5);
-    let limit = 10;
-    const c = new HistoryComponent(() => limit);
-    const full = c.render(80);
-    limit = 2;
-    const trimmed = c.render(80);
-    expect(trimmed.length).toBeLessThanOrEqual(2);
-    expect(full.length).toBeGreaterThan(trimmed.length);
+  it("drops output removed by the bounded history buffer", () => {
+    const component = new HistoryComponent(() => 500);
+    for (let index = 0; index < 500; index += 1) write(`line-${index}`);
+    component.render(80);
+
+    write("line-500");
+    const rendered = component.render(80).map((line) => line.trim());
+    expect(rendered).not.toContain("line-0");
+    expect(rendered).toContain("line-500");
   });
 });

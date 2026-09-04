@@ -1,7 +1,7 @@
 import type { Component } from "@earendil-works/pi-tui";
 import { truncateToWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { formatOutputEvent } from "../../history/output-render.ts";
-import { outputBridge } from "../../core/output-bridge.ts";
+import { outputBridge, type ReplOutputEvent } from "../../core/output-bridge.ts";
 import { stripAnsi } from "../../../output/ansi-utils.ts";
 import { normalizeSelection, applyHighlight, type SelectionPos } from "../selection-utils.ts";
 
@@ -13,6 +13,8 @@ export class HistoryComponent implements Component {
   private selection: { start: SelectionPos; end: SelectionPos } | null = null;
   private isDragging = false;
   private lastRenderedLines: string[] = [];
+  private cachedWidth: number | null = null;
+  private readonly eventLineCache = new Map<number, { event: ReplOutputEvent; lines: string[] }>();
 
   constructor(getMaxLines: () => number, bannerRenderer?: (width: number) => string[]) {
     this.getMaxLines = getMaxLines;
@@ -73,19 +75,41 @@ export class HistoryComponent implements Component {
     const maxLines = this.getMaxLines();
     if (maxLines <= 0) return [];
 
-    const bannerLines = this.bannerRenderer ? this.bannerRenderer(width) : [];
+    if (this.cachedWidth !== width) {
+      this.cachedWidth = width;
+      this.eventLineCache.clear();
+    }
+
+    const bannerLines = (this.bannerRenderer ? this.bannerRenderer(width) : []).flatMap((line) =>
+      wrapTextWithAnsi(line, width)
+    );
     const historyLines: string[] = [];
+    const activeIds = new Set<number>();
 
     for (const item of outputBridge.getHistory()) {
+      activeIds.add(item.id);
       if (item.event.kind === "command" && historyLines.length > 0) {
         historyLines.push("");
       }
-      historyLines.push(...formatOutputEvent(item.event, width).split("\n"));
+
+      let cached = this.eventLineCache.get(item.id);
+      if (cached?.event !== item.event) {
+        cached = {
+          event: item.event,
+          lines: formatOutputEvent(item.event, width)
+            .split("\n")
+            .flatMap((line) => wrapTextWithAnsi(line, width)),
+        };
+        this.eventLineCache.set(item.id, cached);
+      }
+      historyLines.push(...cached.lines);
     }
 
-    const allLines = [...bannerLines, ...historyLines].flatMap((line) =>
-      wrapTextWithAnsi(line, width)
-    );
+    for (const id of this.eventLineCache.keys()) {
+      if (!activeIds.has(id)) this.eventLineCache.delete(id);
+    }
+
+    const allLines = [...bannerLines, ...historyLines];
     const total = allLines.length;
     this.scrollOffset = Math.min(this.scrollOffset, Math.max(0, total - maxLines));
 

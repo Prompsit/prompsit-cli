@@ -1,38 +1,39 @@
-# Repository Guidelines
+# Repository guidelines
 
-<!-- SCOPE: Code style, structure, testing, and commit guidelines for AI agents and contributors. -->
-<!-- DO NOT add here: CLI usage -> README.md, Architecture -> docs/project/architecture.md, Commands -> docs/project/runbook.md -->
+These are the authoritative repository-wide instructions for contributors and coding agents.
 
-## Project Structure
+## Sources of truth
 
-See [CLAUDE.md § Folder Structure](CLAUDE.md#folder-structure) and [architecture.md § Component Breakdown](docs/project/architecture.md#52-component-breakdown).
+| Subject | Canonical source |
+|---|---|
+| CLI commands and flags | Commander definitions in `src/program.ts` and `src/commands/`; verify with `prompsit --help` |
+| Configuration keys and defaults | `src/config/schemas.ts` and `src/config/constants.ts` |
+| API paths | `src/shared/constants.ts` |
+| Dependencies and runtime floor | `package.json` and `package-lock.json` |
+| Architecture boundaries | `.dependency-cruiser.cjs` and [architecture.md](docs/project/architecture.md) |
+| Development and release commands | `package.json#scripts` and [runbook.md](docs/project/runbook.md) |
+| Public usage | [README.md](README.md) |
 
-## Coding Style & Naming Conventions
+## Code
 
-- TypeScript strict mode (`strict: true` in tsconfig.json)
-- ESM modules (`"type": "module"` in package.json)
-- TUI via `@earendil-works/pi-tui` (replaced Ink)
-- Commander.js with `@commander-js/extra-typings` for type-safe CLI
-- Prefer clear module boundaries: CLI wiring in `commands/`, API calls in `api/`, config in `config/`
+- TypeScript strict mode and ESM are mandatory.
+- Keep CLI wiring in `src/commands/`, transport and API resources in `src/api/`, settings in `src/config/`, terminal presentation in `src/output/`, and interactive behavior in `src/repl/`.
+- Use `@commander-js/extra-typings` for commands and `@earendil-works/pi-tui` for TUI behavior.
+- Route user-facing output through the terminal port. Do not write directly to stdout or stderr outside its adapters.
+- Never log or persist credentials. REPL-sensitive commands must be recognized by `src/repl/sensitive-command.ts`.
+- Preserve unrelated working-tree changes.
 
-**For detailed conventions:** See [docs/project/tech_stack.md](docs/project/tech_stack.md) and [docs/principles.md](docs/principles.md)
+## Tests and verification
 
-## Testing Guidelines
+- Keep tests that protect Prompsit business behavior, data integrity, failure recovery, or external contracts.
+- Do not test framework internals or duplicate the same outcome at multiple layers without a distinct risk.
+- Unit tests must not use the network. E2E tests target a selected real API stand and must isolate local state.
+- Before handoff, run `npm run lint:all`, `npm run test:unit`, and `npm run build`. Run relevant E2E tests when valid stand credentials are available.
 
-- Framework: Vitest
-- Naming: `tests/unit/*.test.ts`, `tests/e2e/**/*.test.ts`
-- Tests should avoid real network calls; prefer mocks/fixtures
+## Documentation
 
-**For detailed testing strategy:** See [docs/reference/guides/testing-strategy.md](docs/reference/guides/testing-strategy.md)
+Write project documentation in English. Keep one canonical owner per topic and link to it from secondary entrypoints. Prefer durable contracts and rationale over copied inventories, version tables, status snapshots, or implementation narration.
 
-## Commit & Pull Request Guidelines
+## Commits and pull requests
 
-- Git history uses short, direct messages like "Added ...", "Updated ...", "Fixed ...". Keep commits scoped and readable.
-- PRs: describe behavior change, link issue/story if available, include CLI output snippet for UX changes, and ensure `npm run typecheck` and `npm test` pass.
-
-## Security & Configuration Tips
-
-- Never commit secrets. Auth tokens stored in `~/.prompsit/credentials.json`; runtime config at `~/.prompsit/config.toml`.
-- Environment variables use `PROMPSIT_` with `__` nesting (e.g., `PROMPSIT_API__BASE_URL`).
-
-**For detailed security guidelines:** See [docs/principles.md](docs/principles.md#security-by-design)
+Use short, scoped commit messages. Pull requests should explain the behavior change, its risk, and verification; include CLI output for UX changes.

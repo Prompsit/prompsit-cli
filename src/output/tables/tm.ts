@@ -1,5 +1,3 @@
-// See API-535: Translation Memory table models for tm show / tm search output.
-
 import chalk from "chalk";
 import { TM_SIMILARITY_GOOD } from "../../shared/constants.ts";
 import { t } from "../../i18n/index.ts";

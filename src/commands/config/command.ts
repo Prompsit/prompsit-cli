@@ -1,10 +1,5 @@
 import { Command } from "@commander-js/extra-typings";
-import {
-  getConfigValue,
-  getSettings,
-  setConfigValue,
-  writeConfigToml,
-} from "../../config/index.ts";
+import { getConfigValue, setConfigValue } from "../../config/index.ts";
 import { ErrorCode } from "../../errors/codes.ts";
 import { toErrorMessage } from "../../errors/contracts.ts";
 import { t } from "../../i18n/index.ts";
@@ -51,7 +46,6 @@ configCommand
         failCommand(ErrorCode.CONFIG_WRITE, toErrorMessage(error));
         return;
       }
-      writeConfigToml(getSettings());
       if (key === "api-base-url") {
         applyApiUrlChangeAndNotify();
       }

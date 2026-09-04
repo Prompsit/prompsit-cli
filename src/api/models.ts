@@ -1,6 +1,4 @@
-// See API-446, API-468, API-476, API-489, API-492, API-493: Zod API Response Models
-// Schema-first design: schemas define both runtime validation and TypeScript types.
-// Phase 1 (US003): TokenResponse + HealthResponse. Phase 2 (US008): Translation schemas. Phase 3 (US012): Evaluation schemas. Phase 4 (US011): Engine/Format schemas. Phase 5 (US010): Job schemas. Phase 6 (US009): JobCreateResponse. Phase 7 (US013): Data Processing schemas.
+// Zod schemas define both runtime API validation and TypeScript types.
 
 import { z } from "zod";
 
@@ -53,7 +51,7 @@ export const HealthResponseSchema = z.object({
   timestamp: z.string(),
 });
 
-// --- Translation schemas (Phase 2: US008) ---
+// --- Translation schemas ---
 
 /**
  * Single translation item from API response.
@@ -93,7 +91,7 @@ export const TranslationResponseSchema = z.object({
   total_latency_ms: z.number().nullable(),
 });
 
-// --- Evaluation schemas (US012) ---
+// --- Evaluation schemas ---
 
 /**
  * A source/hypothesis/reference triplet for quality evaluation.
@@ -127,7 +125,7 @@ export const EvaluationResponseSchema = z.object({
   segment_count: z.number().default(0),
 });
 
-// --- Engine & Format schemas (US011) ---
+// --- Engine and format schemas ---
 
 /** Per-engine metadata (APT package info). */
 export const EngineDetailSchema = z.object({
@@ -166,7 +164,7 @@ export const FormatsResponseSchema = z.object({
   total: z.number(),
 });
 
-// --- Job schemas (US010) ---
+// --- Job schemas ---
 
 /**
  * Job status response from GET /v1/jobs/{job_id}.
@@ -449,8 +447,6 @@ export type JobCreateResponse = z.infer<typeof JobCreateResponseSchema>;
 export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
 export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
 export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
-/** @internal Polling code parses the schema directly; alias kept for type-level reuse. */
-export type DeviceTokenError = z.infer<typeof DeviceTokenErrorSchema>;
 export type ChangeSecretResponse = z.infer<typeof ChangeSecretResponseSchema>;
 
 // ---------------------------------------------------------------------------
@@ -498,15 +494,9 @@ export const TMSearchResponseSchema = z.object({
   total_count: z.number(),
 });
 
-/** @internal Schema alias reserved for TM callers. */
-export type TMResponse = z.infer<typeof TMResponseSchema>;
 export type TMListResponse = z.infer<typeof TMListResponseSchema>;
-/** @internal Schema alias reserved for TM callers. */
-export type TMSegmentResponse = z.infer<typeof TMSegmentResponseSchema>;
 export type TMSegmentListResponse = z.infer<typeof TMSegmentListResponseSchema>;
 export type TMImportJobResult = z.infer<typeof TMImportJobResultSchema>;
-/** @internal Schema alias reserved for TM callers. */
-export type TMSearchHitResponse = z.infer<typeof TMSearchHitResponseSchema>;
 export type TMSearchResponse = z.infer<typeof TMSearchResponseSchema>;
 
 // TM param interfaces (camelCase at CLI boundary, mapped to snake_case in resource)

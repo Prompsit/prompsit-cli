@@ -118,8 +118,6 @@ export const MAX_POLL_INTERVAL = 30; // seconds
 // --- Device Flow (RFC 8628) ---
 
 export const DEVICE_FLOW_DEFAULT_INTERVAL = 5; // seconds (RFC 8628 §3.2 default)
-/** @internal Device-code TTL documented for future device-flow callers. */
-export const DEVICE_FLOW_TIMEOUT = 600; // seconds (device_code TTL)
 export const SSE_HEARTBEAT_TIMEOUT = 30; // seconds (2x server heartbeat interval)
 
 // --- Data processing validation ---

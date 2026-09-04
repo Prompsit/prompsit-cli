@@ -1,5 +1,5 @@
 // Flat translate command: @ prefix determines text vs file mode at runtime.
-// Text mode (no @): sync inline translation via POST /v1/translation/translate.
+// Text mode (no @): synchronous inline translation via POST /v1/translation.
 // File mode (@): async document upload + track + download via SSE/polling.
 
 import { Command } from "@commander-js/extra-typings";

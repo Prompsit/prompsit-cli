@@ -12,6 +12,7 @@ import { t } from "../i18n/index.ts";
 import type { ProgressEvent, ProgressPhase, SubmitResult } from "./core/progress-types.ts";
 import { checkCompleteness } from "./input/analyzer.ts";
 import { runWithProgressContext, type ProgressContext } from "../runtime/progress-context.ts";
+import { isSensitiveCommand } from "./sensitive-command.ts";
 
 /**
  * REPL Service - business logic SDK for command execution.
@@ -136,6 +137,7 @@ export class ReplService extends EventEmitter {
    */
   private async executeFullCommand(text: string): Promise<SubmitResult> {
     const commandId = randomUUID();
+    const sensitive = isSensitiveCommand(text);
 
     clearHint();
     this.isRunning = true;
@@ -144,18 +146,20 @@ export class ReplService extends EventEmitter {
 
     this.emitProgress(commandId, "start");
 
-    // Append full command to persistent history file + in-memory navigation
-    this.commandHistory.appendLine(text);
-    this.commandHistory.add(text);
+    if (!sensitive) {
+      // Append full command to persistent history file + in-memory navigation.
+      this.commandHistory.appendLine(text);
+      this.commandHistory.add(text);
 
-    // Echo command as structured history entry (rendered differently from live prompt).
-    outputBridge.write({
-      kind: "command",
-      timestamp: Date.now(),
-      stream: "stdout",
-      level: "info",
-      text,
-    });
+      // Echo command as structured history entry (rendered differently from live prompt).
+      outputBridge.write({
+        kind: "command",
+        timestamp: Date.now(),
+        stream: "stdout",
+        level: "info",
+        text,
+      });
+    }
 
     try {
       const ctx: ProgressContext = {

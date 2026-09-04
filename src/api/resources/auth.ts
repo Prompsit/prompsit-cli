@@ -1,4 +1,3 @@
-// See API-450: Auth Resource + Transport Bearer Integration
 // AuthResource for OAuth2 ROPC flow (RFC 6749 Section 4.3).
 // Uses public transport (token endpoint does not require Authorization header).
 
@@ -70,7 +69,7 @@ export class AuthResource {
    * @throws AuthenticationError if refresh token invalid/expired (401)
    * @throws NetworkError if API unreachable
    */
-  async refreshToken(refreshToken: string): Promise<TokenResponse> {
+  async refreshToken(refreshToken: string, signal?: AbortSignal): Promise<TokenResponse> {
     const baseUrl = this.baseUrl;
     const data = await this.transport.request<unknown>(
       "POST",
@@ -81,7 +80,8 @@ export class AuthResource {
           refresh_token: refreshToken,
         },
       },
-      true // public client (no auth header)
+      true, // public client (no auth header)
+      signal
     );
     return TokenResponseSchema.parse(data);
   }

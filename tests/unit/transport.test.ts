@@ -1,4 +1,7 @@
 import { createServer, type Server } from "node:http";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -15,9 +18,11 @@ function closeServer(server: Server): Promise<void> {
 
 describe("HttpTransport retry overrides", () => {
   const servers: Server[] = [];
+  const tempDirs: string[] = [];
 
   afterEach(async () => {
     await Promise.all(servers.splice(0).map((server) => closeServer(server)));
+    await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
   });
 
   it("does not retry semantic 400 responses when request retry limit is zero", async () => {
@@ -64,5 +69,57 @@ describe("HttpTransport retry overrides", () => {
     expect(response.statusCode).toBe(400);
     expect(hits).toBe(1);
     expect(durationMs).toBeLessThan(500);
+  });
+
+  it("publishes a download only after the stream completes", async () => {
+    const server = createServer((_, response) => response.end("complete-result"));
+    servers.push(server);
+    await new Promise<void>((resolvePromise) => server.listen(0, "127.0.0.1", resolvePromise));
+    const address = server.address();
+    if (address === null || typeof address === "string") throw new Error("Expected TCP address");
+    const dir = await mkdtemp(join(tmpdir(), "prompsit-download-"));
+    tempDirs.push(dir);
+    const target = join(dir, "result.txt");
+
+    await new HttpTransport().requestToFile(
+      "GET",
+      `http://127.0.0.1:${String(address.port)}/result`,
+      target,
+      { retry: { limit: 0 } },
+      true
+    );
+
+    expect(await readFile(target, "utf8")).toBe("complete-result");
+    const files = await readdir(dir);
+    expect(files.filter((name) => name.endsWith(".part"))).toEqual([]);
+  });
+
+  it("preserves an existing destination when the stream fails", async () => {
+    const server = createServer((_, response) => {
+      response.write("partial");
+      response.destroy();
+    });
+    servers.push(server);
+    await new Promise<void>((resolvePromise) => server.listen(0, "127.0.0.1", resolvePromise));
+    const address = server.address();
+    if (address === null || typeof address === "string") throw new Error("Expected TCP address");
+    const dir = await mkdtemp(join(tmpdir(), "prompsit-download-"));
+    tempDirs.push(dir);
+    const target = join(dir, "result.txt");
+    await writeFile(target, "previous-result", "utf8");
+
+    await expect(
+      new HttpTransport().requestToFile(
+        "GET",
+        `http://127.0.0.1:${String(address.port)}/result`,
+        target,
+        { retry: { limit: 0 } },
+        true
+      )
+    ).rejects.toThrow();
+
+    expect(await readFile(target, "utf8")).toBe("previous-result");
+    const files = await readdir(dir);
+    expect(files.filter((name) => name.endsWith(".part"))).toEqual([]);
   });
 });

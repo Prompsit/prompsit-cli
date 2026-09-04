@@ -1,26 +1,16 @@
-# REPL Output Contract
+# REPL output contract
 
-This document defines the runtime event contract between the terminal output port and the REPL output bridge.
+The terminal port and REPL bridge exchange structured events:
 
-## Event Model
+| Kind | Meaning |
+|---|---|
+| `text` | stdout text |
+| `table` | stdout table model |
+| `system` | stderr status, warning, hint, or error with a level |
+| `command` | non-sensitive REPL command echo |
 
-- `kind: "text"`: stdout text payload.
-- `kind: "table"`: stdout structured table payload.
-- `kind: "system"`: stderr diagnostic/status payload with a `level`.
-- `kind: "command"`: REPL-local command echo emitted by `ReplService` before command execution.
+`terminal.line`, `terminal.json`, and `terminal.table` produce stdout events. Informational, warning, success, and error methods produce `system` events. `terminal.prompt` is CLI-only.
 
-## Stream Rules
+Sensitive commands must produce neither persistent history nor a command echo. The renderer treats system message text as already styled. Tests should assert event kind, stream ownership, ordering, and sensitive-data exclusion rather than incidental wrapping or color codes.
 
-- `stdout` must use `text` or `table` (and `command` for REPL command echo).
-- `stderr` must use `system` only.
-
-## Producer Rules
-
-- `terminal.line/json/table` write to stdout.
-- `terminal.info/dim/warn/success/error` write to stderr as `system`.
-- `terminal.prompt` is CLI-interactive only and must not be used in REPL mode.
-
-## Consumer Rules
-
-- REPL renderer (`history-render`) must treat `system` as pre-styled message text and render as-is.
-- Tests should assert stream/kind contract (`stderr -> system`) rather than depending on incidental table/text formatting.
+The event types in [`src/repl/core/output-bridge.ts`](../../../src/repl/core/output-bridge.ts) are authoritative.
