@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Node.js requirement is now explicit at 22.19+ to match the TUI dependency floor
 - Automated npm publishing via GitHub Actions (CalVer from mirror commit date)
+- npm releases now authenticate through GitHub Actions OIDC trusted publishing instead of a long-lived npm token
 - `/publish` skill: commit+push only, npm publish handled by CI
 
 ### Added

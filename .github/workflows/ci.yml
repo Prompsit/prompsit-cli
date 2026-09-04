@@ -5,10 +5,11 @@ name: CI
 # triggers this workflow (lint/typecheck/test/build → CalVer npm publish). The `main` triggers
 # below are CORRECT for the mirror — do NOT repoint them to `master`. See docs/project/runbook.md §7.
 #
-# `paths:` below scopes the whole workflow to package-relevant files, so a docs/README-only
-# push does not run CI and does not bump the npm CalVer version. Keep this list in sync with
-# whatever actually ships in the published package (see package.json "files").
+# `paths:` below scopes push/PR runs to package-relevant files, so a docs/README-only push does
+# not bump the npm CalVer version. `workflow_dispatch` remains available for release recovery.
+# Keep the path lists in sync with whatever actually ships (see package.json "files").
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -63,18 +64,19 @@ jobs:
   publish:
     name: Publish to npm
     needs: [check]
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: npm
+          package-manager-cache: false
 
       - run: npm ci
 
@@ -100,8 +102,6 @@ jobs:
         id: publish
         if: steps.check-npm.outputs.exists == 'false'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Extract release notes from CHANGELOG
         if: steps.publish.outcome == 'success'
