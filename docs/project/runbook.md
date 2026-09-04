@@ -88,7 +88,7 @@ Set `TEST_ACCOUNT` and `TEST_SECRET`; optionally override the stand with `PROMPS
 
 ## Release flow
 
-GitLab `origin/master` is primary. Its pipeline leak-scans the repository and creates a filtered squash commit on public GitHub `main`. GitHub Actions validates relevant code, tests, policies, workflow, and documentation. The `package-changes` job publishes only when package inputs changed: `src/`, `examples/`, `assets/`, the package manifests, `tsconfig.json`, or `scripts/clean-build.mjs`. Docs-, test-, skill-, and workflow-only pushes run CI without creating a package version. [`.gitlab-ci.yml`](../../.gitlab-ci.yml), [`.github-mirror-exclude`](../../.github-mirror-exclude), and [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) are authoritative for these mechanics.
+GitLab `origin/master` is primary. Its pipeline leak-scans the repository and creates a filtered squash commit on public GitHub `main`. GitHub Actions validates relevant code, tests, policies, workflow, and documentation. The `package-changes` job publishes only when package inputs changed: `src/`, `examples/`, `assets/`, the package manifests, `tsconfig.json`, or `scripts/clean-build.mjs`. Docs-, test-, skill-, and workflow-only pushes run CI without creating a package version. The private-repository files `.gitlab-ci.yml` and `.github-mirror-exclude`, together with the public [GitHub Actions workflow](../../.github/workflows/ci.yml), are authoritative for these mechanics.
 
 npm publication uses GitHub Actions OIDC Trusted Publishing. The trust configuration and runtime are owned by the npm package settings and CI workflow. Do not configure `NPM_TOKEN`, `NODE_AUTH_TOKEN`, or another long-lived npm credential.
 
