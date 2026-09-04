@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 26.904.1804 - 2026-09-04
+
 ### Changed
 - Node.js requirement now follows the package manifest and TUI dependency floor
 - REPL history rendering now reuses width-aware formatted event lines instead of rebuilding the entire buffer on every frame
