@@ -113,6 +113,36 @@ describe("trackJob abort propagation (P1 regression)", () => {
     expect(cancelMock).toHaveBeenCalledWith("job-dlq-test", expect.any(AbortSignal));
   });
 
+  it("returns the side-effect result for a completed TMX import", async () => {
+    (client.session as any).request = vi.fn().mockResolvedValue({
+      status: "completed",
+      progress_percentage: 100,
+      current_step: null,
+      error_message: null,
+      result_url: null,
+      tm_import_result: {
+        tm_id: "tm-1",
+        segment_count: 12,
+        source_lang: "en",
+        target_lang: "es",
+      },
+    });
+
+    await expect(
+      trackJob(client as any, "job-tmx-test", { strategy: "polling" })
+    ).resolves.toEqual({
+      resultUrl: undefined,
+      tmImportResult: {
+        tm_id: "tm-1",
+        segment_count: 12,
+        source_lang: "en",
+        target_lang: "es",
+      },
+    });
+
+    expect(cancelMock).not.toHaveBeenCalled();
+  });
+
   it("throws JobError on unknown status (fail-safe)", async () => {
     (client.session as any).request = vi.fn().mockResolvedValue({
       status: "some_future_status",

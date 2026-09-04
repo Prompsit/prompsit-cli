@@ -1,6 +1,6 @@
 // See API-446, API-468, API-476, API-489, API-492, API-493: Zod API Response Models
 // Schema-first design: schemas define both runtime validation and TypeScript types.
-// Phase 1 (US003): TokenResponse + HealthResponse. Phase 2 (US008): Translation schemas. Phase 3 (US012): Evaluation schemas. Phase 4 (US011): Engine/Format schemas. Phase 5 (US010): Job schemas. Phase 6 (US009): DocJobCreateResponse. Phase 7 (US013): Data Processing schemas.
+// Phase 1 (US003): TokenResponse + HealthResponse. Phase 2 (US008): Translation schemas. Phase 3 (US012): Evaluation schemas. Phase 4 (US011): Engine/Format schemas. Phase 5 (US010): Job schemas. Phase 6 (US009): JobCreateResponse. Phase 7 (US013): Data Processing schemas.
 
 import { z } from "zod";
 
@@ -187,8 +187,16 @@ export const FormatsResponseSchema = z.object({
  *
  * Pattern: z.object() rejects unknown keys (strict schema contract).
  */
+export const TMImportJobResultSchema = z.object({
+  tm_id: z.string(),
+  segment_count: z.number(),
+  source_lang: z.string(),
+  target_lang: z.string(),
+});
+
 export const JobStatusResponseSchema = z.object({
   job_id: z.string(),
+  job_type: z.string(),
   status: z.string(),
   progress_percentage: z.number().default(0),
   current_step: z.string().nullable(),
@@ -201,12 +209,14 @@ export const JobStatusResponseSchema = z.object({
   started_at: z.string().nullable(),
   completed_at: z.string().nullable(),
   result_url: z.string().nullable().default(null),
+  error_code: z.string().nullable().default(null),
+  tm_import_result: TMImportJobResultSchema.nullable().default(null),
 });
 
-// --- Document Translation Job schema (US009) ---
+// --- Async Job Creation schema ---
 
 /**
- * Job creation response from POST /v1/translation/document.
+ * Job creation response shared by document translation, data processing, and TMX import.
  *
  * Fields:
  * - job_id: Unique job identifier (required)
@@ -215,10 +225,12 @@ export const JobStatusResponseSchema = z.object({
  *
  * Pattern: z.object() rejects unknown keys (strict schema contract).
  */
-export const DocJobCreateResponseSchema = z.object({
+export const JobCreateResponseSchema = z.object({
   job_id: z.string(),
   status: z.string().default("pending"),
   job_type: z.string().default("translation"),
+  status_url: z.string(),
+  result_url: z.string().nullable(),
 });
 
 /** Single language entry from GET /v1/data/score/languages. */
@@ -235,23 +247,6 @@ export const DataScoreLanguagesResponseSchema = z.object({
 });
 
 export type DataScoreLanguagesResponse = z.infer<typeof DataScoreLanguagesResponseSchema>;
-
-// --- Data Processing schemas (US013) ---
-
-/**
- * Job creation response from multipart upload endpoints.
- * Returned by POST /v1/data/annotate and POST /v1/data/score.
- *
- * Fields:
- * - job_id: Unique job identifier for async tracking (required)
- * - retry_after: Suggested polling interval in seconds (nullable, default null)
- *
- * Pattern: z.object() rejects unknown keys (strict schema contract).
- */
-export const DataJobCreateResponseSchema = z.object({
-  job_id: z.string(),
-  retry_after: z.number().nullable().default(null),
-});
 
 // --- User Usage schemas ---
 
@@ -450,8 +445,7 @@ export type LanguagePairDetail = z.infer<typeof LanguagePairDetailSchema>;
 export type FormatInfo = z.infer<typeof FormatInfoSchema>;
 export type FormatsResponse = z.infer<typeof FormatsResponseSchema>;
 export type JobStatusResponse = z.infer<typeof JobStatusResponseSchema>;
-export type DocJobCreateResponse = z.infer<typeof DocJobCreateResponseSchema>;
-export type DataJobCreateResponse = z.infer<typeof DataJobCreateResponseSchema>;
+export type JobCreateResponse = z.infer<typeof JobCreateResponseSchema>;
 export type UserUsageResponse = z.infer<typeof UserUsageResponseSchema>;
 export type DeviceAuthorizationResponse = z.infer<typeof DeviceAuthorizationResponseSchema>;
 export type DeviceTokenResponse = z.infer<typeof DeviceTokenResponseSchema>;
@@ -492,12 +486,6 @@ export const TMSegmentListResponseSchema = z.object({
   page_size: z.number(),
 });
 
-export const TMImportResponseSchema = z.object({
-  tm_id: z.string(),
-  segment_count: z.number(),
-  language_pairs: z.array(z.tuple([z.string(), z.string()])),
-});
-
 export const TMSearchHitResponseSchema = z.object({
   source_text: z.string(),
   target_text: z.string(),
@@ -516,7 +504,7 @@ export type TMListResponse = z.infer<typeof TMListResponseSchema>;
 /** @internal Schema alias reserved for TM callers. */
 export type TMSegmentResponse = z.infer<typeof TMSegmentResponseSchema>;
 export type TMSegmentListResponse = z.infer<typeof TMSegmentListResponseSchema>;
-export type TMImportResponse = z.infer<typeof TMImportResponseSchema>;
+export type TMImportJobResult = z.infer<typeof TMImportJobResultSchema>;
 /** @internal Schema alias reserved for TM callers. */
 export type TMSearchHitResponse = z.infer<typeof TMSearchHitResponseSchema>;
 export type TMSearchResponse = z.infer<typeof TMSearchResponseSchema>;

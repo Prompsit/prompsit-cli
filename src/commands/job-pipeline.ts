@@ -9,6 +9,7 @@
 // the track/download phases and the progress-band math (single source of truth).
 
 import type { APIClient } from "../api/client.ts";
+import { JobError } from "../errors/contracts.ts";
 import { trackJob } from "./job-tracking.ts";
 
 export interface JobPipelineParams {
@@ -42,7 +43,7 @@ export async function runJobPipeline(params: JobPipelineParams): Promise<string>
   });
 
   // Phase 2: Server processing (5-95%)
-  const resultUrl = await trackJob(client, resp.job_id, {
+  const completion = await trackJob(client, resp.job_id, {
     description,
     silent: true,
     signal,
@@ -50,9 +51,12 @@ export async function runJobPipeline(params: JobPipelineParams): Promise<string>
       onProgress(5 + Math.round(pct * 0.9));
     },
   });
+  if (!completion.resultUrl) {
+    throw new JobError("Server did not provide result_url for a file-producing job");
+  }
 
   // Phase 3: Download (95-100%)
-  return client.jobs.download(resultUrl, outputPath, signal, (p) => {
+  return client.jobs.download(completion.resultUrl, outputPath, signal, (p) => {
     onProgress(95 + Math.round(p.percent * 5));
   });
 }

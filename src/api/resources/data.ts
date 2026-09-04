@@ -6,8 +6,8 @@ import { openAsBlob } from "node:fs";
 import { basename } from "node:path";
 import type { AuthSession, Progress } from "../auth-session.ts";
 import {
-  DataJobCreateResponseSchema,
-  type DataJobCreateResponse,
+  JobCreateResponseSchema,
+  type JobCreateResponse,
   type ScoreParams,
   type AnnotateParams,
 } from "../models.ts";
@@ -17,7 +17,7 @@ import { Endpoint } from "../../shared/constants.ts";
  * Data processing API resource (annotation + scoring).
  *
  * Calls POST /v1/data/annotate and POST /v1/data/score via AuthSession.
- * Both endpoints accept multipart file uploads and return DataJobCreateResponse
+ * Both endpoints accept multipart file uploads and return JobCreateResponse
  * for async job tracking.
  */
 export class DataResource {
@@ -33,12 +33,12 @@ export class DataResource {
    * Upload corpus file for annotation via Monotextor (async job).
    *
    * @param params - Annotation parameters (file, lang, pipeline, optional filters)
-   * @returns DataJobCreateResponse with job_id for tracking
+   * @returns JobCreateResponse with job_id for tracking
    */
   async annotate(
     params: AnnotateParams,
     onUploadProgress?: (progress: Progress) => void
-  ): Promise<DataJobCreateResponse> {
+  ): Promise<JobCreateResponse> {
     const { filePath, lang, pipeline, minLen, minAvgWords, lidModel } = params;
     const fileBlob = await openAsBlob(filePath);
     const fileName = basename(filePath);
@@ -59,7 +59,7 @@ export class DataResource {
       onUploadProgress
     );
 
-    return DataJobCreateResponseSchema.parse(data);
+    return JobCreateResponseSchema.parse(data);
   }
 
   /**
@@ -70,7 +70,7 @@ export class DataResource {
    * - Parallel mode: source_file + target_file (two separate files)
    *
    * @param params - Score parameters (source file, optional target file and output format)
-   * @returns DataJobCreateResponse with job_id for tracking
+   * @returns JobCreateResponse with job_id for tracking
    * @throws AuthenticationError if not authenticated
    * @throws ZodError if response schema mismatch
    * @throws APIError on API errors
@@ -78,7 +78,7 @@ export class DataResource {
   async score(
     params: ScoreParams,
     onUploadProgress?: (progress: Progress) => void
-  ): Promise<DataJobCreateResponse> {
+  ): Promise<JobCreateResponse> {
     const { sourceFile, targetFile, outputFormat, sourceLang } = params;
     const baseUrl = this.baseUrl;
     const sourceBlob = await openAsBlob(sourceFile);
@@ -107,6 +107,6 @@ export class DataResource {
       onUploadProgress
     );
 
-    return DataJobCreateResponseSchema.parse(data);
+    return JobCreateResponseSchema.parse(data);
   }
 }

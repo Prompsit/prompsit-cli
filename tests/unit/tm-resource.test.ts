@@ -130,12 +130,14 @@ describe("TMResource boundary mapping", () => {
   describe("importTmx()", () => {
     it("sends profile_id as searchParam, not in FormData (F1)", async () => {
       session.request.mockResolvedValue({
-        tm_id: "tm-1",
-        segment_count: 50,
-        language_pairs: [["en", "es"]],
+        job_id: "job-1",
+        status: "pending",
+        job_type: "tmx_import",
+        status_url: "/v1/jobs/job-1",
+        result_url: null,
       });
 
-      await resource.importTmx("/tmp/test.tmx", "p-1");
+      const result = await resource.importTmx("/tmp/test.tmx", "p-1");
 
       const [method, url, options] = session.request.mock.calls[0];
       expect(method).toBe("POST");
@@ -149,13 +151,16 @@ describe("TMResource boundary mapping", () => {
       const formData = options.body as FormData;
       expect(formData.has("file")).toBe(true);
       expect(formData.has("profile_id")).toBe(false);
+      expect(result).toMatchObject({ job_id: "job-1", job_type: "tmx_import" });
     });
 
     it("omits profile_id from searchParams when undefined", async () => {
       session.request.mockResolvedValue({
-        tm_id: "tm-1",
-        segment_count: 10,
-        language_pairs: [["en", "de"]],
+        job_id: "job-2",
+        status: "pending",
+        job_type: "tmx_import",
+        status_url: "/v1/jobs/job-2",
+        result_url: null,
       });
 
       await resource.importTmx("/tmp/test.tmx");

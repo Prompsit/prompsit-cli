@@ -7,7 +7,7 @@
 import { SSEClient } from "../api/sse-client.ts";
 import type { SSEEvent } from "../api/sse-models.ts";
 import { CancelledError, JobError, RateLimitError } from "../errors/contracts.ts";
-import type { JobStatusResponse } from "../api/models.ts";
+import type { JobStatusResponse, TMImportJobResult } from "../api/models.ts";
 import type { APIClient } from "../api/client.ts";
 import { t } from "../i18n/index.ts";
 import { terminal } from "../output/terminal.ts";
@@ -37,6 +37,7 @@ export interface JobResult {
   readonly success: boolean;
   readonly kind: "success" | "failed" | "cancelled";
   readonly resultUrl?: string;
+  readonly tmImportResult?: TMImportJobResult;
   readonly error?: string;
 }
 
@@ -91,7 +92,12 @@ export class SSETracker implements JobTracker {
 
     // Map terminal events to JobResult
     if ("result_url" in result) {
-      return { success: true, kind: "success", resultUrl: result.result_url };
+      return {
+        success: true,
+        kind: "success",
+        resultUrl: result.result_url ?? undefined,
+        tmImportResult: result.tm_import_result ?? undefined,
+      };
     }
     if ("error_message" in result) {
       return { success: false, kind: "failed", error: result.error_message || "Unknown error" };
@@ -151,7 +157,12 @@ export class PollingTracker implements JobTracker {
 
       // Terminal states
       if (jobStatus.status === JobStatus.COMPLETED) {
-        return { success: true, kind: "success", resultUrl: jobStatus.result_url ?? undefined };
+        return {
+          success: true,
+          kind: "success",
+          resultUrl: jobStatus.result_url ?? undefined,
+          tmImportResult: jobStatus.tm_import_result ?? undefined,
+        };
       }
       if (jobStatus.status === JobStatus.FAILED) {
         return {
@@ -212,7 +223,7 @@ export interface TrackJobOptions {
  * @param client - API client instance
  * @param jobId - Job ID to track
  * @param options - Tracking configuration
- * @returns Server-provided result URL (HATEOAS) for downloading the result
+ * @returns Completion metadata for either a downloadable file or a side-effect job
  * @throws JobError if job failed or was cancelled
  * @throws CancelledError if aborted via AbortSignal (Ctrl+C)
  */
@@ -220,7 +231,7 @@ export async function trackJob(
   client: APIClient,
   jobId: string,
   options: TrackJobOptions = {}
-): Promise<string> {
+): Promise<{ resultUrl?: string; tmImportResult?: TMImportJobResult }> {
   const {
     description = "Processing",
     strategy = getSettings().cli.job_tracking_strategy,
@@ -296,10 +307,10 @@ export async function trackJob(
     if (result.success) {
       animator.complete();
       sink?.succeed("Complete");
-      if (!result.resultUrl) {
-        throw new JobError("Server did not provide result_url (HATEOAS contract violated)");
-      }
-      return result.resultUrl;
+      return {
+        resultUrl: result.resultUrl,
+        tmImportResult: result.tmImportResult,
+      };
     }
     animator.stop();
     sink?.fail();

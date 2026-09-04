@@ -7,6 +7,7 @@
 import { z } from "zod";
 
 import { JobStatus, SSEEventType } from "../shared/constants.ts";
+import { TMImportJobResultSchema } from "./models.ts";
 
 // --- SSE Event Schemas ---
 
@@ -37,7 +38,8 @@ export const SSEProgressEventSchema = z.object({
  */
 export const SSECompleteEventSchema = z.object({
   status: z.string().default(JobStatus.COMPLETED),
-  result_url: z.string().min(1),
+  result_url: z.string().min(1).nullable().default(null),
+  tm_import_result: TMImportJobResultSchema.nullable().default(null),
 });
 
 /**

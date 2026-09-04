@@ -5,8 +5,8 @@ import type { AuthSession, Progress } from "../auth-session.ts";
 import {
   TranslationResponseSchema,
   type TranslationResponse,
-  DocJobCreateResponseSchema,
-  type DocJobCreateResponse,
+  JobCreateResponseSchema,
+  type JobCreateResponse,
   type TranslateParams,
   type UploadDocumentParams,
 } from "../models.ts";
@@ -68,14 +68,14 @@ export class TranslationResource {
    * Uses openAsBlob for memory-efficient streaming from disk.
    *
    * @param params - Upload parameters (file path, languages, output format)
-   * @returns Validated DocJobCreateResponse with job_id for tracking
+   * @returns Validated JobCreateResponse with job_id for tracking
    * @throws AuthenticationError if not authenticated
    * @throws APIError on API errors (422 unsupported format, 413 file too large)
    */
   async uploadDocument(
     params: UploadDocumentParams,
     onUploadProgress?: (progress: Progress) => void
-  ): Promise<DocJobCreateResponse> {
+  ): Promise<JobCreateResponse> {
     const { filePath, sourceLang, targetLang, outputFormat } = params;
     const baseUrl = this.baseUrl;
 
@@ -99,6 +99,6 @@ export class TranslationResource {
       onUploadProgress
     );
 
-    return DocJobCreateResponseSchema.parse(data);
+    return JobCreateResponseSchema.parse(data);
   }
 }

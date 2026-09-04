@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - GitHub Release auto-creation from CHANGELOG.md Unreleased section
 
 ### Fixed
+- `prompsit tm import` now follows the API's asynchronous job lifecycle and reports the imported language pair and segment count after completion
 - `npm install -g prompsit-cli` no longer emits npm `allow-scripts` warnings from Prompsit CLI install scripts or the native `koffi` dependency
 - `npm install -g prompsit-cli` no longer pulls deprecated `@mariozechner/pi-tui`; the TUI dependency now uses `@earendil-works/pi-tui`
 - `prompsit eval ...` now works from the CLI — the command was registered as `evaluate` while all docs/examples used `eval`, so the bare CLI printed root help. The command is now `eval` everywhere (CLI + REPL); the `evaluate` keyword is removed

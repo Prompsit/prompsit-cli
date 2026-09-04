@@ -45,4 +45,27 @@ describe("parseSSEEvent", () => {
   ])("returns null for $eventType with invalid/unknown data", ({ eventType, data }) => {
     expect(parseSSEEvent(eventType, data)).toBeNull();
   });
+
+  it("parses completion of a TMX import without a result URL", () => {
+    expect(
+      parseSSEEvent(SSEEventType.COMPLETE, {
+        status: "completed",
+        result_url: null,
+        tm_import_result: {
+          tm_id: "tm-1",
+          segment_count: 12,
+          source_lang: "en",
+          target_lang: "es",
+        },
+      })
+    ).toMatchObject({
+      result_url: null,
+      tm_import_result: {
+        tm_id: "tm-1",
+        segment_count: 12,
+        source_lang: "en",
+        target_lang: "es",
+      },
+    });
+  });
 });

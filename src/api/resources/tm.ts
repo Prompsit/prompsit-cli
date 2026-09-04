@@ -6,11 +6,11 @@ import type { AuthSession, Progress } from "../auth-session.ts";
 import {
   TMListResponseSchema,
   TMSegmentListResponseSchema,
-  TMImportResponseSchema,
+  JobCreateResponseSchema,
   TMSearchResponseSchema,
   type TMListResponse,
   type TMSegmentListResponse,
-  type TMImportResponse,
+  type JobCreateResponse,
   type TMSearchResponse,
   type TMListParams,
   type TMShowSegmentsParams,
@@ -86,7 +86,7 @@ export class TMResource {
     filePath: string,
     profileId?: string,
     onUploadProgress?: (progress: Progress) => void
-  ): Promise<TMImportResponse> {
+  ): Promise<JobCreateResponse> {
     const fileBlob = await openAsBlob(filePath);
     const fileName = basename(filePath);
 
@@ -105,7 +105,7 @@ export class TMResource {
       onUploadProgress
     );
 
-    return TMImportResponseSchema.parse(data);
+    return JobCreateResponseSchema.parse(data);
   }
 
   /**
